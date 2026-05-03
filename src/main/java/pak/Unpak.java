@@ -16,8 +16,8 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.zip.CRC32;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -94,11 +94,10 @@ public class Unpak {
             Cons.println("Reading " + filename);
             Pakpref.mapdir = this.infile.getPath();
             this.raf = new RandomAccessFile(this.infile, "r");
-            this.m = new Mappak();
-            this.m.auton = true;
-            this.m.loadmap(this.raf);
-            this.zmodel = new ZipDirModel(this.m.zf, this);
-            this.zmodel.setfileparams(this.raf, this.m.offset);
+            this.m = new Mappak(true);
+            this.m.loadMap(this.raf);
+            this.zmodel = new ZipDirModel(this.m.getZf(), this);
+            this.zmodel.setfileparams(this.raf, this.m.getOffset());
             Cons.println("Scanning for referenced files...");
             this.scan = new Scan(this, (Component) null, this.m, this.zmodel, filename, this.gamedir, true);
             if (this.scan.nofiles) {
@@ -113,7 +112,7 @@ public class Unpak {
                RandomAccessFile copyraf = new RandomAccessFile(renfile, "rw");
                copyraf.setLength(0L);
                this.raf.seek(0L);
-               this.m.copyblock(this.raf, copyraf, ilength);
+               Util.copyBlock(this.raf, copyraf, ilength);
                copyraf.close();
                Cons.println("Done");
                this.infile = renfile;
@@ -122,21 +121,21 @@ public class Unpak {
                } else {
                   this.raf.close();
                   this.raf = new RandomAccessFile(this.infile, "r");
-                  this.zmodel.setfileparams(this.raf, this.m.offset);
+                  this.zmodel.setfileparams(this.raf, this.m.getOffset());
                   Cons.print("Writing " + filename + "...");
                   this.raf.seek(0L);
                   RandomAccessFile outraf = new RandomAccessFile(sfile, "rw");
                   outraf.setLength(0L);
                   Cons.print("BSP data...");
-                  this.m.savemap(this.raf, outraf);
+                  this.m.saveMap(this.raf, outraf);
                   Cons.print("Pak data...");
-                  this.m.savepak(this.raf, outraf);
+                  this.m.savePak(this.raf, outraf);
                   outraf.close();
                   Cons.println("Done");
                   this.raf.close();
                   this.infile = sfile;
                   this.raf = new RandomAccessFile(this.infile, "rw");
-                  this.zmodel.setfileparams(this.raf, this.m.offset);
+                  this.zmodel.setfileparams(this.raf, this.m.getOffset());
                   this.checknav();
                   this.raf.close();
                   long duration = System.currentTimeMillis() - starttime;
@@ -185,8 +184,8 @@ public class Unpak {
             Pakpref.mapdir = this.infile.getPath();
             Pakpref.put("Mapdir", Pakpref.mapdir);
             this.raf = new RandomAccessFile(this.infile, "r");
-            this.m = new Mappak();
-            this.m.loadmap(this.raf);
+            this.m = new Mappak(false);
+            this.m.loadMap(this.raf);
             this.frame = new JFrame("Pakrat %s - %s".formatted(Version.getVersion(), filename));
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
@@ -234,8 +233,8 @@ public class Unpak {
             menubar.add(viewmenu);
             menubar.add(helpmenu);
             this.frame.setJMenuBar(menubar);
-            this.zmodel = new ZipDirModel(this.m.zf, this);
-            this.zmodel.setfileparams(this.raf, this.m.offset);
+            this.zmodel = new ZipDirModel(this.m.getZf(), this);
+            this.zmodel.setfileparams(this.raf, this.m.getOffset());
             this.tmodel = new TableSorter(this.zmodel);
             this.table = new JTable(this.tmodel);
             this.tmodel.setTableHeader(this.table.getTableHeader());
@@ -373,7 +372,7 @@ public class Unpak {
                         RandomAccessFile copyraf = new RandomAccessFile(renfile, "rw");
                         copyraf.setLength(0L);
                         Unpak.this.raf.seek(0L);
-                        Unpak.this.m.copyblock(Unpak.this.raf, copyraf, ilength);
+                        Util.copyBlock(Unpak.this.raf, copyraf, ilength);
                         copyraf.close();
                         Cons.println("Done");
                         Unpak.this.infile = renfile;
@@ -385,7 +384,7 @@ public class Unpak {
 
                         Unpak.this.raf.close();
                         Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "r");
-                        Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.offset);
+                        Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.getOffset());
                      }
                   }
 
@@ -395,9 +394,9 @@ public class Unpak {
                   RandomAccessFile outraf = new RandomAccessFile(sfile, "rw");
                   outraf.setLength(0L);
                   Cons.print("BSP data...");
-                  Unpak.this.m.savemap(Unpak.this.raf, outraf);
+                  Unpak.this.m.saveMap(Unpak.this.raf, outraf);
                   Cons.print("Pak data...");
-                  Unpak.this.m.savepak(Unpak.this.raf, outraf);
+                  Unpak.this.m.savePak(Unpak.this.raf, outraf);
                   outraf.close();
                   Cons.println("Done");
                   Unpak.this.raf.close();
@@ -407,7 +406,7 @@ public class Unpak {
                   Unpak.this.checknav();
                   Unpak.this.raf.close();
                   Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "r");
-                  Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.offset);
+                  Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.getOffset());
                   Unpak.this.tmodel.fireTableDataChanged();
                   Unpak.this.dirty = false;
                   Unpak.this.frame.setTitle("Pakrat - " + sfile.getName());
@@ -538,13 +537,13 @@ public class Unpak {
                   Pakpref.mapdir = Unpak.this.infile.getPath();
                   Pakpref.put("Mapdir", Pakpref.mapdir);
                   Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "r");
-                  Unpak.this.m = new Mappak();
+                  Unpak.this.m = new Mappak(false);
                   Unpak.this.frame.setCursor(Cursor.getPredefinedCursor(3));
-                  Unpak.this.m.loadmap(Unpak.this.raf);
+                  Unpak.this.m.loadMap(Unpak.this.raf);
                   Unpak.this.frame.setCursor(Cursor.getDefaultCursor());
                   Unpak.this.frame.setTitle("Pakrat - " + filename_);
-                  Unpak.this.zmodel = new ZipDirModel(Unpak.this.m.zf, Unpak.this);
-                  Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.offset);
+                  Unpak.this.zmodel = new ZipDirModel(Unpak.this.m.getZf(), Unpak.this);
+                  Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.getOffset());
                   Unpak.this.tmodel = new TableSorter(Unpak.this.zmodel);
                   Unpak.this.table.setModel(Unpak.this.tmodel);
                   Unpak.this.tmodel.setTableHeader(Unpak.this.table.getTableHeader());
@@ -755,11 +754,10 @@ public class Unpak {
             Cons.println("Reading " + filename);
             Pakpref.mapdir = this.infile.getPath();
             this.raf = new RandomAccessFile(this.infile, "r");
-            this.m = new Mappak();
-            this.m.auton = true;
-            this.m.loadmap(this.raf);
-            this.zmodel = new ZipDirModel(this.m.zf, this);
-            this.zmodel.setfileparams(this.raf, this.m.offset);
+            this.m = new Mappak(true);
+            this.m.loadMap(this.raf);
+            this.zmodel = new ZipDirModel(this.m.getZf(), this);
+            this.zmodel.setfileparams(this.raf, this.m.getOffset());
             Zipf match = this.zmodel.getbyfilename(pakfile);
             if (match == null) {
                Cons.println("Can't find file " + pakfile + " in Pak.");
@@ -797,16 +795,15 @@ public class Unpak {
             Cons.println("Reading " + filename);
             Pakpref.mapdir = this.infile.getPath();
             this.raf = new RandomAccessFile(this.infile, "r");
-            this.m = new Mappak();
-            this.m.auton = true;
-            this.m.loadmap(this.raf);
+            this.m = new Mappak(true);
+            this.m.loadMap(this.raf);
             String zipname = filename + ".zip";
             File outfile = new File(zipname);
             Cons.print("Writing " + zipname + "...");
             RandomAccessFile zraf = new RandomAccessFile(outfile, "rw");
             zraf.setLength(0L);
-            this.raf.seek((long) this.m.offset);
-            this.m.copyblock(this.raf, zraf, (long) this.m.length);
+            this.raf.seek((long) this.m.getOffset());
+            Util.copyBlock(this.raf, zraf, (long) this.m.getLength());
             zraf.close();
             Cons.println("done");
             this.raf.close();
@@ -836,11 +833,10 @@ public class Unpak {
          if (this.infile.exists() && this.infile.canRead()) {
             Pakpref.mapdir = this.infile.getPath();
             this.raf = new RandomAccessFile(this.infile, "r");
-            this.m = new Mappak();
-            this.m.auton = true;
-            this.m.loadmap(this.raf);
-            this.zmodel = new ZipDirModel(this.m.zf, this);
-            this.zmodel.setfileparams(this.raf, this.m.offset);
+            this.m = new Mappak(true);
+            this.m.loadMap(this.raf);
+            this.zmodel = new ZipDirModel(this.m.getZf(), this);
+            this.zmodel.setfileparams(this.raf, this.m.getOffset());
 
             for (int i = 0; i < this.zmodel.getRowCount(); ++i) {
                Zipf z = this.zmodel.getzipfile(i);
@@ -915,10 +911,6 @@ public class Unpak {
                   CRC32 crc = new CRC32();
                   crc.update(z.data);
                   z.CRC = crc.getValue();
-                  if (this.m.zf == null) {
-                     this.m.zf = new ArrayList<>();
-                     this.zmodel.setziplist(this.m.zf);
-                  }
 
                   this.zmodel.addfile(z);
                   if (!this.auton) {
@@ -944,11 +936,12 @@ public class Unpak {
    }
 
    public void checknav() {
-      for (int i = 0; i < this.m.zf.size(); ++i) {
-         Zipf z = (Zipf) this.m.zf.get(i);
+      List<Zipf> fileList = this.m.getZf();
+      for (int i = 0; i < fileList.size(); ++i) {
+         Zipf z = fileList.get(i);
          if (z.getFilename().toLowerCase().endsWith(".nav")) {
             try {
-               this.raf.seek((long) (this.m.offset + z.datofs));
+               this.raf.seek((long) (this.m.getOffset() + z.datofs));
                byte[] buffer = new byte[z.size];
                this.raf.read(buffer);
                ByteBuffer zb = ByteBuffer.wrap(buffer);
@@ -978,14 +971,14 @@ public class Unpak {
                      CRC32 crc = new CRC32();
                      crc.update(buffer);
                      z.CRC = crc.getValue();
-                     this.raf.seek((long) (this.m.offset + z.datofs + 8));
+                     this.raf.seek((long) (this.m.getOffset() + z.datofs + 8));
                      this.raf.writeInt(Swab.I((int) blen));
-                     this.raf.seek((long) (this.m.offset + z.relofs + 14));
+                     this.raf.seek((long) (this.m.getOffset() + z.relofs + 14));
                      this.raf.writeInt(Swab.I((int) z.CRC));
-                     long cdpos = (long) (this.m.offset + this.m.cdoffs);
+                     long cdpos = (long) (this.m.getOffset() + this.m.getCdoffs());
 
                      for (int j = 0; j < i; ++j) {
-                        Zipf zj = (Zipf) this.m.zf.get(j);
+                        Zipf zj = fileList.get(j);
                         cdpos += (long) (46 + zj.getFullname().length());
                      }
 
@@ -1251,7 +1244,7 @@ public class Unpak {
       try {
          ByteBuffer zb;
          if (z.inpak) {
-            this.raf.seek((long) (this.m.offset + z.datofs));
+            this.raf.seek((long) (this.m.getOffset() + z.datofs));
             byte[] buffer = new byte[z.size];
             this.raf.read(buffer);
             zb = ByteBuffer.wrap(buffer);

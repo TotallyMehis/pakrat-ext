@@ -1,8 +1,9 @@
 package pak;
 
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
+
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.table.AbstractTableModel;
@@ -13,17 +14,17 @@ import javax.swing.tree.TreePath;
 public class ZipDirModel extends AbstractTableModel {
    RandomAccessFile braf;
    int offset;
-   ArrayList<Zipf> zfl;
+   List<Zipf> zfl;
    public Unpak pakrat;
    static String[] header = new String[] { "In", "Filename", "Path", "Size", "Type" };
    static Object[] cols;
 
-   public ZipDirModel(ArrayList<Zipf> zipfilelist, Unpak rat) {
+   public ZipDirModel(List<Zipf> zipfilelist, Unpak rat) {
       this.zfl = zipfilelist;
       this.pakrat = rat;
    }
 
-   public void setziplist(ArrayList<Zipf> zipfilelist) {
+   public void setziplist(List<Zipf> zipfilelist) {
       this.zfl = zipfilelist;
    }
 

@@ -1,6 +1,8 @@
 package pak;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.List;
 
 public abstract class Util {
@@ -39,5 +41,20 @@ public abstract class Util {
         }
 
         return null;
+    }
+
+    public static void copyBlock(RandomAccessFile in, RandomAccessFile out, long length) throws IOException {
+        int size = (int) length;
+
+        int bytesread;
+        for (byte[] buffer = new byte[1024]; size > 0; size -= bytesread) {
+            if (size > 1024) {
+                bytesread = in.read(buffer, 0, 1024);
+                out.write(buffer, 0, bytesread);
+            } else {
+                bytesread = in.read(buffer, 0, size);
+                out.write(buffer, 0, bytesread);
+            }
+        }
     }
 }

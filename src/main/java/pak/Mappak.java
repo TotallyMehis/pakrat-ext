@@ -5,57 +5,42 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Mappak {
-   int ident;
-   int version;
-   Lump[] lump;
-   int maprev;
-   int offset;
-   int length;
-   long filelength;
-   int cdoffs;
-   ArrayList<Zipf> zf;
-   String tdsd;
-   int[] tdst;
-   String[] texname;
-   String[] staticname;
-   String[] detailname;
-   int glumps;
-   GameLump[] gl;
-   ArrayList<String> entkeylist;
-   ArrayList<String> entvallist;
-   public boolean auton = false;
-   static final String[] entext = new String[] { ".vmt", ".mdl", ".spr", ".wav", ".mp3", ".txt" };
+   private int ident;
+   private int version;
+   private Lump[] lumps;
+   private int maprev;
+   private int offset;
+   private int length;
+   private long filelength;
+   private int cdoffs;
+   private final List<Zipf> zf = new ArrayList<>();
+   private String[] texname;
+   private String[] staticname;
+   private String[] detailname;
+   private int glumps;
+   private GameLump[] gl;
+   private List<String> entkeylist;
+   private List<String> entvallist;
+   private final boolean auton;
 
-   public Mappak() {
+   private static final List<String> entext = List.of(".vmt", ".mdl", ".spr", ".wav", ".mp3", ".txt");
+
+   public Mappak(boolean auton) {
+      this.auton = auton;
    }
 
-   public void copyblock(RandomAccessFile in, RandomAccessFile out, long length) throws IOException {
-      int size = (int) length;
-
-      int bytesread;
-      for (byte[] buffer = new byte[1024]; size > 0; size -= bytesread) {
-         if (size > 1024) {
-            bytesread = in.read(buffer, 0, 1024);
-            out.write(buffer, 0, bytesread);
-         } else {
-            bytesread = in.read(buffer, 0, size);
-            out.write(buffer, 0, bytesread);
-         }
-      }
-
-   }
-
-   public void savemap(RandomAccessFile bin, RandomAccessFile bout) throws IOException {
+   public void saveMap(RandomAccessFile bin, RandomAccessFile bout) throws IOException {
       bin.seek(1036L);
       bout.seek(1036L);
-      this.copyblock(bin, bout, (long) (this.offset - 1036));
-      bin.seek(this.roundupto4((long) (this.offset + this.length)));
-      bout.seek(this.roundupto4(bout.getFilePointer()));
+      Util.copyBlock(bin, bout, (long) (this.offset - 1036));
+      bin.seek(roundUpTo4((long) (this.offset + this.length)));
+      bout.seek(roundUpTo4(bout.getFilePointer()));
       long pakdiff = bout.getFilePointer() - bin.getFilePointer();
-      this.copyblock(bin, bout, this.filelength - bin.getFilePointer());
-      long outpos = this.roundupto4(bout.getFilePointer());
+      Util.copyBlock(bin, bout, this.filelength - bin.getFilePointer());
+      long outpos = roundUpTo4(bout.getFilePointer());
       bout.seek(0L);
       byte[] buffer = new byte[1036];
       ByteBuffer b = ByteBuffer.wrap(buffer);
@@ -64,11 +49,11 @@ public class Mappak {
       b.putInt(this.ident);
       b.putInt(this.version);
 
-      for (int i = 0; i < 64; ++i) {
-         Lump l = this.lump[i];
-         if (l.ofs() > this.lump[40].ofs()) {
+      for (int i = 0; i < LumpIndices.NUM_LUMPS; ++i) {
+         Lump l = this.lumps[i];
+         if (l.ofs() > this.lumps[LumpIndices.PAKFILE].ofs()) {
             int newOfs = (int) ((long) l.ofs() + pakdiff);
-            l = this.lump[i] = new Lump(newOfs, l.len(), l.vers(), l.fourCC());
+            l = this.lumps[i] = new Lump(newOfs, l.len(), l.vers(), l.fourCC());
          }
 
          b.putInt(l.ofs());
@@ -82,12 +67,12 @@ public class Mappak {
       bout.seek(outpos);
    }
 
-   public void savepak(RandomAccessFile bin, RandomAccessFile bout) throws IOException {
+   public void savePak(RandomAccessFile bin, RandomAccessFile bout) throws IOException {
       int numzips = this.zf.size();
       int newoffset = (int) bout.getFilePointer();
 
       for (int i = 0; i < numzips; ++i) {
-         Zipf z = (Zipf) this.zf.get(i);
+         Zipf z = this.zf.get(i);
          z.relofs = (int) bout.getFilePointer() - newoffset;
          bout.writeInt(Swab.I(67324752));
          bout.writeShort(Swab.S(10));
@@ -100,11 +85,11 @@ public class Mappak {
          bout.writeInt(Swab.I(z.size));
          bout.writeShort(Swab.S(z.getFullname().length()));
          bout.writeShort(0);
-         this.writestr(bout, z.getFullname());
+         writeString(bout, z.getFullname());
          z.datofs = (int) bout.getFilePointer() - newoffset;
          if (z.inpak) {
             bin.seek((long) (this.offset + z.datofs));
-            this.copyblock(bin, bout, (long) z.size);
+            Util.copyBlock(bin, bout, (long) z.size);
          } else {
             bout.write(z.data);
             z.data = null;
@@ -133,7 +118,7 @@ public class Mappak {
          bout.writeShort(0);
          bout.writeInt(0);
          bout.writeInt(Swab.I(z.relofs));
-         this.writestr(bout, z.getFullname());
+         writeString(bout, z.getFullname());
       }
 
       int cdend = (int) bout.getFilePointer() - newoffset;
@@ -146,25 +131,26 @@ public class Mappak {
       bout.writeInt(Swab.I(this.cdoffs));
       bout.writeShort(0);
       int newlen = (int) bout.getFilePointer() - newoffset;
-      this.lump[40] = new Lump(newoffset, newlen, this.lump[40].vers(), this.lump[40].fourCC());
-      this.offset = this.lump[40].ofs();
-      this.length = this.lump[40].len();
+      this.lumps[LumpIndices.PAKFILE] = new Lump(newoffset, newlen, this.lumps[LumpIndices.PAKFILE].vers(),
+            this.lumps[LumpIndices.PAKFILE].fourCC());
+      this.offset = this.lumps[LumpIndices.PAKFILE].ofs();
+      this.length = this.lumps[LumpIndices.PAKFILE].len();
       bout.seek(648L);
-      bout.writeInt(Swab.I(this.lump[40].ofs()));
-      bout.writeInt(Swab.I(this.lump[40].len()));
+      bout.writeInt(Swab.I(this.lumps[LumpIndices.PAKFILE].ofs()));
+      bout.writeInt(Swab.I(this.lumps[LumpIndices.PAKFILE].len()));
    }
 
-   public void loadmap(RandomAccessFile b) throws IOException {
-      this.loadheader(b);
-      this.loadpak(b);
-      this.loadtexstring(b);
-      this.loadgamelump(b);
-      this.loadpropstatics(b);
-      this.loadpropdetails(b);
+   public void loadMap(RandomAccessFile b) throws IOException {
+      this.loadHeader(b);
+      this.loadPak(b);
+      this.loadTexString(b);
+      this.loadGameLump(b);
+      this.loadPropStatics(b);
+      this.loadPropDetails(b);
    }
 
-   public void loadgamelump(RandomAccessFile raf) throws IOException {
-      raf.seek((long) this.lump[35].ofs());
+   private void loadGameLump(RandomAccessFile raf) throws IOException {
+      raf.seek((long) this.lumps[35].ofs());
       this.glumps = Swab.I(raf.readInt());
       this.gl = new GameLump[this.glumps];
 
@@ -180,7 +166,7 @@ public class Mappak {
 
    }
 
-   public void loadpropstatics(RandomAccessFile raf) throws IOException {
+   private void loadPropStatics(RandomAccessFile raf) throws IOException {
       int spid = -1;
 
       for (int i = 0; i < this.glumps; ++i) {
@@ -195,13 +181,13 @@ public class Mappak {
          this.staticname = new String[psnames];
 
          for (int i = 0; i < psnames; ++i) {
-            this.staticname[i] = this.readntstr(raf, 128);
+            this.staticname[i] = readNullTerminatedString(raf, 128);
          }
 
       }
    }
 
-   public void loadpropdetails(RandomAccessFile raf) throws IOException {
+   private void loadPropDetails(RandomAccessFile raf) throws IOException {
       int dpid = -1;
 
       for (int i = 0; i < this.glumps; ++i) {
@@ -216,30 +202,29 @@ public class Mappak {
          this.detailname = new String[pdnames];
 
          for (int i = 0; i < pdnames; ++i) {
-            this.detailname[i] = this.readntstr(raf, 128);
+            this.detailname[i] = readNullTerminatedString(raf, 128);
          }
 
       }
    }
 
-   public void loadtexstring(RandomAccessFile raf) throws IOException {
-      int sofs = this.lump[43].ofs();
-      int slen = this.lump[43].len();
+   public void loadTexString(RandomAccessFile raf) throws IOException {
+      int sofs = this.lumps[LumpIndices.TEXDATA_STRING_DATA].ofs();
+      int slen = this.lumps[LumpIndices.TEXDATA_STRING_DATA].len();
       raf.seek((long) sofs);
-      this.tdsd = this.readstr(raf, slen);
-      int ofs = this.lump[44].ofs();
-      int len = this.lump[44].len();
-      int numtdst = len / Lump.size(44);
-      this.tdst = new int[numtdst];
+      String tdsd = readString(raf, slen);
+      int ofs = this.lumps[LumpIndices.TEXDATA_STRING_TABLE].ofs();
+      int len = this.lumps[LumpIndices.TEXDATA_STRING_TABLE].len();
+      int numtdst = len / Lump.size(LumpIndices.TEXDATA_STRING_TABLE);
       this.texname = new String[numtdst];
       raf.seek((long) ofs);
 
       for (int i = 0; i < numtdst; ++i) {
-         int ix = this.tdst[i] = Swab.I(raf.readInt());
+         int ix = Swab.I(raf.readInt());
 
          for (int j = ix; j < sofs; ++j) {
-            if (this.tdsd.charAt(j) == 0) {
-               this.texname[i] = this.tdsd.substring(ix, j);
+            if (tdsd.charAt(j) == 0) {
+               this.texname[i] = tdsd.substring(ix, j);
                break;
             }
          }
@@ -247,17 +232,17 @@ public class Mappak {
 
    }
 
-   public void loadentities(RandomAccessFile raf, JProgFrame prog) throws IOException {
+   public void loadEntities(RandomAccessFile raf, JProgFrame prog) throws IOException {
       this.entkeylist = new ArrayList<>();
       this.entvallist = new ArrayList<>();
       ArrayList<String> keylist = new ArrayList<>();
       ArrayList<String> vallist = new ArrayList<>();
       String classname = "";
-      int ofs = this.lump[0].ofs();
-      int end = ofs + this.lump[0].len();
+      int ofs = this.lumps[LumpIndices.ENTITIES].ofs();
+      int end = ofs + this.lumps[LumpIndices.ENTITIES].len();
       raf.seek((long) ofs);
       if (!this.auton) {
-         prog.setMaximum(this.lump[0].len());
+         prog.setMaximum(this.lumps[LumpIndices.ENTITIES].len());
       }
 
       long fp;
@@ -273,7 +258,7 @@ public class Mappak {
             classname = "";
          } else if (line.equals("}")) {
             for (int i = 0; i < keylist.size(); ++i) {
-               this.entkeylist.add(classname + " : keyword \"" + (String) keylist.get(i) + "\"");
+               this.entkeylist.add(classname + " : keyword \"" + keylist.get(i) + "\"");
                this.entvallist.add(vallist.get(i));
             }
 
@@ -289,15 +274,16 @@ public class Mappak {
                if (key.equals("classname")) {
                   classname = val;
                } else {
-                  for (int i = 0; i < entext.length; ++i) {
-                     if (val.endsWith(entext[i])) {
-                        if (entext[i].equals(".spr")) {
-                           val = this.stripext(val) + ".vmt";
+                  for (String ext : entext) {
+                     if (val.endsWith(ext)) {
+                        if (ext.equals(".spr")) {
+                           val = stripExtension(val) + ".vmt";
                         }
 
                         keylist.add(key);
                         vallist.add(val);
                         done = true;
+                        break;
                      }
                   }
 
@@ -333,7 +319,7 @@ public class Mappak {
 
    }
 
-   public String stripext(String in) {
+   private static String stripExtension(String in) {
       String out = in;
       int i = in.lastIndexOf(".");
       if (i > -1) {
@@ -343,7 +329,7 @@ public class Mappak {
       return out;
    }
 
-   public void loadheader(RandomAccessFile bb) throws IOException {
+   private void loadHeader(RandomAccessFile bb) throws IOException {
       this.filelength = bb.length();
       this.ident = Swab.I(bb.readInt());
       this.version = Swab.I(bb.readInt());
@@ -356,9 +342,9 @@ public class Mappak {
             Cons.println("Version: " + this.version);
          }
 
-         this.lump = new Lump[64];
+         this.lumps = new Lump[LumpIndices.NUM_LUMPS];
 
-         for (int i = 0; i < 64; ++i) {
+         for (int i = 0; i < LumpIndices.NUM_LUMPS; ++i) {
             int ofs = Swab.I(bb.readInt());
             int len = Swab.I(bb.readInt());
             int vers = Swab.I(bb.readInt());
@@ -373,7 +359,7 @@ public class Mappak {
                      " " + Lump.name(i) + "  " + lump.len() / Lump.size(i) + (Lump.size(i) == 1 ? " bytes" : ""));
             }
 
-            this.lump[i] = lump;
+            this.lumps[i] = lump;
          }
 
          this.maprev = Swab.I(bb.readInt());
@@ -383,14 +369,14 @@ public class Mappak {
 
          int last = 0;
 
-         for (int i = 0; i < 64; ++i) {
-            if (this.lump[i].ofs() > this.lump[last].ofs()) {
+         for (int i = 0; i < LumpIndices.NUM_LUMPS; ++i) {
+            if (this.lumps[i].ofs() > this.lumps[last].ofs()) {
                last = i;
             }
          }
 
-         this.offset = this.lump[40].ofs();
-         this.length = this.lump[40].len();
+         this.offset = this.lumps[LumpIndices.PAKFILE].ofs();
+         this.length = this.lumps[LumpIndices.PAKFILE].len();
          if (this.length == 0) {
             Cons.println("Map contains no pakfile!");
          } else {
@@ -399,7 +385,7 @@ public class Mappak {
       }
    }
 
-   public void loadpak(RandomAccessFile bb) throws IOException {
+   private void loadPak(RandomAccessFile bb) throws IOException {
       boolean cdirf = false;
 
       for (int off = this.offset + this.length - 22; off >= 0; --off) {
@@ -454,8 +440,8 @@ public class Mappak {
                bb.readShort();
                bb.readInt();
                zfro[i] = Swab.I(bb.readInt());
-               zffn[i] = this.readstr(bb, fnlen);
-               this.readstr(bb, exlen + fclen);
+               zffn[i] = readString(bb, fnlen);
+               readString(bb, exlen + fclen);
                if (csize != usize) {
                   Cons.println("Zip file " + i + " is compressed! " + csize + "!=" + usize);
                   return;
@@ -483,8 +469,6 @@ public class Mappak {
                zfdo[i] = zfro[i] + 30 + fnlen + exlen;
             }
 
-            this.zf = new ArrayList<>();
-
             for (int i = 0; i < cdes; ++i) {
                Zipf z = new Zipf();
                z.size = zfcs[i];
@@ -501,14 +485,14 @@ public class Mappak {
       }
    }
 
-   public void writestr(RandomAccessFile b, String str) throws IOException {
+   private static void writeString(RandomAccessFile b, String str) throws IOException {
       for (int i = 0; i < str.length(); ++i) {
          b.writeByte(str.charAt(i));
       }
 
    }
 
-   public String readstr(RandomAccessFile b, int len) throws IOException {
+   private static String readString(RandomAccessFile b, int len) throws IOException {
       StringBuffer linebuff = new StringBuffer();
 
       for (int i = 0; i < len; ++i) {
@@ -519,8 +503,8 @@ public class Mappak {
       return linebuff.toString();
    }
 
-   public String readntstr(RandomAccessFile r, int len) throws IOException {
-      String str = this.readstr(r, len);
+   private static String readNullTerminatedString(RandomAccessFile r, int len) throws IOException {
+      String str = readString(r, len);
       int eos = str.indexOf(0);
       if (eos > -1) {
          str = str.substring(0, eos);
@@ -529,7 +513,43 @@ public class Mappak {
       return str;
    }
 
-   public long roundupto4(long value) {
+   private static long roundUpTo4(long value) {
       return (value + 3L) / 4L * 4L;
+   }
+
+   public int getOffset() {
+      return this.offset;
+   }
+
+   public int getLength() {
+      return this.length;
+   }
+
+   public int getCdoffs() {
+      return this.cdoffs;
+   }
+
+   public String[] getTexname() {
+      return this.texname;
+   }
+
+   public String[] getStaticname() {
+      return this.staticname;
+   }
+
+   public String[] getDetailname() {
+      return this.detailname;
+   }
+
+   public List<String> getEntkeylist() {
+      return this.entkeylist;
+   }
+
+   public List<String> getEntvallist() {
+      return this.entvallist;
+   }
+
+   public List<Zipf> getZf() {
+      return this.zf;
    }
 }

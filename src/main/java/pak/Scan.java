@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
@@ -581,22 +582,26 @@ public class Scan {
    }
 
    public void scanentities() throws IOException {
-      this.m.loadentities(this.raf, this.prog);
+      this.m.loadEntities(this.raf, this.prog);
       if (!this.auton) {
          this.prog.setString("Entities...");
       }
 
+      List<String> entValueList = this.m.getEntvallist();
       if (!this.auton) {
-         this.prog.setMaximum(this.m.entvallist.size());
+         this.prog.setMaximum(entValueList.size());
       }
 
-      for (int i = 0; i < this.m.entvallist.size(); ++i) {
+      List<String> entKeyList = this.m.getEntkeylist();
+
+      assert entValueList.size() == entKeyList.size();
+      for (int i = 0; i < entValueList.size(); ++i) {
          if (!this.auton) {
             this.prog.setValue(i);
          }
 
-         String name = (String) this.m.entvallist.get(i);
-         String ref = (String) this.m.entkeylist.get(i);
+         String name = entValueList.get(i);
+         String ref = entKeyList.get(i);
          Scanfile sfile = new Scanfile(name, this.tmod, this.basedir, Scanfile.gettype(name), Scanfile.ENTITY, ref);
          this.files.add(sfile);
          this.files.addAll(this.checksubfile(sfile));
@@ -605,16 +610,17 @@ public class Scan {
    }
 
    public void scanstatics() throws IOException {
+      String[] staticNames = this.m.getStaticname();
       if (!this.auton) {
-         this.prog.setMaximum(this.m.staticname.length);
+         this.prog.setMaximum(staticNames.length);
       }
 
-      for (int i = 0; i < this.m.staticname.length; ++i) {
+      for (int i = 0; i < staticNames.length; ++i) {
          if (!this.auton) {
             this.prog.setValue(i);
          }
 
-         Scanfile sfile = new Scanfile(this.m.staticname[i], this.tmod, this.basedir, (byte) 3, Scanfile.STATIC, "");
+         Scanfile sfile = new Scanfile(staticNames[i], this.tmod, this.basedir, (byte) 3, Scanfile.STATIC, "");
          this.files.add(sfile);
          this.files.addAll(this.checksubfile(sfile));
       }
@@ -622,16 +628,17 @@ public class Scan {
    }
 
    public void scandetails() throws IOException {
+      String[] detailNames = this.m.getDetailname();
       if (!this.auton) {
-         this.prog.setMaximum(this.m.detailname.length);
+         this.prog.setMaximum(detailNames.length);
       }
 
-      for (int i = 0; i < this.m.detailname.length; ++i) {
+      for (int i = 0; i < detailNames.length; ++i) {
          if (!this.auton) {
             this.prog.setValue(i);
          }
 
-         Scanfile sfile = new Scanfile(this.m.detailname[i], this.tmod, this.basedir, (byte) 3, Scanfile.DETAIL, "");
+         Scanfile sfile = new Scanfile(detailNames[i], this.tmod, this.basedir, (byte) 3, Scanfile.DETAIL, "");
          this.files.add(sfile);
          this.files.addAll(this.checksubfile(sfile));
       }
@@ -639,16 +646,17 @@ public class Scan {
    }
 
    public void scantextures() throws IOException {
+      String[] textures = this.m.getTexname();
       if (!this.auton) {
-         this.prog.setMaximum(this.m.texname.length);
+         this.prog.setMaximum(textures.length);
       }
 
-      for (int i = 0; i < this.m.texname.length; ++i) {
+      for (int i = 0; i < textures.length; ++i) {
          if (!this.auton) {
             this.prog.setValue(i);
          }
 
-         Scanfile sfile = new Scanfile(this.m.texname[i], this.tmod, this.basedir, (byte) 1, Scanfile.TEXTURE, "");
+         Scanfile sfile = new Scanfile(textures[i], this.tmod, this.basedir, (byte) 1, Scanfile.TEXTURE, "");
          this.files.add(sfile);
          this.files.addAll(this.checksubfile(sfile));
       }
