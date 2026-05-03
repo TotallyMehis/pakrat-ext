@@ -35,10 +35,11 @@ class JImage extends JComponent {
    }
 
    public void setScale(float scale) {
-      BufferedImageOp op = new AffineTransformOp(AffineTransform.getScaleInstance((double)scale, (double)scale), (RenderingHints)null);
-      this.viewImage = op.filter(this.image, (BufferedImage)null);
-      this.width = (int)((float)this.owidth * scale);
-      this.height = (int)((float)this.oheight * scale);
+      BufferedImageOp op = new AffineTransformOp(AffineTransform.getScaleInstance((double) scale, (double) scale),
+            (RenderingHints) null);
+      this.viewImage = op.filter(this.image, (BufferedImage) null);
+      this.width = (int) ((float) this.owidth * scale);
+      this.height = (int) ((float) this.oheight * scale);
       this.revalidate();
       this.repaint();
    }

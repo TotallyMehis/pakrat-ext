@@ -24,7 +24,7 @@ public class Phymdl {
          this.numsolids = b.getInt();
          this.checksum = b.getInt();
 
-         for(int i = 0; i < this.numsolids; ++i) {
+         for (int i = 0; i < this.numsolids; ++i) {
             int ssize = b.getInt();
             b.position(b.position() + ssize);
          }
@@ -33,7 +33,7 @@ public class Phymdl {
          String[] physdata = this.physblock.split("\n");
          this.gibmodel = new ArrayList<>();
 
-         for(int i = 0; i < physdata.length; ++i) {
+         for (int i = 0; i < physdata.length; ++i) {
             if (physdata[i].startsWith("break ")) {
             }
 
@@ -53,8 +53,8 @@ public class Phymdl {
    public String readstr(ByteBuffer b) {
       StringBuffer linebuff = new StringBuffer();
 
-      while(true) {
-         char c = (char)b.get();
+      while (true) {
+         char c = (char) b.get();
          if (c == 0) {
             return linebuff.toString();
          }

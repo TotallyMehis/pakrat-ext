@@ -46,21 +46,21 @@ public class Mdl {
          this.incmodelindex = b.getInt();
          this.incmodelfile = new String[this.numincmodels];
 
-         for(int i = 0; i < this.numtexpaths; ++i) {
+         for (int i = 0; i < this.numtexpaths; ++i) {
             b.position(start + this.texpathindex + i * 4);
             int pindex = b.getInt();
             b.position(start + pindex);
             this.texpaths[i] = this.readstr(b);
          }
 
-         for(int i = 0; i < this.numtextures; ++i) {
+         for (int i = 0; i < this.numtextures; ++i) {
             b.position(start + this.textureindex + 64 * i);
             int tindex = b.getInt();
             b.position(start + this.textureindex + 64 * i + tindex);
             this.textures[i] = this.readstr(b);
          }
 
-         for(int i = 0; i < this.numincmodels; ++i) {
+         for (int i = 0; i < this.numincmodels; ++i) {
             b.position(start + this.incmodelindex + 8 * i + 4);
             int imfindex = b.getInt();
             b.position(start + this.incmodelindex + 8 * i + imfindex);
@@ -76,8 +76,8 @@ public class Mdl {
       if (!this.isValid) {
          return texlist;
       } else {
-         for(int i = 0; i < this.numtexpaths; ++i) {
-            for(int j = 0; j < this.numtextures; ++j) {
+         for (int i = 0; i < this.numtexpaths; ++i) {
+            for (int j = 0; j < this.numtextures; ++j) {
                String tex = this.texpaths[i] + this.textures[j];
                texlist.add(tex);
             }
@@ -90,8 +90,8 @@ public class Mdl {
    public String readstr(ByteBuffer b) {
       StringBuffer linebuff = new StringBuffer();
 
-      while(true) {
-         char c = (char)b.get();
+      while (true) {
+         char c = (char) b.get();
          if (c == 0) {
             return linebuff.toString();
          }

@@ -18,10 +18,11 @@ class ScanTCBR extends JCheckBox implements TableCellRenderer {
    }
 
    @Override
-   public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+   public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+         int row, int column) {
       boolean enabled = false;
       if (table != null) {
-         enabled = ((ScanModel)table.getModel()).getfile(row).onlydisk();
+         enabled = ((ScanModel) table.getModel()).getfile(row).onlydisk();
          this.setEnabled(enabled);
       }
 
@@ -41,7 +42,7 @@ class ScanTCBR extends JCheckBox implements TableCellRenderer {
          this.setBackground(table.getBackground());
       }
 
-      this.setSelected(value != null && (Boolean)value);
+      this.setSelected(value != null && (Boolean) value);
       if (hasFocus) {
          this.setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
       } else {

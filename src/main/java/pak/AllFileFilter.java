@@ -6,8 +6,9 @@ import java.util.Set;
 import javax.swing.filechooser.FileFilter;
 
 class AllFileFilter extends FileFilter {
-   private static final Set<String> extensions = Set.of("vmt", "vtf", "wav", "mp3", "txt", "mdl", "vtx", "ani", "phy", "vvd", "ain", "nav");
-    
+   private static final Set<String> extensions = Set.of("vmt", "vtf", "wav", "mp3", "txt", "mdl", "vtx", "ani", "phy",
+         "vvd", "ain", "nav");
+
    AllFileFilter() {
    }
 

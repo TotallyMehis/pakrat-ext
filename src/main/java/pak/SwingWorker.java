@@ -29,7 +29,7 @@ public abstract class SwingWorker {
    }
 
    public Object get() {
-      while(true) {
+      while (true) {
          Thread t = this.threadVar.get();
          if (t == null) {
             return this.getValue();

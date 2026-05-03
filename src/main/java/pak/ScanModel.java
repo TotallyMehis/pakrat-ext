@@ -5,8 +5,9 @@ import javax.swing.table.AbstractTableModel;
 
 public class ScanModel extends AbstractTableModel {
    ArrayList<Scanfile> fl;
-   static String[] tstr = new String[]{"Unknown", "Material", "Texture", "Model", "Model", "Model", "Model", "Sound", "Sound", "Navigation", "AI Node", "Text", "Soundcache"};
-   static String[] header = new String[]{"Filename", "Path", "Type", "Location", "Add"};
+   static String[] tstr = new String[] { "Unknown", "Material", "Texture", "Model", "Model", "Model", "Model", "Sound",
+         "Sound", "Navigation", "AI Node", "Text", "Soundcache" };
+   static String[] header = new String[] { "Filename", "Path", "Type", "Location", "Add" };
    static Object[] cols;
    static String[] locstr;
 
@@ -20,7 +21,7 @@ public class ScanModel extends AbstractTableModel {
    }
 
    public Scanfile getfile(int row) {
-      return this.fl != null ? (Scanfile)this.fl.get(row) : null;
+      return this.fl != null ? (Scanfile) this.fl.get(row) : null;
    }
 
    public int getRowCount() {
@@ -55,7 +56,7 @@ public class ScanModel extends AbstractTableModel {
 
    public void setValueAt(Object value, int row, int col) {
       if (col == 4) {
-         this.getfile(row).mark = (Boolean)value;
+         this.getfile(row).mark = (Boolean) value;
       }
 
       this.fireTableDataChanged();
@@ -88,7 +89,7 @@ public class ScanModel extends AbstractTableModel {
    public int numselected() {
       int count = 0;
 
-      for(int i = 0; i < this.getRowCount(); ++i) {
+      for (int i = 0; i < this.getRowCount(); ++i) {
          if (this.getfile(i).mark) {
             ++count;
          }
@@ -98,7 +99,7 @@ public class ScanModel extends AbstractTableModel {
    }
 
    public boolean noneselected() {
-      for(int i = 0; i < this.getRowCount(); ++i) {
+      for (int i = 0; i < this.getRowCount(); ++i) {
          if (this.getfile(i).mark) {
             return false;
          }
@@ -108,7 +109,7 @@ public class ScanModel extends AbstractTableModel {
    }
 
    public boolean setallselected() {
-      for(int i = 0; i < this.getRowCount(); ++i) {
+      for (int i = 0; i < this.getRowCount(); ++i) {
          Scanfile sf = this.getfile(i);
          if (sf.onlydisk()) {
             sf.mark = true;
@@ -120,7 +121,7 @@ public class ScanModel extends AbstractTableModel {
    }
 
    public void resetallselected() {
-      for(int i = 0; i < this.getRowCount(); ++i) {
+      for (int i = 0; i < this.getRowCount(); ++i) {
          Scanfile sf = this.getfile(i);
          if (sf.onlydisk()) {
             sf.mark = false;
@@ -135,7 +136,7 @@ public class ScanModel extends AbstractTableModel {
    }
 
    static {
-      cols = new Object[]{"", "", "", "", Boolean.TRUE};
-      locstr = new String[]{"Not found", "In Pak", "In List", "On Disk"};
+      cols = new Object[] { "", "", "", "", Boolean.TRUE };
+      locstr = new String[] { "Not found", "In Pak", "In List", "On Disk" };
    }
 }

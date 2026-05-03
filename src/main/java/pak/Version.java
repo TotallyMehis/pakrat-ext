@@ -7,6 +7,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Version {
     private static final ReentrantLock PROPERTIES_LOCK = new ReentrantLock();
     private static Properties properties;
+
     private static Properties getProperties() {
         PROPERTIES_LOCK.lock();
         try {

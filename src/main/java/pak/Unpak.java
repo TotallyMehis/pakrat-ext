@@ -6,8 +6,6 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -45,10 +43,6 @@ import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.TransferHandler;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -83,7 +77,8 @@ public class Unpak {
       this.auton = true;
       Cons.open(false);
       long starttime = System.currentTimeMillis();
-      Cons.println("**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
+      Cons.println(
+            "**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
       Cons.println("Game base directory " + basename);
       Cons.println("Perfoming autoscan of " + filename);
 
@@ -105,10 +100,11 @@ public class Unpak {
             this.zmodel = new ZipDirModel(this.m.zf, this);
             this.zmodel.setfileparams(this.raf, this.m.offset);
             Cons.println("Scanning for referenced files...");
-            this.scan = new Scan(this, (Component)null, this.m, this.zmodel, filename, this.gamedir, true);
+            this.scan = new Scan(this, (Component) null, this.m, this.zmodel, filename, this.gamedir, true);
             if (this.scan.nofiles) {
                long duration = System.currentTimeMillis() - starttime;
-               Cons.println("**** Pakrat autoscan complete in " + (new DecimalFormat("0.#")).format((double)((float)duration / 1000.0F)) + " seconds");
+               Cons.println("**** Pakrat autoscan complete in "
+                     + (new DecimalFormat("0.#")).format((double) ((float) duration / 1000.0F)) + " seconds");
             } else {
                File sfile = new File(this.infile.getAbsolutePath());
                long ilength = this.infile.length();
@@ -144,7 +140,8 @@ public class Unpak {
                   this.checknav();
                   this.raf.close();
                   long duration = System.currentTimeMillis() - starttime;
-                  Cons.println("**** Pakrat autoscan complete in " + (new DecimalFormat("0.#")).format((double)((float)duration / 1000.0F)) + " seconds");
+                  Cons.println("**** Pakrat autoscan complete in "
+                        + (new DecimalFormat("0.#")).format((double) ((float) duration / 1000.0F)) + " seconds");
                }
             }
          } else {
@@ -162,7 +159,8 @@ public class Unpak {
          Pakpref.getInit();
          this.gamedir = Pakpref.gamedir;
          Cons.settitle("Pakrat - console");
-         Cons.println("Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
+         Cons.println(
+               "Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
          if (filename == null) {
             JFileChooser chooser = new JFileChooser(Pakpref.mapdir);
             chooser.setDialogTitle("Open a map file");
@@ -295,43 +293,10 @@ public class Unpak {
             delfile.setEnabled(false);
             savefile.setEnabled(false);
             ListSelectionModel rowsel = this.table.getSelectionModel();
-            rowsel.addListSelectionListener(new ListSelectionListener() {
-               public void valueChanged(ListSelectionEvent lse) {
-                  if (!lse.getValueIsAdjusting()) {
-                     ListSelectionModel lsm = (ListSelectionModel)lse.getSource();
-                     if (lsm.isSelectionEmpty()) {
-                        view.setEnabled(false);
-                        editfile.setEnabled(false);
-                        delfile.setEnabled(false);
-                        savefile.setEnabled(false);
-                     } else {
-                        view.setEnabled(true);
-                        delfile.setEnabled(true);
-                        savefile.setEnabled(true);
-                        if (Unpak.this.table.getSelectedRowCount() == 1) {
-                           editfile.setEnabled(true);
-                        } else {
-                           editfile.setEnabled(false);
-                        }
-                     }
-
-                  }
-               }
-            });
-            this.tree.addTreeSelectionListener(new TreeSelectionListener() {
-               public void valueChanged(TreeSelectionEvent e) {
-                  TreePath[] paths = Unpak.this.tree.getSelectionPaths();
-                  if (paths != null) {
-                     for(int i = 0; i < paths.length; ++i) {
-                        Object sel = ((DefaultMutableTreeNode)paths[i].getLastPathComponent()).getUserObject();
-                        if (sel.getClass() != Zipf.class) {
-                           Unpak.this.tree.removeSelectionPath(paths[i]);
-                        }
-                     }
-                  }
-
-                  int numselected = Unpak.this.tree.getSelectionCount();
-                  if (numselected == 0) {
+            rowsel.addListSelectionListener(lse -> {
+               if (!lse.getValueIsAdjusting()) {
+                  ListSelectionModel lsm = (ListSelectionModel) lse.getSource();
+                  if (lsm.isSelectionEmpty()) {
                      view.setEnabled(false);
                      editfile.setEnabled(false);
                      delfile.setEnabled(false);
@@ -340,7 +305,7 @@ public class Unpak {
                      view.setEnabled(true);
                      delfile.setEnabled(true);
                      savefile.setEnabled(true);
-                     if (numselected == 1) {
+                     if (Unpak.this.table.getSelectedRowCount() == 1) {
                         editfile.setEnabled(true);
                      } else {
                         editfile.setEnabled(false);
@@ -349,13 +314,116 @@ public class Unpak {
 
                }
             });
-            msave.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  try {
-                     File sfile = new File(Unpak.this.infile.getAbsolutePath());
-                     JFileChooser schooser = new JFileChooser(sfile);
-                     schooser.setDialogTitle("Save map file - " + sfile.getName());
-                     schooser.setFileFilter(new BspFileFilter());
+            this.tree.addTreeSelectionListener(_ -> {
+               TreePath[] paths = Unpak.this.tree.getSelectionPaths();
+               if (paths != null) {
+                  for (int i = 0; i < paths.length; ++i) {
+                     Object sel = ((DefaultMutableTreeNode) paths[i].getLastPathComponent()).getUserObject();
+                     if (sel.getClass() != Zipf.class) {
+                        Unpak.this.tree.removeSelectionPath(paths[i]);
+                     }
+                  }
+               }
+
+               int numselected = Unpak.this.tree.getSelectionCount();
+               if (numselected == 0) {
+                  view.setEnabled(false);
+                  editfile.setEnabled(false);
+                  delfile.setEnabled(false);
+                  savefile.setEnabled(false);
+               } else {
+                  view.setEnabled(true);
+                  delfile.setEnabled(true);
+                  savefile.setEnabled(true);
+                  if (numselected == 1) {
+                     editfile.setEnabled(true);
+                  } else {
+                     editfile.setEnabled(false);
+                  }
+               }
+
+            });
+            msave.addActionListener(_ -> {
+               try {
+                  File sfile = new File(Unpak.this.infile.getAbsolutePath());
+                  JFileChooser schooser = new JFileChooser(sfile);
+                  schooser.setDialogTitle("Save map file - " + sfile.getName());
+                  schooser.setFileFilter(new BspFileFilter());
+                  schooser.setSelectedFile(sfile);
+                  int result = schooser.showSaveDialog(Unpak.this.frame);
+                  if (result == 1) {
+                     return;
+                  }
+
+                  sfile = schooser.getSelectedFile();
+                  String sfilename = sfile.getName();
+                  if (sfile.exists()) {
+                     result = JOptionPane.showConfirmDialog(Unpak.this.frame,
+                           "Map file \"" + sfile + "\" exists. \nAre you sure you want to overwrite?",
+                           "Save BSP file", 0);
+                     if (result == 1) {
+                        return;
+                     }
+
+                     Unpak.this.frame.setCursor(Cursor.getPredefinedCursor(3));
+                     if (sfile.getCanonicalPath().equals(Unpak.this.infile.getCanonicalPath())) {
+                        long ilength = Unpak.this.infile.length();
+                        File renfile = new File(Unpak.this.infile.getAbsolutePath() + ".bak");
+                        Cons.print("Copying current map file to " + renfile.getAbsolutePath() + "...");
+                        RandomAccessFile copyraf = new RandomAccessFile(renfile, "rw");
+                        copyraf.setLength(0L);
+                        Unpak.this.raf.seek(0L);
+                        Unpak.this.m.copyblock(Unpak.this.raf, copyraf, ilength);
+                        copyraf.close();
+                        Cons.println("Done");
+                        Unpak.this.infile = renfile;
+                        if (!Unpak.this.infile.exists()) {
+                           Cons.println("Cannot find renamed file - map save aborted");
+                           Unpak.this.frame.setCursor(Cursor.getDefaultCursor());
+                           return;
+                        }
+
+                        Unpak.this.raf.close();
+                        Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "r");
+                        Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.offset);
+                     }
+                  }
+
+                  Cons.print("Writing " + sfilename + "...");
+                  Unpak.this.closescan();
+                  Unpak.this.raf.seek(0L);
+                  RandomAccessFile outraf = new RandomAccessFile(sfile, "rw");
+                  outraf.setLength(0L);
+                  Cons.print("BSP data...");
+                  Unpak.this.m.savemap(Unpak.this.raf, outraf);
+                  Cons.print("Pak data...");
+                  Unpak.this.m.savepak(Unpak.this.raf, outraf);
+                  outraf.close();
+                  Cons.println("Done");
+                  Unpak.this.raf.close();
+                  Unpak.this.frame.setCursor(Cursor.getDefaultCursor());
+                  Unpak.this.infile = sfile;
+                  Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "rw");
+                  Unpak.this.checknav();
+                  Unpak.this.raf.close();
+                  Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "r");
+                  Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.offset);
+                  Unpak.this.tmodel.fireTableDataChanged();
+                  Unpak.this.dirty = false;
+                  Unpak.this.frame.setTitle("Pakrat - " + sfile.getName());
+               } catch (Exception ex) {
+                  System.out.println(ex);
+               }
+
+            });
+            savefile.addActionListener(_ -> {
+               int[] rows = Unpak.this.getSelection();
+               if (rows.length != 0) {
+                  if (rows.length == 1) {
+                     Zipf z = Unpak.this.zmodel.getzipfile(rows[0]);
+                     File sfile = new File(z.getFullname());
+                     JFileChooser schooser = new JFileChooser(Pakpref.adddir);
+                     schooser.setDialogTitle("Save selected file - " + z.getFullname());
                      schooser.setSelectedFile(sfile);
                      int result = schooser.showSaveDialog(Unpak.this.frame);
                      if (result == 1) {
@@ -363,403 +431,299 @@ public class Unpak {
                      }
 
                      sfile = schooser.getSelectedFile();
-                     String sfilename = sfile.getName();
-                     if (sfile.exists()) {
-                        result = JOptionPane.showConfirmDialog(Unpak.this.frame, "Map file \"" + sfile + "\" exists. \nAre you sure you want to overwrite?", "Save BSP file", 0);
-                        if (result == 1) {
-                           return;
-                        }
-
-                        Unpak.this.frame.setCursor(Cursor.getPredefinedCursor(3));
-                        if (sfile.getCanonicalPath().equals(Unpak.this.infile.getCanonicalPath())) {
-                           long ilength = Unpak.this.infile.length();
-                           File renfile = new File(Unpak.this.infile.getAbsolutePath() + ".bak");
-                           Cons.print("Copying current map file to " + renfile.getAbsolutePath() + "...");
-                           RandomAccessFile copyraf = new RandomAccessFile(renfile, "rw");
-                           copyraf.setLength(0L);
-                           Unpak.this.raf.seek(0L);
-                           Unpak.this.m.copyblock(Unpak.this.raf, copyraf, ilength);
-                           copyraf.close();
-                           Cons.println("Done");
-                           Unpak.this.infile = renfile;
-                           if (!Unpak.this.infile.exists()) {
-                              Cons.println("Cannot find renamed file - map save aborted");
-                              Unpak.this.frame.setCursor(Cursor.getDefaultCursor());
-                              return;
-                           }
-
-                           Unpak.this.raf.close();
-                           Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "r");
-                           Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.offset);
-                        }
+                     Unpak.this.savepakfile(z, sfile, false);
+                  } else {
+                     JFileChooser sc = new JFileChooser(Pakpref.adddir);
+                     sc.setDialogTitle("Select location to save " + rows.length + " files");
+                     sc.setFileSelectionMode(1);
+                     int result = sc.showSaveDialog(Unpak.this.frame);
+                     if (result == 1) {
+                        return;
                      }
 
-                     Cons.print("Writing " + sfilename + "...");
-                     Unpak.this.closescan();
-                     Unpak.this.raf.seek(0L);
-                     RandomAccessFile outraf = new RandomAccessFile(sfile, "rw");
-                     outraf.setLength(0L);
-                     Cons.print("BSP data...");
-                     Unpak.this.m.savemap(Unpak.this.raf, outraf);
-                     Cons.print("Pak data...");
-                     Unpak.this.m.savepak(Unpak.this.raf, outraf);
-                     outraf.close();
-                     Cons.println("Done");
-                     Unpak.this.raf.close();
-                     Unpak.this.frame.setCursor(Cursor.getDefaultCursor());
-                     Unpak.this.infile = sfile;
-                     Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "rw");
-                     Unpak.this.checknav();
-                     Unpak.this.raf.close();
-                     Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "r");
-                     Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.offset);
+                     File path = sc.getSelectedFile();
+
+                     for (int r = 0; r < rows.length; ++r) {
+                        Zipf z = Unpak.this.zmodel.getzipfile(rows[r]);
+                        File sfile = new File(path, z.getFilename());
+                        if (!Unpak.this.savepakfile(z, sfile, true)) {
+                           break;
+                        }
+                     }
+                  }
+
+               }
+            });
+            addfile.addActionListener(_ -> {
+               try {
+                  JFileChooser fchooser = new JFileChooser(Pakpref.adddir);
+                  fchooser.setDialogTitle("Select file(s) to add to pak");
+                  fchooser.setApproveButtonToolTipText("Open the selected files(s)");
+                  fchooser.setFileFilter(new MdlFileFilter());
+                  fchooser.setFileFilter(new PakFileFilter());
+                  fchooser.setFileFilter(new AllFileFilter());
+                  fchooser.setMultiSelectionEnabled(true);
+                  fchooser.setFileSelectionMode(2);
+                  int result = fchooser.showOpenDialog(Unpak.this.frame);
+                  if (result == 1) {
+                     return;
+                  }
+
+                  File[] tfile = fchooser.getSelectedFiles();
+                  Pakpref.adddir = fchooser.getCurrentDirectory().getPath();
+                  Pakpref.put("Adddir", Pakpref.adddir);
+                  Unpak.this.addfiletopak(tfile, Unpak.this.gamedir, false);
+               } catch (Exception ex) {
+                  System.out.println(ex);
+               }
+
+            });
+            delfile.addActionListener(_ -> {
+               int[] rows = Unpak.this.getSelection();
+               if (rows.length != 0) {
+                  Unpak.this.deletepakfiles(rows);
+               }
+            });
+            editfile.addActionListener(_ -> {
+               int[] rows = Unpak.this.getSelection();
+               if (rows.length != 0) {
+                  Zipf z = Unpak.this.zmodel.getzipfile(rows[0]);
+                  JTextField filetext = new JTextField(z.getFilename());
+                  JTextField pathtext = new JTextField(z.getPathname());
+                  Container cbox = Box.createHorizontalBox();
+                  cbox.add(new JLabel("Size: " + z.size + "  CRC32: " + Integer.toHexString((int) z.CRC)));
+                  Container fbox = Box.createHorizontalBox();
+                  fbox.add(new JLabel("Filename : "));
+                  fbox.add(filetext);
+                  Container pbox = Box.createHorizontalBox();
+                  pbox.add(new JLabel("Path : "));
+                  pbox.add(pathtext);
+                  int result = JOptionPane.showOptionDialog(Unpak.this.frame,
+                        new Object[] { z.getFullname(), cbox, fbox, pbox }, "Edit file parameters", 2, -1,
+                        (Icon) null, (Object[]) null, (Object) null);
+                  if (result != 2) {
+                     z.setfull(pathtext.getText() + "/" + filetext.getText());
                      Unpak.this.tmodel.fireTableDataChanged();
-                     Unpak.this.dirty = false;
-                     Unpak.this.frame.setTitle("Pakrat - " + sfile.getName());
-                  } catch (Exception ex) {
-                     System.out.println(ex);
-                  }
-
-               }
-            });
-            savefile.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  int[] rows = Unpak.this.getSelection();
-                  if (rows.length != 0) {
-                     if (rows.length == 1) {
-                        Zipf z = Unpak.this.zmodel.getzipfile(rows[0]);
-                        File sfile = new File(z.getFullname());
-                        JFileChooser schooser = new JFileChooser(Pakpref.adddir);
-                        schooser.setDialogTitle("Save selected file - " + z.getFullname());
-                        schooser.setSelectedFile(sfile);
-                        int result = schooser.showSaveDialog(Unpak.this.frame);
-                        if (result == 1) {
-                           return;
-                        }
-
-                        sfile = schooser.getSelectedFile();
-                        Unpak.this.savepakfile(z, sfile, false);
-                     } else {
-                        JFileChooser sc = new JFileChooser(Pakpref.adddir);
-                        sc.setDialogTitle("Select location to save " + rows.length + " files");
-                        sc.setFileSelectionMode(1);
-                        int result = sc.showSaveDialog(Unpak.this.frame);
-                        if (result == 1) {
-                           return;
-                        }
-
-                        File path = sc.getSelectedFile();
-
-                        for(int r = 0; r < rows.length; ++r) {
-                           Zipf z = Unpak.this.zmodel.getzipfile(rows[r]);
-                           File sfile = new File(path, z.getFilename());
-                           if (!Unpak.this.savepakfile(z, sfile, true)) {
-                              break;
-                           }
-                        }
-                     }
-
-                  }
-               }
-            });
-            addfile.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  try {
-                     JFileChooser fchooser = new JFileChooser(Pakpref.adddir);
-                     fchooser.setDialogTitle("Select file(s) to add to pak");
-                     fchooser.setApproveButtonToolTipText("Open the selected files(s)");
-                     fchooser.setFileFilter(new MdlFileFilter());
-                     fchooser.setFileFilter(new PakFileFilter());
-                     fchooser.setFileFilter(new AllFileFilter());
-                     fchooser.setMultiSelectionEnabled(true);
-                     fchooser.setFileSelectionMode(2);
-                     int result = fchooser.showOpenDialog(Unpak.this.frame);
-                     if (result == 1) {
-                        return;
-                     }
-
-                     File[] tfile = fchooser.getSelectedFiles();
-                     Pakpref.adddir = fchooser.getCurrentDirectory().getPath();
-                     Pakpref.put("Adddir", Pakpref.adddir);
-                     Unpak.this.addfiletopak(tfile, Unpak.this.gamedir, false);
-                  } catch (Exception ex) {
-                     System.out.println(ex);
-                  }
-
-               }
-            });
-            delfile.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  int[] rows = Unpak.this.getSelection();
-                  if (rows.length != 0) {
-                     Unpak.this.deletepakfiles(rows);
-                  }
-               }
-            });
-            editfile.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  int[] rows = Unpak.this.getSelection();
-                  if (rows.length != 0) {
-                     Zipf z = Unpak.this.zmodel.getzipfile(rows[0]);
-                     JTextField filetext = new JTextField(z.getFilename());
-                     JTextField pathtext = new JTextField(z.getPathname());
-                     Container cbox = Box.createHorizontalBox();
-                     cbox.add(new JLabel("Size: " + z.size + "  CRC32: " + Integer.toHexString((int)z.CRC)));
-                     Container fbox = Box.createHorizontalBox();
-                     fbox.add(new JLabel("Filename : "));
-                     fbox.add(filetext);
-                     Container pbox = Box.createHorizontalBox();
-                     pbox.add(new JLabel("Path : "));
-                     pbox.add(pathtext);
-                     int result = JOptionPane.showOptionDialog(Unpak.this.frame, new Object[]{z.getFullname(), cbox, fbox, pbox}, "Edit file parameters", 2, -1, (Icon)null, (Object[])null, (Object)null);
-                     if (result != 2) {
-                        z.setfull(pathtext.getText() + "/" + filetext.getText());
-                        Unpak.this.tmodel.fireTableDataChanged();
-                        Unpak.this.dirty = true;
-                        if (Unpak.this.treeview) {
-                           Unpak.this.updateTree();
-                        }
-
-                     }
-                  }
-               }
-            });
-            mpref.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  Unpak.this.dopreferences();
-               }
-            });
-            mload.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  try {
-                     JFileChooser rchooser = new JFileChooser(Pakpref.mapdir);
-                     rchooser.setDialogTitle("Open a map file");
-                     rchooser.setFileFilter(new BspFileFilter());
-                     int result = rchooser.showOpenDialog(Unpak.this.frame);
-                     if (result == 1) {
-                        return;
-                     }
-
-                     Unpak.this.closescan();
-                     Unpak.this.infile = rchooser.getSelectedFile();
-                     String filename = Unpak.this.infile.getName();
-                     Unpak.this.currentdir = Unpak.this.infile.getPath();
-                     if (!Unpak.this.infile.exists() || !Unpak.this.infile.canRead()) {
-                        Cons.println("Can't open " + filename);
-                        return;
-                     }
-
-                     Cons.println("Reading " + filename);
-                     Pakpref.mapdir = Unpak.this.infile.getPath();
-                     Pakpref.put("Mapdir", Pakpref.mapdir);
-                     Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "r");
-                     Unpak.this.m = new Mappak();
-                     Unpak.this.frame.setCursor(Cursor.getPredefinedCursor(3));
-                     Unpak.this.m.loadmap(Unpak.this.raf);
-                     Unpak.this.frame.setCursor(Cursor.getDefaultCursor());
-                     Unpak.this.frame.setTitle("Pakrat - " + filename);
-                     Unpak.this.zmodel = new ZipDirModel(Unpak.this.m.zf, Unpak.this);
-                     Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.offset);
-                     Unpak.this.tmodel = new TableSorter(Unpak.this.zmodel);
-                     Unpak.this.table.setModel(Unpak.this.tmodel);
-                     Unpak.this.tmodel.setTableHeader(Unpak.this.table.getTableHeader());
-                     Unpak.this.table.setAutoResizeMode(1);
-                     Unpak.this.table.getColumn("Size").setMaxWidth(50);
-                     Unpak.this.table.getColumn("Type").setMaxWidth(50);
-                     Unpak.this.table.getColumn("In").setMaxWidth(20);
-                     Unpak.this.table.getColumn(ZipDirModel.header[1]).setCellRenderer(new ZipTableCR());
-                     Unpak.this.dirty = false;
+                     Unpak.this.dirty = true;
                      if (Unpak.this.treeview) {
                         Unpak.this.updateTree();
                      }
-                  } catch (Exception ex) {
-                     System.out.println(ex);
-                  }
 
+                  }
                }
             });
-            mquit.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  int result = JOptionPane.showConfirmDialog(Unpak.this.frame, "Quit Pakrat?" + (Unpak.this.dirty ? "\n(Changes have not been saved)" : ""), "Pakrat", 0);
-                  if (result == 0) {
-                     System.exit(0);
+            mpref.addActionListener(_ -> {
+               Unpak.this.dopreferences();
+            });
+            mload.addActionListener(_ -> {
+               try {
+                  JFileChooser rchooser = new JFileChooser(Pakpref.mapdir);
+                  rchooser.setDialogTitle("Open a map file");
+                  rchooser.setFileFilter(new BspFileFilter());
+                  int result = rchooser.showOpenDialog(Unpak.this.frame);
+                  if (result == 1) {
+                     return;
                   }
 
+                  Unpak.this.closescan();
+                  Unpak.this.infile = rchooser.getSelectedFile();
+                  String filename_ = Unpak.this.infile.getName();
+                  Unpak.this.currentdir = Unpak.this.infile.getPath();
+                  if (!Unpak.this.infile.exists() || !Unpak.this.infile.canRead()) {
+                     Cons.println("Can't open " + filename_);
+                     return;
+                  }
+
+                  Cons.println("Reading " + filename_);
+                  Pakpref.mapdir = Unpak.this.infile.getPath();
+                  Pakpref.put("Mapdir", Pakpref.mapdir);
+                  Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "r");
+                  Unpak.this.m = new Mappak();
+                  Unpak.this.frame.setCursor(Cursor.getPredefinedCursor(3));
+                  Unpak.this.m.loadmap(Unpak.this.raf);
+                  Unpak.this.frame.setCursor(Cursor.getDefaultCursor());
+                  Unpak.this.frame.setTitle("Pakrat - " + filename_);
+                  Unpak.this.zmodel = new ZipDirModel(Unpak.this.m.zf, Unpak.this);
+                  Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.offset);
+                  Unpak.this.tmodel = new TableSorter(Unpak.this.zmodel);
+                  Unpak.this.table.setModel(Unpak.this.tmodel);
+                  Unpak.this.tmodel.setTableHeader(Unpak.this.table.getTableHeader());
+                  Unpak.this.table.setAutoResizeMode(1);
+                  Unpak.this.table.getColumn("Size").setMaxWidth(50);
+                  Unpak.this.table.getColumn("Type").setMaxWidth(50);
+                  Unpak.this.table.getColumn("In").setMaxWidth(20);
+                  Unpak.this.table.getColumn(ZipDirModel.header[1]).setCellRenderer(new ZipTableCR());
+                  Unpak.this.dirty = false;
+                  if (Unpak.this.treeview) {
+                     Unpak.this.updateTree();
+                  }
+               } catch (Exception ex) {
+                  System.out.println(ex);
                }
+
+            });
+            mquit.addActionListener(_ -> {
+               int result = JOptionPane.showConfirmDialog(Unpak.this.frame,
+                     "Quit Pakrat?" + (Unpak.this.dirty ? "\n(Changes have not been saved)" : ""), "Pakrat", 0);
+               if (result == 0) {
+                  System.exit(0);
+               }
+
             });
             this.frame.addWindowListener(new WindowAdapter() {
+               @Override
                public void windowClosing(WindowEvent we) {
                   if (!Unpak.this.dirty) {
                      System.exit(0);
                   }
 
-                  int result = JOptionPane.showConfirmDialog(Unpak.this.frame, "Quit Pakrat?\n(Changes have not been saved)", "Pakrat", 0);
+                  int result = JOptionPane.showConfirmDialog(Unpak.this.frame,
+                        "Quit Pakrat?\n(Changes have not been saved)", "Pakrat", 0);
                   if (result == 0) {
                      System.exit(0);
                   }
 
                }
             });
-            mtree.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  Unpak.this.treeview = mtree.getState();
-                  if (Unpak.this.treeview) {
-                     Unpak.this.updateTree();
-                     Unpak.this.zmodel.setTreeSelection(Unpak.this.tree, Unpak.this.table);
-                     sortmenu.setEnabled(false);
-                     Unpak.this.mainsp.getViewport().setView(Unpak.this.tree);
-                  } else {
-                     Unpak.this.zmodel.setTableSelection(Unpak.this.tree, Unpak.this.table);
-                     sortmenu.setEnabled(true);
-                     Unpak.this.mainsp.getViewport().setView(Unpak.this.table);
+            mtree.addActionListener(_ -> {
+               Unpak.this.treeview = mtree.getState();
+               if (Unpak.this.treeview) {
+                  Unpak.this.updateTree();
+                  Unpak.this.zmodel.setTreeSelection(Unpak.this.tree, Unpak.this.table);
+                  sortmenu.setEnabled(false);
+                  Unpak.this.mainsp.getViewport().setView(Unpak.this.tree);
+               } else {
+                  Unpak.this.zmodel.setTableSelection(Unpak.this.tree, Unpak.this.table);
+                  sortmenu.setEnabled(true);
+                  Unpak.this.mainsp.getViewport().setView(Unpak.this.table);
+               }
+
+            });
+            snone.addActionListener(_ -> {
+               Unpak.this.tmodel.cancelSorting();
+            });
+            sname.addActionListener(_ -> {
+               int status = Unpak.this.tmodel.getSortingStatus(1);
+               status = status < 1 ? 1 : -1;
+               Unpak.this.tmodel.cancelSorting();
+               Unpak.this.tmodel.setSortingStatus(1, status);
+            });
+            spath.addActionListener(_ -> {
+               int status = Unpak.this.tmodel.getSortingStatus(2);
+               status = status < 1 ? 1 : -1;
+               Unpak.this.tmodel.cancelSorting();
+               Unpak.this.tmodel.setSortingStatus(2, status);
+            });
+            ssize.addActionListener(_ -> {
+               int status = Unpak.this.tmodel.getSortingStatus(3);
+               status = status < 1 ? 1 : -1;
+               Unpak.this.tmodel.cancelSorting();
+               Unpak.this.tmodel.setSortingStatus(3, status);
+            });
+            stype.addActionListener(_ -> {
+               int status = Unpak.this.tmodel.getSortingStatus(4);
+               status = status < 1 ? 1 : -1;
+               Unpak.this.tmodel.cancelSorting();
+               Unpak.this.tmodel.setSortingStatus(4, status);
+            });
+            view.addActionListener(_ -> {
+               int[] rows = Unpak.this.getSelection();
+               if (rows.length != 0) {
+                  for (int i = 0; i < rows.length; ++i) {
+                     Unpak.this.viewfile(Unpak.this.zmodel.getzipfile(rows[i]));
                   }
 
                }
             });
-            snone.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  Unpak.this.tmodel.cancelSorting();
-               }
+            ascan.addActionListener(_ -> {
+               Unpak.this.closescan();
+               Unpak.this.scan = new Scan(Unpak.this, Unpak.this.frame, Unpak.this.m, Unpak.this.zmodel,
+                     Unpak.this.infile.getName(), Unpak.this.gamedir);
             });
-            sname.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  int status = Unpak.this.tmodel.getSortingStatus(1);
-                  status = status < 1 ? 1 : -1;
-                  Unpak.this.tmodel.cancelSorting();
-                  Unpak.this.tmodel.setSortingStatus(1, status);
-               }
+            auto.addActionListener(_ -> {
+               Unpak.this.closescan();
+               Unpak.this.scan = new Scan(Unpak.this, Unpak.this.frame, Unpak.this.m, Unpak.this.zmodel,
+                     Unpak.this.infile.getName(), Unpak.this.gamedir, true);
             });
-            spath.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  int status = Unpak.this.tmodel.getSortingStatus(2);
-                  status = status < 1 ? 1 : -1;
-                  Unpak.this.tmodel.cancelSorting();
-                  Unpak.this.tmodel.setSortingStatus(2, status);
-               }
+            mcons.addActionListener(_ -> {
+               Cons.show();
             });
-            ssize.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  int status = Unpak.this.tmodel.getSortingStatus(3);
-                  status = status < 1 ? 1 : -1;
-                  Unpak.this.tmodel.cancelSorting();
-                  Unpak.this.tmodel.setSortingStatus(3, status);
-               }
-            });
-            stype.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  int status = Unpak.this.tmodel.getSortingStatus(4);
-                  status = status < 1 ? 1 : -1;
-                  Unpak.this.tmodel.cancelSorting();
-                  Unpak.this.tmodel.setSortingStatus(4, status);
-               }
-            });
-            view.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  int[] rows = Unpak.this.getSelection();
-                  if (rows.length != 0) {
-                     for(int i = 0; i < rows.length; ++i) {
-                        Unpak.this.viewfile(Unpak.this.zmodel.getzipfile(rows[i]));
-                     }
+            mhelp.addActionListener(_ -> {
+               String help = """
+                      Pakrat %s
+                      Original Pakrat 0.95 by Rof (rof@mellish.org.uk)
+                      Edited by Mehis
 
-                  }
-               }
-            });
-            ascan.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  Unpak.this.closescan();
-                  Unpak.this.scan = new Scan(Unpak.this, Unpak.this.frame, Unpak.this.m, Unpak.this.zmodel, Unpak.this.infile.getName(), Unpak.this.gamedir);
-               }
-            });
-            auto.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  Unpak.this.closescan();
-                  Unpak.this.scan = new Scan(Unpak.this, Unpak.this.frame, Unpak.this.m, Unpak.this.zmodel, Unpak.this.infile.getName(), Unpak.this.gamedir, true);
-               }
-            });
-            mcons.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  Cons.show();
-               }
-            });
-            mhelp.addActionListener(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {
-                  String help =
-                  """
-                   Pakrat %s
-                   Original Pakrat 0.95 by Rof (rof@mellish.org.uk)
-                   Edited by Mehis
-                   
-                   A program for managing Half-Life 2 BSP PAK archives
-                   
-                   File menu:
-                    Load BSP     - load a new BSP file
-                    Save BSP     - save the current BSP file, writing any changes to pak
-                    Preferences  - set the game base directory, path-fixup, and autoscan options
-                    Quit         - quit Pakrat
-                    
-                   View menu:
-                    As Tree      - view pak list as a directory tree
-                    Sort...      - sort the pak list via columns
-                    
-                   Help menu:
-                    Console      - show console window
-                    About Pakrat - this information
-                    
-                   Button controls:
-                    View         - view the selected pak entry
-                    Edit         - edit the selected entry's file and path name
-                    Add          - add a file or files to the pak
-                    Delete       - delete the selected entry from the pak
-                    Save         - save the selected entry to disk
-                    Scan         - scan for all files used in map
-                    Auto         - automatically scan and add all files used in map to the pak
-                    
-                   About Pakrat
-                    Pakrat is a graphical replacement for the command-line bspzip program.
-                    HL2 map (.bsp) files contain a general file storage area, known as the
-                    pak. Usually this area contains special material (.vmt) and texture
-                    (.vtf) files which store the environment reflection maps from
-                    env_cubemap entities generated when the console command buildcubemaps
-                    is run. These files will be visible in the pak list of opened maps.
-                    
-                    Pakrat allows you to add files to the pak, such as texture, material,
-                    sound and model files. If these files are used in the map, they will
-                    be preferentially loaded from the map's pak, allowing you to make
-                    maps with custom textures, etc., embedded into the map .bsp file.
-                    These maps therefore do not need to be distributed with extra files
-                    to include custom components.
-                    
-                   Path fixup
-                    The Source engine looks for files in the pak with a certain relative
-                    paths. For example, material and texture files should have a path
-                    starting with the "materials" folder. If set to do so, Pakrat can
-                    attempt to change the path of any file added to the pak such that it
-                    is correct. The best way to do this is set the Game Root directory
-                    under the Preferences menu item. This should be, for example:
-                    "C:\\Games\\Steam\\SteamApps\\common\\Half-Life 2\\hl2"
-                    for a typical HL2 installation. If mapping for CS:S or HL2DM, change
-                    the Game Root appropriately. If the Game Root is not set, Pakrat
-                    can attempt to guess the correct path from the file name and location.
-                    You may also edit each pak entry's filename and path directly, using
-                    the Edit button.
-                    
-                   The View button shows the contents of the selected file(s). For material
-                   (.vmt) files, the file is displayed as text. For textures (.vtf), a
-                   summary of the texture properties is printed, and the texture bitmap
-                   is displayed below. Unrecognised file types are displayed as ASCII
-                   text or as a hex dump depending on which tab is selected.
-                    
-                   The Scan button opens a new window which allows all files referenced
-                   in the map geometry and entities to be scanned for. Files that can be
-                   found on disk can be added to the pack by using the Add Selected button.
-                   
-                   The Auto button performs a scan of used files and automatically adds any
-                   file found on disk to the pak.
+                      A program for managing Half-Life 2 BSP PAK archives
 
-                  
-                  """.formatted(Version.getFullVersion());
-                  Unpak.this.TextBox("About Pakrat", help);
-               }
+                      File menu:
+                       Load BSP     - load a new BSP file
+                       Save BSP     - save the current BSP file, writing any changes to pak
+                       Preferences  - set the game base directory, path-fixup, and autoscan options
+                       Quit         - quit Pakrat
+
+                      View menu:
+                       As Tree      - view pak list as a directory tree
+                       Sort...      - sort the pak list via columns
+
+                      Help menu:
+                       Console      - show console window
+                       About Pakrat - this information
+
+                      Button controls:
+                       View         - view the selected pak entry
+                       Edit         - edit the selected entry's file and path name
+                       Add          - add a file or files to the pak
+                       Delete       - delete the selected entry from the pak
+                       Save         - save the selected entry to disk
+                       Scan         - scan for all files used in map
+                       Auto         - automatically scan and add all files used in map to the pak
+
+                      About Pakrat
+                       Pakrat is a graphical replacement for the command-line bspzip program.
+                       HL2 map (.bsp) files contain a general file storage area, known as the
+                       pak. Usually this area contains special material (.vmt) and texture
+                       (.vtf) files which store the environment reflection maps from
+                       env_cubemap entities generated when the console command buildcubemaps
+                       is run. These files will be visible in the pak list of opened maps.
+
+                       Pakrat allows you to add files to the pak, such as texture, material,
+                       sound and model files. If these files are used in the map, they will
+                       be preferentially loaded from the map's pak, allowing you to make
+                       maps with custom textures, etc., embedded into the map .bsp file.
+                       These maps therefore do not need to be distributed with extra files
+                       to include custom components.
+
+                      Path fixup
+                       The Source engine looks for files in the pak with a certain relative
+                       paths. For example, material and texture files should have a path
+                       starting with the "materials" folder. If set to do so, Pakrat can
+                       attempt to change the path of any file added to the pak such that it
+                       is correct. The best way to do this is set the Game Root directory
+                       under the Preferences menu item. This should be, for example:
+                       "C:\\Games\\Steam\\SteamApps\\common\\Half-Life 2\\hl2"
+                       for a typical HL2 installation. If mapping for CS:S or HL2DM, change
+                       the Game Root appropriately. If the Game Root is not set, Pakrat
+                       can attempt to guess the correct path from the file name and location.
+                       You may also edit each pak entry's filename and path directly, using
+                       the Edit button.
+
+                      The View button shows the contents of the selected file(s). For material
+                      (.vmt) files, the file is displayed as text. For textures (.vtf), a
+                      summary of the texture properties is printed, and the texture bitmap
+                      is displayed below. Unrecognised file types are displayed as ASCII
+                      text or as a hex dump depending on which tab is selected.
+
+                      The Scan button opens a new window which allows all files referenced
+                      in the map geometry and entities to be scanned for. Files that can be
+                      found on disk can be added to the pack by using the Add Selected button.
+
+                      The Auto button performs a scan of used files and automatically adds any
+                      file found on disk to the pak.
+
+
+                     """.formatted(Version.getFullVersion());
+               Unpak.this.TextBox("About Pakrat", help);
             });
             this.frame.setDefaultCloseOperation(0);
             this.frame.setSize(640, 480);
@@ -777,7 +741,8 @@ public class Unpak {
       this.auton = true;
       Cons.open(false);
       long starttime = System.currentTimeMillis();
-      Cons.println("**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
+      Cons.println(
+            "**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
       Cons.println("Saving " + pakfile + " from " + filename);
 
       try {
@@ -803,7 +768,8 @@ public class Unpak {
                this.savepakfile(match, mfile, false);
                this.raf.close();
                long duration = System.currentTimeMillis() - starttime;
-               Cons.println("**** Pakrat file save complete in " + (new DecimalFormat("0.#")).format((double)((float)duration / 1000.0F)) + " seconds");
+               Cons.println("**** Pakrat file save complete in "
+                     + (new DecimalFormat("0.#")).format((double) ((float) duration / 1000.0F)) + " seconds");
             }
          } else {
             Cons.println("Can't open " + filename);
@@ -817,7 +783,8 @@ public class Unpak {
       this.auton = true;
       Cons.open(false);
       long starttime = System.currentTimeMillis();
-      Cons.println("**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
+      Cons.println(
+            "**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
       Cons.println("Dumping pak lump from " + filename);
 
       try {
@@ -838,13 +805,14 @@ public class Unpak {
             Cons.print("Writing " + zipname + "...");
             RandomAccessFile zraf = new RandomAccessFile(outfile, "rw");
             zraf.setLength(0L);
-            this.raf.seek((long)this.m.offset);
-            this.m.copyblock(this.raf, zraf, (long)this.m.length);
+            this.raf.seek((long) this.m.offset);
+            this.m.copyblock(this.raf, zraf, (long) this.m.length);
             zraf.close();
             Cons.println("done");
             this.raf.close();
             long duration = System.currentTimeMillis() - starttime;
-            Cons.println("**** Pakrat file dump complete in " + (new DecimalFormat("0.#")).format((double)((float)duration / 1000.0F)) + " seconds");
+            Cons.println("**** Pakrat file dump complete in "
+                  + (new DecimalFormat("0.#")).format((double) ((float) duration / 1000.0F)) + " seconds");
          } else {
             Cons.println("Can't open " + filename);
          }
@@ -874,7 +842,7 @@ public class Unpak {
             this.zmodel = new ZipDirModel(this.m.zf, this);
             this.zmodel.setfileparams(this.raf, this.m.offset);
 
-            for(int i = 0; i < this.zmodel.getRowCount(); ++i) {
+            for (int i = 0; i < this.zmodel.getRowCount(); ++i) {
                Zipf z = this.zmodel.getzipfile(i);
                Cons.println(z.getFullDetails());
             }
@@ -891,7 +859,7 @@ public class Unpak {
    public int addfiletopak(File[] tfile, String base, boolean yta) throws IOException {
       boolean all = yta;
 
-      for(int i = 0; i < tfile.length; ++i) {
+      for (int i = 0; i < tfile.length; ++i) {
          if (tfile[i] != null) {
             if (tfile[i].isDirectory()) {
                int res = this.addfiletopak(tfile[i].listFiles(), base, all);
@@ -911,7 +879,10 @@ public class Unpak {
                      String relfull = z.getrelfull(base);
                      if (relfull != null) {
                         if (Pakpref.fixup == 1 && !all) {
-                           int result = JOptionPane.showOptionDialog(this.frame, z.getFullname() + "\nFix-up path to: \"" + relfull + "\" ?", "Add file " + (i + 1) + " of " + tfile.length, 0, 3, (Icon)null, new String[]{"Yes", "Yes to All", "No", "Skip", "Cancel"}, (Object)null);
+                           int result = JOptionPane.showOptionDialog(this.frame,
+                                 z.getFullname() + "\nFix-up path to: \"" + relfull + "\" ?",
+                                 "Add file " + (i + 1) + " of " + tfile.length, 0, 3, (Icon) null,
+                                 new String[] { "Yes", "Yes to All", "No", "Skip", "Cancel" }, (Object) null);
                            if (result == 0 || result == 1) {
                               z.setfull(relfull);
                            }
@@ -934,7 +905,7 @@ public class Unpak {
                   }
 
                   Cons.println("Reading " + tfilename);
-                  z.size = (int)tfile[i].length();
+                  z.size = (int) tfile[i].length();
                   z.datofs = z.relofs = 0;
                   z.inpak = false;
                   z.data = new byte[z.size];
@@ -973,25 +944,29 @@ public class Unpak {
    }
 
    public void checknav() {
-      for(int i = 0; i < this.m.zf.size(); ++i) {
-         Zipf z = (Zipf)this.m.zf.get(i);
+      for (int i = 0; i < this.m.zf.size(); ++i) {
+         Zipf z = (Zipf) this.m.zf.get(i);
          if (z.getFilename().toLowerCase().endsWith(".nav")) {
             try {
-               this.raf.seek((long)(this.m.offset + z.datofs));
+               this.raf.seek((long) (this.m.offset + z.datofs));
                byte[] buffer = new byte[z.size];
                this.raf.read(buffer);
                ByteBuffer zb = ByteBuffer.wrap(buffer);
                zb.order(ByteOrder.LITTLE_ENDIAN);
-               long magic = (long)zb.getInt() & -1L;
+               long magic = (long) zb.getInt() & -1L;
                if (magic != -17958194L) {
                   Cons.println("Nav file " + z.getFullname() + " is invalid.");
                } else {
                   zb.getInt();
-                  long nlen = (long)zb.getInt() & -1L;
+                  long nlen = (long) zb.getInt() & -1L;
                   long blen = this.raf.length();
                   if (nlen != blen) {
                      if (!this.auton) {
-                        int result = JOptionPane.showConfirmDialog(this.frame, "Nav file \"" + z.getFullname() + "\" version does not match this bsp file.\n" + "Do you want to update it?", "Check NAV file", 0);
+                        int result = JOptionPane
+                              .showConfirmDialog(
+                                    this.frame, "Nav file \"" + z.getFullname()
+                                          + "\" version does not match this bsp file.\n" + "Do you want to update it?",
+                                    "Check NAV file", 0);
                         if (result == 1) {
                            break;
                         }
@@ -999,24 +974,24 @@ public class Unpak {
 
                      Cons.print("Updating " + z.getFullname() + "...");
                      zb.position(8);
-                     zb.putInt((int)blen);
+                     zb.putInt((int) blen);
                      CRC32 crc = new CRC32();
                      crc.update(buffer);
                      z.CRC = crc.getValue();
-                     this.raf.seek((long)(this.m.offset + z.datofs + 8));
-                     this.raf.writeInt(Swab.I((int)blen));
-                     this.raf.seek((long)(this.m.offset + z.relofs + 14));
-                     this.raf.writeInt(Swab.I((int)z.CRC));
-                     long cdpos = (long)(this.m.offset + this.m.cdoffs);
+                     this.raf.seek((long) (this.m.offset + z.datofs + 8));
+                     this.raf.writeInt(Swab.I((int) blen));
+                     this.raf.seek((long) (this.m.offset + z.relofs + 14));
+                     this.raf.writeInt(Swab.I((int) z.CRC));
+                     long cdpos = (long) (this.m.offset + this.m.cdoffs);
 
-                     for(int j = 0; j < i; ++j) {
-                        Zipf zj = (Zipf)this.m.zf.get(j);
-                        cdpos += (long)(46 + zj.getFullname().length());
+                     for (int j = 0; j < i; ++j) {
+                        Zipf zj = (Zipf) this.m.zf.get(j);
+                        cdpos += (long) (46 + zj.getFullname().length());
                      }
 
                      cdpos += 16L;
                      this.raf.seek(cdpos);
-                     this.raf.writeInt(Swab.I((int)z.CRC));
+                     this.raf.writeInt(Swab.I((int) z.CRC));
                      Cons.println("Done");
                   } else {
                      Cons.println("Nav file " + z.getFullname() + " matches BSP.");
@@ -1059,8 +1034,8 @@ public class Unpak {
          } else {
             int[] rows = new int[paths.length];
 
-            for(int i = 0; i < paths.length; ++i) {
-               Zipf sel = (Zipf)((DefaultMutableTreeNode)paths[i].getLastPathComponent()).getUserObject();
+            for (int i = 0; i < paths.length; ++i) {
+               Zipf sel = (Zipf) ((DefaultMutableTreeNode) paths[i].getLastPathComponent()).getUserObject();
                int row = this.zmodel.getrow(sel);
                if (row == -1) {
                   Cons.println("GetSelection: Couldn't find a match for " + sel);
@@ -1077,14 +1052,15 @@ public class Unpak {
    }
 
    public void deletepakfiles(int[] rows) {
-      Object[] options = new Object[]{"Yes", "Yes to All", "No", "Cancel"};
+      Object[] options = new Object[] { "Yes", "Yes to All", "No", "Cancel" };
       boolean all = false;
       Arrays.sort(rows);
 
-      for(int i = rows.length - 1; i >= 0; --i) {
+      for (int i = rows.length - 1; i >= 0; --i) {
          Zipf z = this.zmodel.getzipfile(rows[i]);
          if (!all) {
-            int result = JOptionPane.showOptionDialog(this.frame, "Remove file " + z.getFilename() + " from the pak?", "Delete file " + (rows.length - i) + " of " + rows.length, 1, 3, (Icon)null, options, options[0]);
+            int result = JOptionPane.showOptionDialog(this.frame, "Remove file " + z.getFilename() + " from the pak?",
+                  "Delete file " + (rows.length - i) + " of " + rows.length, 1, 3, (Icon) null, options, options[0]);
             if (result == 2) {
                continue;
             }
@@ -1121,7 +1097,7 @@ public class Unpak {
       try {
          ByteBuffer zb;
          if (z.inpak) {
-            this.raf.seek((long)(off + z.datofs));
+            this.raf.seek((long) (off + z.datofs));
             byte[] buffer = new byte[z.size];
             this.raf.read(buffer);
             zb = ByteBuffer.wrap(buffer);
@@ -1140,7 +1116,8 @@ public class Unpak {
                   options = 1;
                }
 
-               int result = JOptionPane.showConfirmDialog(this.frame, "File \"" + sfile + "\" exists, overwrite?", "Save selected file" + (multi ? "s" : ""), options);
+               int result = JOptionPane.showConfirmDialog(this.frame, "File \"" + sfile + "\" exists, overwrite?",
+                     "Save selected file" + (multi ? "s" : ""), options);
                if (result == 1) {
                   return true;
                }
@@ -1154,7 +1131,7 @@ public class Unpak {
          Cons.print("Writing " + sfilename + " ...");
          FileOutputStream fos = new FileOutputStream(sfile);
 
-         for(int i = 0; i < z.size; ++i) {
+         for (int i = 0; i < z.size; ++i) {
             fos.write(zb.get());
          }
 
@@ -1177,23 +1154,21 @@ public class Unpak {
       gbox.add(new JLabel("Game root directory :   "));
       gbox.add(gdirtext);
       gbox.add(gdfind);
-      JComboBox<String> fcombo = new JComboBox<>(new String[]{"Never", "Ask", "Always"});
+      JComboBox<String> fcombo = new JComboBox<>(new String[] { "Never", "Ask", "Always" });
       fcombo.setSelectedIndex(Pakpref.fixup);
       fcombo.setToolTipText("Sets whether to strip off the root directory on adding a file");
       Box fbox = Box.createHorizontalBox();
       fbox.add(new JLabel("Path fixup on add file :   "));
       fbox.add(fcombo);
-      gdfind.addActionListener(new ActionListener() {
-         public void actionPerformed(ActionEvent ae) {
-            JFileChooser dc = new JFileChooser(gdirtext.getText());
-            dc.setDialogTitle("Set game root directory");
-            dc.setFileSelectionMode(1);
-            int dr = dc.showOpenDialog(Unpak.this.frame);
-            if (dr != 1) {
-               gdirtext.setText(dc.getSelectedFile().getPath());
-            }
-
+      gdfind.addActionListener(_ -> {
+         JFileChooser dc = new JFileChooser(gdirtext.getText());
+         dc.setDialogTitle("Set game root directory");
+         dc.setFileSelectionMode(1);
+         int dr = dc.showOpenDialog(Unpak.this.frame);
+         if (dr != 1) {
+            gdirtext.setText(dc.getSelectedFile().getPath());
          }
+
       });
       Box abox = Box.createVerticalBox();
       abox.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Autoscan extra files:"));
@@ -1216,7 +1191,8 @@ public class Unpak {
       ab5.setToolTipText("Scan for custom soundscape file (and associated sound files)");
       abox.add(ab5);
       abox.setToolTipText("Optional files to search for during Scan and Autoscan operations");
-      int result = JOptionPane.showOptionDialog(this.frame, new Object[]{gbox, fbox, abox}, "Preferences", 2, -1, (Icon)null, (Object[])null, (Object)null);
+      int result = JOptionPane.showOptionDialog(this.frame, new Object[] { gbox, fbox, abox }, "Preferences", 2, -1,
+            (Icon) null, (Object[]) null, (Object) null);
       if (result != 2) {
          this.gamedir = gdirtext.getText();
          this.gamedir = this.gamedir.replace(File.separatorChar, '/');
@@ -1239,8 +1215,8 @@ public class Unpak {
    public String readstr(RandomAccessFile r, int len) throws IOException {
       StringBuffer linebuff = new StringBuffer();
 
-      for(int i = 0; i < len; ++i) {
-         char c = (char)r.readUnsignedByte();
+      for (int i = 0; i < len; ++i) {
+         char c = (char) r.readUnsignedByte();
          linebuff.append(c);
       }
 
@@ -1250,8 +1226,8 @@ public class Unpak {
    public String readstr(ByteBuffer b, int len) {
       StringBuffer linebuff = new StringBuffer();
 
-      for(int i = 0; i < len; ++i) {
-         char c = (char)b.get();
+      for (int i = 0; i < len; ++i) {
+         char c = (char) b.get();
          linebuff.append(c);
       }
 
@@ -1261,8 +1237,8 @@ public class Unpak {
    public String readstr(ByteBuffer b) {
       StringBuffer linebuff = new StringBuffer();
 
-      while(true) {
-         char c = (char)b.get();
+      while (true) {
+         char c = (char) b.get();
          if (c == 0) {
             return linebuff.toString();
          }
@@ -1275,7 +1251,7 @@ public class Unpak {
       try {
          ByteBuffer zb;
          if (z.inpak) {
-            this.raf.seek((long)(this.m.offset + z.datofs));
+            this.raf.seek((long) (this.m.offset + z.datofs));
             byte[] buffer = new byte[z.size];
             this.raf.read(buffer);
             zb = ByteBuffer.wrap(buffer);
@@ -1318,7 +1294,7 @@ public class Unpak {
       Vtf vtf = new Vtf();
 
       try {
-         vtf.read(b, (long)size);
+         vtf.read(b, (long) size);
       } catch (Exception ex) {
          Cons.println(ex);
          t.append(ex.toString());
@@ -1331,11 +1307,13 @@ public class Unpak {
          t.append("Version " + vtf.vers[0] + "." + vtf.vers[1] + "\n");
          t.append("WxH: " + vtf.width + " x " + vtf.height + "\n");
          t.append("Flags: " + vtf.GetFlagStr() + "\n");
-         t.append("Start frame " + vtf.startframe + " of " + vtf.numframes + " with " + vtf.GetFaceCount() + " face(s)\n");
+         t.append(
+               "Start frame " + vtf.startframe + " of " + vtf.numframes + " with " + vtf.GetFaceCount() + " face(s)\n");
          t.append("Reflectivity: ");
          DecimalFormat df = new DecimalFormat("0.00");
-         t.append(df.format((double)vtf.refx) + ", " + df.format((double)vtf.refy) + ", " + df.format((double)vtf.refz));
-         t.append("  Bumpscale: " + df.format((double)vtf.bumpscale) + "\n");
+         t.append(df.format((double) vtf.refx) + ", " + df.format((double) vtf.refy) + ", "
+               + df.format((double) vtf.refz));
+         t.append("  Bumpscale: " + df.format((double) vtf.bumpscale) + "\n");
          if (vtf.imageformat < Vtf.imgfmt.length) {
             t.append("Image format: " + Vtf.imgfmt[vtf.imageformat]);
          } else {
@@ -1400,8 +1378,8 @@ public class Unpak {
             t.append("\n");
          }
 
-         for(int i = 0; i < phy.gibmodel.size(); ++i) {
-            String gib = (String)phy.gibmodel.get(i);
+         for (int i = 0; i < phy.gibmodel.size(); ++i) {
+            String gib = (String) phy.gibmodel.get(i);
             t.append("    " + gib + ".mdl");
             if (this.isinpak("models/" + gib + ".mdl")) {
                t.append(" - in pak\n");
@@ -1436,13 +1414,13 @@ public class Unpak {
          t.append("Checksum : " + Integer.toHexString(model.checksum) + "\n");
          t.append(model.numtexpaths + " texture path(s)\n");
 
-         for(int i = 0; i < model.numtexpaths; ++i) {
+         for (int i = 0; i < model.numtexpaths; ++i) {
             t.append("    [materials/]" + model.texpaths[i] + "\n");
          }
 
          t.append(model.numtextures + " texture(s)\n");
 
-         for(int i = 0; i < model.numtextures; ++i) {
+         for (int i = 0; i < model.numtextures; ++i) {
             t.append("    " + model.textures[i]);
             if (this.isinpak("materials/" + model.texpaths[0] + model.textures[i] + ".vmt")) {
                t.append(" - in pak\n");
@@ -1453,7 +1431,7 @@ public class Unpak {
 
          t.append(model.numincmodels + " include model(s)\n");
 
-         for(int i = 0; i < model.numincmodels; ++i) {
+         for (int i = 0; i < model.numincmodels; ++i) {
             t.append("    " + model.incmodelfile[i]);
             if (this.isinpak(model.incmodelfile[i])) {
                t.append(" - in pak\n");
@@ -1463,10 +1441,10 @@ public class Unpak {
          }
       }
 
-      String[] modelexts = new String[]{".phy", ".sw.vtx", ".dx80.vtx", ".dx90.vtx", ".vvd"};
+      String[] modelexts = new String[] { ".phy", ".sw.vtx", ".dx80.vtx", ".dx90.vtx", ".vvd" };
       t.append("Associated files\n");
 
-      for(int i = 0; i < modelexts.length; ++i) {
+      for (int i = 0; i < modelexts.length; ++i) {
          String amfname = this.strsubext(filename, modelexts[i]);
          t.append("    " + amfname);
          if (this.isinpak(amfname)) {
@@ -1483,7 +1461,7 @@ public class Unpak {
       StringBuffer text = new StringBuffer();
       StringBuffer hext = new StringBuffer();
 
-      for(int i = 0; i < input.length(); ++i) {
+      for (int i = 0; i < input.length(); ++i) {
          if (i % 32 == 0) {
             hext.append("\n");
          }
@@ -1503,7 +1481,7 @@ public class Unpak {
          }
 
          if (c > 31) {
-            text.append((char)c);
+            text.append((char) c);
          } else {
             text.append('\u0000');
          }
@@ -1578,15 +1556,15 @@ public class Unpak {
 
          if (args.length != 1) {
             System.out.println(
-               """
-               Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)
-               Usage:
-                 pakrat [<filename.bsp>]
-                 pakrat -auto <base directory> <filename.bsp>
-                 pakrat -list <filename.bsp>
-                 pakrat -save <filename.bsp> <pakfile>
-                 pakrat -dump <filename.bsp>
-               """.formatted(Version.getFullVersion()));
+                  """
+                        Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)
+                        Usage:
+                          pakrat [<filename.bsp>]
+                          pakrat -auto <base directory> <filename.bsp>
+                          pakrat -list <filename.bsp>
+                          pakrat -save <filename.bsp> <pakfile>
+                          pakrat -dump <filename.bsp>
+                        """.formatted(Version.getFullVersion()));
             return;
          }
 

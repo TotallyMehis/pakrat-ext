@@ -17,7 +17,8 @@ public class Scanfile {
    boolean mark = false;
    Scanfile parent;
    String referent;
-   static final String[] ext = new String[]{"null", ".vmt", ".vtf", ".mdl", ".vtx", ".phy", ".vvd", ".wav", ".mp3", ".nav", ".ain", ".txt", ".cache"};
+   static final String[] ext = new String[] { "null", ".vmt", ".vtf", ".mdl", ".vtx", ".phy", ".vvd", ".wav", ".mp3",
+         ".nav", ".ain", ".txt", ".cache" };
    static final byte NUL = 0;
    static final byte VMT = 1;
    static final byte VTF = 2;
@@ -106,7 +107,7 @@ public class Scanfile {
    public static byte gettype(String name) {
       name = name.toLowerCase();
 
-      for(byte i = 1; i < ext.length; ++i) {
+      for (byte i = 1; i < ext.length; ++i) {
          if (name.endsWith(ext[i])) {
             return i;
          }
@@ -135,6 +136,7 @@ public class Scanfile {
 
    @Override
    public String toString() {
-      return this.name + " (" + this.getext(this.type) + ") : " + (this.inlist ? "L" : " ") + (this.inpak ? "P" : " ") + (this.ondisk ? "D" : " ");
+      return this.name + " (" + this.getext(this.type) + ") : " + (this.inlist ? "L" : " ") + (this.inpak ? "P" : " ")
+            + (this.ondisk ? "D" : " ");
    }
 }

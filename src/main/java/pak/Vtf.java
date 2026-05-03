@@ -30,9 +30,15 @@ public class Vtf {
    static final int IF_UVWQ8888 = 23;
    static final int IF_RGBA16161616F = 24;
    static final int IF_RGBA16161616 = 25;
-   static final String[] imgfmt = new String[]{"RBGA8888", "ABGR8888", "RGB888", "BGR888", "RGB565", "I8", "IA88", "P8", "A8", "RGB888-BS", "BGR888-BS", "ARGB8888", " BGRA8888", "DXT1", "DXT3", "DXT5", "BGRX8888", "BGR565", "BGRX5551", "BGRA4444", "DXT1_1BA", "BGRA5551", "UV88", "UVWQ8888", "RGBA16161616F", "RGBA16161616"};
-   static final int[] imgfmtsize = new int[]{4, 4, 3, 3, 2, 1, 2, 1, 1, 3, 3, 4, 4, 0, 0, 0, 4, 2, 2, 2, 0, 2, 2, 4, 8, 8, 4};
-   static final String[] flagstr = new String[]{"POINTSAMPLE", "TRILINEAR", "CLAMP-S", "CLAMP-T", "ANISOTROPIC", "HINT-DXT5", "NOCOMPRESS", "NORMAL", "NOMIP", "NOLOD", "MINMIP", "PROC", "1BALPHA", "8BALPHA", "ENVMAP", "RENDERTARGET", "DEPTH-RT", "NODEBUGOVERRIDE", "SINGLECOPY", "1OVERMIPLEVELINALPHA", "PREMULTCOL1OML", "NORMALTODUDV", "ALPHATESTMIPGEN", "NODEPTHBUFF", "NICEFILTERED"};
+   static final String[] imgfmt = new String[] { "RBGA8888", "ABGR8888", "RGB888", "BGR888", "RGB565", "I8", "IA88",
+         "P8", "A8", "RGB888-BS", "BGR888-BS", "ARGB8888", " BGRA8888", "DXT1", "DXT3", "DXT5", "BGRX8888", "BGR565",
+         "BGRX5551", "BGRA4444", "DXT1_1BA", "BGRA5551", "UV88", "UVWQ8888", "RGBA16161616F", "RGBA16161616" };
+   static final int[] imgfmtsize = new int[] { 4, 4, 3, 3, 2, 1, 2, 1, 1, 3, 3, 4, 4, 0, 0, 0, 4, 2, 2, 2, 0, 2, 2, 4,
+         8, 8, 4 };
+   static final String[] flagstr = new String[] { "POINTSAMPLE", "TRILINEAR", "CLAMP-S", "CLAMP-T", "ANISOTROPIC",
+         "HINT-DXT5", "NOCOMPRESS", "NORMAL", "NOMIP", "NOLOD", "MINMIP", "PROC", "1BALPHA", "8BALPHA", "ENVMAP",
+         "RENDERTARGET", "DEPTH-RT", "NODEBUGOVERRIDE", "SINGLECOPY", "1OVERMIPLEVELINALPHA", "PREMULTCOL1OML",
+         "NORMALTODUDV", "ALPHATESTMIPGEN", "NODEPTHBUFF", "NICEFILTERED" };
    static final int TF_ENVMAP = 16384;
    int[] vers = new int[2];
    boolean isValid = false;
@@ -54,8 +60,8 @@ public class Vtf {
    boolean isLR;
    byte[] lrbuffer;
    byte[] buffer;
-   double gamma = (double)1.0F;
-   double bright = (double)1.0F;
+   double gamma = (double) 1.0F;
+   double bright = (double) 1.0F;
 
    public Vtf() {
    }
@@ -64,8 +70,8 @@ public class Vtf {
       this.isValid = false;
       char[] type = new char[4];
 
-      for(int i = 0; i < 4; ++i) {
-         type[i] = (char)b.get();
+      for (int i = 0; i < 4; ++i) {
+         type[i] = (char) b.get();
       }
 
       String tstr = new String(type);
@@ -87,15 +93,16 @@ public class Vtf {
          this.imageformat = b.getInt();
          this.nummips = b.get();
          this.lrimageformat = b.getInt();
-         this.lrwidth = (short)b.get();
-         this.lrheight = (short)b.get();
+         this.lrwidth = (short) b.get();
+         this.lrheight = (short) b.get();
          this.isLR = this.lrimageformat != -1;
          int lrbuffsize = 0;
          if (this.isLR) {
             lrbuffsize = this.CalcSize(this.lrwidth, this.lrheight, this.lrimageformat);
          }
 
-         int buffsize = this.CalcSize(this.width, this.height, this.nummips, this.imageformat) * this.GetFaceCount() * this.numframes;
+         int buffsize = this.CalcSize(this.width, this.height, this.nummips, this.imageformat) * this.GetFaceCount()
+               * this.numframes;
          b.position(this.headersize);
          this.lrbuffer = new byte[lrbuffsize];
          if (this.isLR) {
@@ -112,7 +119,7 @@ public class Vtf {
       int bflags = this.flags;
       StringBuffer str = new StringBuffer();
 
-      for(int i = 0; i < 25; ++i) {
+      for (int i = 0; i < 25; ++i) {
          if ((bflags & 1) == 1) {
             str.append(flagstr[i]).append(" ");
          }
@@ -125,10 +132,11 @@ public class Vtf {
 
    public int[] GetIntARGB(int frame, int face, int miplevel) {
       int[] idata = new int[this.GetWidth(miplevel) * this.GetHeight(miplevel)];
-      byte[] data = this.GetRGBA(this.GetData(frame, face, miplevel), this.GetWidth(miplevel), this.GetHeight(miplevel), this.imageformat);
+      byte[] data = this.GetRGBA(this.GetData(frame, face, miplevel), this.GetWidth(miplevel), this.GetHeight(miplevel),
+            this.imageformat);
       int a = 0;
 
-      for(int i = 0; i < idata.length; ++i) {
+      for (int i = 0; i < idata.length; ++i) {
          idata[i] = (data[a + 3] & 255) << 24 | (data[a] & 255) << 16 | (data[a + 1] & 255) << 8 | data[a + 2] & 255;
          a += 4;
       }
@@ -138,10 +146,11 @@ public class Vtf {
 
    public int[] GetIntCompRGBA(int frame, int face, int miplevel, int component) {
       int[] idata = new int[this.GetWidth(miplevel) * this.GetHeight(miplevel)];
-      byte[] data = this.GetRGBA(this.GetData(frame, face, miplevel), this.GetWidth(miplevel), this.GetHeight(miplevel), this.imageformat);
+      byte[] data = this.GetRGBA(this.GetData(frame, face, miplevel), this.GetWidth(miplevel), this.GetHeight(miplevel),
+            this.imageformat);
       int a = 0;
 
-      for(int i = 0; i < idata.length; ++i) {
+      for (int i = 0; i < idata.length; ++i) {
          int alph = data[a + component] & 255;
          idata[i] = alph << 16 | alph << 8 | alph;
          a += 4;
@@ -151,7 +160,8 @@ public class Vtf {
    }
 
    public byte[] GetRGBA(int frame, int face, int miplevel) {
-      return this.GetRGBA(this.GetData(frame, face, miplevel), this.GetWidth(miplevel), this.GetHeight(miplevel), this.imageformat);
+      return this.GetRGBA(this.GetData(frame, face, miplevel), this.GetWidth(miplevel), this.GetHeight(miplevel),
+            this.imageformat);
    }
 
    public byte[] GetRGBA(byte[] data, int mwidth, int mheight, int format) {
@@ -165,7 +175,7 @@ public class Vtf {
                int end = mwidth * mheight * 3;
                int j = 0;
 
-               for(int i = 0; i < end; i += 3) {
+               for (int i = 0; i < end; i += 3) {
                   dest[j] = data[i];
                   dest[j + 1] = data[i + 1];
                   dest[j + 2] = data[i + 2];
@@ -178,7 +188,7 @@ public class Vtf {
                int end = mwidth * mheight * 3;
                int j = 0;
 
-               for(int i = 0; i < end; i += 3) {
+               for (int i = 0; i < end; i += 3) {
                   dest[j] = data[i + 2];
                   dest[j + 1] = data[i + 1];
                   dest[j + 2] = data[i + 0];
@@ -191,7 +201,7 @@ public class Vtf {
                if (format == 12) {
                   int end = mwidth * mheight * 4;
 
-                  for(int i = 0; i < end; i += 4) {
+                  for (int i = 0; i < end; i += 4) {
                      dest[i + 0] = data[i + 2];
                      dest[i + 1] = data[i + 1];
                      dest[i + 2] = data[i + 0];
@@ -202,7 +212,7 @@ public class Vtf {
                } else if (format == 16) {
                   int end = mwidth * mheight * 4;
 
-                  for(int i = 0; i < end; i += 4) {
+                  for (int i = 0; i < end; i += 4) {
                      dest[i + 0] = data[i + 2];
                      dest[i + 1] = data[i + 1];
                      dest[i + 2] = data[i + 0];
@@ -213,7 +223,7 @@ public class Vtf {
                } else if (format == 11) {
                   int end = mwidth * mheight * 4;
 
-                  for(int i = 0; i < end; i += 4) {
+                  for (int i = 0; i < end; i += 4) {
                      dest[i + 0] = data[i + 3];
                      dest[i + 1] = data[i + 2];
                      dest[i + 2] = data[i + 1];
@@ -225,7 +235,7 @@ public class Vtf {
                   int end = mwidth * mheight;
                   int j = 0;
 
-                  for(int i = 0; i < end; ++i) {
+                  for (int i = 0; i < end; ++i) {
                      dest[j + 0] = -1;
                      dest[j + 1] = -1;
                      dest[j + 2] = -1;
@@ -238,7 +248,7 @@ public class Vtf {
                   int end = mwidth * mheight;
                   int j = 0;
 
-                  for(int i = 0; i < end; ++i) {
+                  for (int i = 0; i < end; ++i) {
                      dest[j + 0] = data[i];
                      dest[j + 1] = data[i];
                      dest[j + 2] = data[i];
@@ -251,7 +261,7 @@ public class Vtf {
                   int end = mwidth * mheight * 2;
                   int j = 0;
 
-                  for(int i = 0; i < end; i += 2) {
+                  for (int i = 0; i < end; i += 2) {
                      dest[j + 0] = data[i];
                      dest[j + 1] = data[i];
                      dest[j + 2] = data[i];
@@ -264,7 +274,7 @@ public class Vtf {
                   int end = mwidth * mheight * 3;
                   int j = 0;
 
-                  for(int i = 0; i < end; i += 3) {
+                  for (int i = 0; i < end; i += 3) {
                      if (data[i] == 0 && data[i + 1] == 0 && data[i + 2] == 255) {
                         dest[j] = 0;
                         dest[j + 1] = 0;
@@ -285,7 +295,7 @@ public class Vtf {
                   int end = mwidth * mheight * 3;
                   int j = 0;
 
-                  for(int i = 0; i < end; i += 3) {
+                  for (int i = 0; i < end; i += 3) {
                      if (data[i] == 255 && data[i + 1] == 0 && data[i + 2] == 0) {
                         dest[j] = 0;
                         dest[j + 1] = 0;
@@ -306,14 +316,14 @@ public class Vtf {
                   int end = mwidth * mheight * 2;
                   int j = 0;
 
-                  for(int i = 0; i < end; i += 2) {
+                  for (int i = 0; i < end; i += 2) {
                      int src = (255 & data[i + 1]) * 256 + (255 & data[i]);
                      int red = src & 31;
                      int green = src >> 5 & 63;
                      int blue = src >>> 11 & 31;
-                     dest[j + 0] = (byte)(red << 3 | red >> 2);
-                     dest[j + 1] = (byte)(green << 2 | green >> 4);
-                     dest[j + 2] = (byte)(blue << 3 | blue >> 2);
+                     dest[j + 0] = (byte) (red << 3 | red >> 2);
+                     dest[j + 1] = (byte) (green << 2 | green >> 4);
+                     dest[j + 2] = (byte) (blue << 3 | blue >> 2);
                      dest[j + 3] = -1;
                      j += 4;
                   }
@@ -323,14 +333,14 @@ public class Vtf {
                   int end = mwidth * mheight * 2;
                   int j = 0;
 
-                  for(int i = 0; i < end; i += 2) {
+                  for (int i = 0; i < end; i += 2) {
                      int src = (255 & data[i + 1]) * 256 + (255 & data[i]);
                      int blue = src & 31;
                      int green = src >> 5 & 63;
                      int red = src >>> 11 & 31;
-                     dest[j + 0] = (byte)(red << 3 | red >> 2);
-                     dest[j + 1] = (byte)(green << 2 | green >> 4);
-                     dest[j + 2] = (byte)(blue << 3 | blue >> 2);
+                     dest[j + 0] = (byte) (red << 3 | red >> 2);
+                     dest[j + 1] = (byte) (green << 2 | green >> 4);
+                     dest[j + 2] = (byte) (blue << 3 | blue >> 2);
                      dest[j + 3] = -1;
                      j += 4;
                   }
@@ -340,14 +350,14 @@ public class Vtf {
                   int end = mwidth * mheight * 2;
                   int j = 0;
 
-                  for(int i = 0; i < end; i += 2) {
+                  for (int i = 0; i < end; i += 2) {
                      int src = (255 & data[i + 1]) * 256 + (255 & data[i]);
                      int blue = src & 31;
                      int green = src >> 5 & 31;
                      int red = src >>> 10 & 31;
-                     dest[j + 0] = (byte)(red << 3 | red >> 2);
-                     dest[j + 1] = (byte)(green << 3 | green >> 2);
-                     dest[j + 2] = (byte)(blue << 3 | blue >> 2);
+                     dest[j + 0] = (byte) (red << 3 | red >> 2);
+                     dest[j + 1] = (byte) (green << 3 | green >> 2);
+                     dest[j + 2] = (byte) (blue << 3 | blue >> 2);
                      dest[j + 3] = -1;
                      j += 4;
                   }
@@ -357,15 +367,15 @@ public class Vtf {
                   int end = mwidth * mheight * 2;
                   int j = 0;
 
-                  for(int i = 0; i < end; i += 2) {
+                  for (int i = 0; i < end; i += 2) {
                      int src = (255 & data[i + 1]) * 256 + (255 & data[i]);
                      int blue = src & 31;
                      int green = src >> 5 & 31;
                      int red = src >>> 10 & 31;
-                     int alpha = (int)((long)src & 32768L);
-                     dest[j + 0] = (byte)(red << 3 | red >> 2);
-                     dest[j + 1] = (byte)(green << 3 | green >> 2);
-                     dest[j + 2] = (byte)(blue << 3 | blue >> 2);
+                     int alpha = (int) ((long) src & 32768L);
+                     dest[j + 0] = (byte) (red << 3 | red >> 2);
+                     dest[j + 1] = (byte) (green << 3 | green >> 2);
+                     dest[j + 2] = (byte) (blue << 3 | blue >> 2);
                      if (alpha == 0) {
                         dest[j + 3] = 0;
                      } else {
@@ -380,16 +390,16 @@ public class Vtf {
                   int end = mwidth * mheight * 2;
                   int j = 0;
 
-                  for(int i = 0; i < end; i += 2) {
+                  for (int i = 0; i < end; i += 2) {
                      int src = (255 & data[i + 1]) * 256 + (255 & data[i]);
                      int blue = src & 15;
                      int green = src >> 4 & 15;
                      int red = src >> 8 & 15;
                      int alpha = src >>> 12 & 15;
-                     dest[j + 0] = (byte)(red << 4 | red >> 4);
-                     dest[j + 1] = (byte)(green << 4 | green >> 4);
-                     dest[j + 2] = (byte)(blue << 4 | blue >> 4);
-                     dest[j + 3] = (byte)(alpha << 4 | alpha >> 4);
+                     dest[j + 0] = (byte) (red << 4 | red >> 4);
+                     dest[j + 1] = (byte) (green << 4 | green >> 4);
+                     dest[j + 2] = (byte) (blue << 4 | blue >> 4);
+                     dest[j + 3] = (byte) (alpha << 4 | alpha >> 4);
                      j += 4;
                   }
 
@@ -398,7 +408,7 @@ public class Vtf {
                   int end = mwidth * mheight * 2;
                   int j = 0;
 
-                  for(int i = 0; i < end; i += 2) {
+                  for (int i = 0; i < end; i += 2) {
                      dest[j + 0] = data[i];
                      dest[j + 1] = data[i + 1];
                      dest[j + 2] = 0;
@@ -411,15 +421,15 @@ public class Vtf {
                   int end = mwidth * mheight * 8;
                   int j = 0;
 
-                  for(int i = 0; i < end; i += 8) {
+                  for (int i = 0; i < end; i += 8) {
                      int red = (255 & data[i + 1]) * 256 + (255 & data[i]);
                      int green = (255 & data[i + 3]) * 256 + (255 & data[i + 2]);
                      int blue = (255 & data[i + 5]) * 256 + (255 & data[i + 4]);
                      int alpha = (255 & data[i + 7]) * 256 + (255 & data[i + 6]);
-                     dest[j + 0] = (byte)(red >>> 8);
-                     dest[j + 1] = (byte)(green >>> 8);
-                     dest[j + 2] = (byte)(blue >>> 8);
-                     dest[j + 3] = (byte)(alpha >>> 8);
+                     dest[j + 0] = (byte) (red >>> 8);
+                     dest[j + 1] = (byte) (green >>> 8);
+                     dest[j + 2] = (byte) (blue >>> 8);
+                     dest[j + 3] = (byte) (alpha >>> 8);
                      j += 4;
                   }
 
@@ -431,7 +441,7 @@ public class Vtf {
                   int end = mwidth * mheight * 8;
                   int j = 0;
 
-                  for(int i = 0; i < end; i += 8) {
+                  for (int i = 0; i < end; i += 8) {
                      int red = (255 & data[i + 1]) * 256 + (255 & data[i]);
                      int green = (255 & data[i + 3]) * 256 + (255 & data[i + 2]);
                      int blue = (255 & data[i + 5]) * 256 + (255 & data[i + 4]);
@@ -439,10 +449,10 @@ public class Vtf {
                      red = this.HDRScale(red);
                      green = this.HDRScale(green);
                      blue = this.HDRScale(blue);
-                     dest[j + 0] = (byte)(red >>> 8);
-                     dest[j + 1] = (byte)(green >>> 8);
-                     dest[j + 2] = (byte)(blue >>> 8);
-                     dest[j + 3] = (byte)(alpha >>> 8);
+                     dest[j + 0] = (byte) (red >>> 8);
+                     dest[j + 1] = (byte) (green >>> 8);
+                     dest[j + 2] = (byte) (blue >>> 8);
+                     dest[j + 3] = (byte) (alpha >>> 8);
                      j += 4;
                   }
 
@@ -451,7 +461,7 @@ public class Vtf {
             } else {
                int end = mwidth * mheight * 4;
 
-               for(int i = 0; i < end; ++i) {
+               for (int i = 0; i < end; ++i) {
                   dest[i] = data[i];
                }
 
@@ -464,7 +474,7 @@ public class Vtf {
    }
 
    public int HDRScale(int chan) {
-      int out = (int)(Math.pow((double)((float)chan / 65535.0F), this.gamma) * (double)65535.0F * this.bright);
+      int out = (int) (Math.pow((double) ((float) chan / 65535.0F), this.gamma) * (double) 65535.0F * this.bright);
       if (out > 65535) {
          out = 65535;
       }
@@ -486,8 +496,8 @@ public class Vtf {
 
       int index = 0;
 
-      for(int y = 0; y < mheight; y += 4) {
-         for(int x = 0; x < mwidth; x += 4) {
+      for (int y = 0; y < mheight; y += 4) {
+         for (int x = 0; x < mwidth; x += 4) {
             colours[0] = ColRGBA8888.from565(data[index], data[index + 1]);
             colours[1] = ColRGBA8888.from565(data[index + 2], data[index + 3]);
             int bitmask = toInt(data, index + 4);
@@ -529,8 +539,8 @@ public class Vtf {
 
             int k = 0;
 
-            for(int j = 0; j < 4; ++j) {
-               for(int var19 = 0; var19 < 4; ++var19) {
+            for (int j = 0; j < 4; ++j) {
+               for (int var19 = 0; var19 < 4; ++var19) {
                   int select = (bitmask & 3 << k * 2) >>> k * 2;
                   ColRGBA8888 col = colours[select];
                   if (x + var19 < mwidth && y + j < mheight) {
@@ -560,8 +570,8 @@ public class Vtf {
 
       int index = 0;
 
-      for(int y = 0; y < mheight; y += 4) {
-         for(int x = 0; x < mwidth; x += 4) {
+      for (int y = 0; y < mheight; y += 4) {
+         for (int x = 0; x < mwidth; x += 4) {
             alphas[0] = data[index] & 255;
             alphas[1] = data[index + 1] & 255;
             int alphamask0 = toInt3(data, index + 2);
@@ -590,8 +600,8 @@ public class Vtf {
 
             int k = 0;
 
-            for(int j = 0; j < 4; ++j) {
-               for(int var23 = 0; var23 < 4; ++var23) {
+            for (int j = 0; j < 4; ++j) {
+               for (int var23 = 0; var23 < 4; ++var23) {
                   int select = (bitmask & 3 << k * 2) >>> k * 2;
                   ColRGBA8888 col = colours[select];
                   if (x + var23 < mwidth && y + j < mheight) {
@@ -623,11 +633,11 @@ public class Vtf {
 
             int bits = alphamask0;
 
-            for(int var26 = 0; var26 < 2; ++var26) {
-               for(int var24 = 0; var24 < 4; ++var24) {
+            for (int var26 = 0; var26 < 2; ++var26) {
+               for (int var24 = 0; var24 < 4; ++var24) {
                   if (x + var24 < mwidth && y + var26 < mheight) {
                      int offset = (y + var26) * bps + (x + var24) * bpp + 3;
-                     dest[offset] = (byte)alphas[bits & 7];
+                     dest[offset] = (byte) alphas[bits & 7];
                   }
 
                   bits >>= 3;
@@ -636,11 +646,11 @@ public class Vtf {
 
             bits = alphamask1;
 
-            for(int var27 = 2; var27 < 4; ++var27) {
-               for(int var25 = 0; var25 < 4; ++var25) {
+            for (int var27 = 2; var27 < 4; ++var27) {
+               for (int var25 = 0; var25 < 4; ++var25) {
                   if (x + var25 < mwidth && y + var27 < mheight) {
                      int offset = (y + var27) * bps + (x + var25) * bpp + 3;
-                     dest[offset] = (byte)alphas[bits & 7];
+                     dest[offset] = (byte) alphas[bits & 7];
                   }
 
                   bits >>= 3;
@@ -678,7 +688,7 @@ public class Vtf {
       int doffset = this.GetOffset(frame, face, miplevel);
       byte[] databuff = new byte[dlength];
 
-      for(int i = 0; i < dlength; ++i) {
+      for (int i = 0; i < dlength; ++i) {
          databuff[i] = this.buffer[i + doffset];
       }
 
@@ -702,7 +712,7 @@ public class Vtf {
          mip = mmipcount - 1;
       }
 
-      for(int i = mmipcount - 1; i > mip; --i) {
+      for (int i = mmipcount - 1; i > mip; --i) {
          offset += mframecount * mfacecount * this.CalcSize(this.GetWidth(i), this.GetHeight(i), this.imageformat);
       }
 
@@ -717,7 +727,7 @@ public class Vtf {
       } else {
          int mwidth = this.width;
 
-         for(int i = 0; i < miplev; ++i) {
+         for (int i = 0; i < miplev; ++i) {
             mwidth >>= 1;
             if (mwidth < 1) {
                mwidth = 1;
@@ -734,7 +744,7 @@ public class Vtf {
       } else {
          int mheight = this.height;
 
-         for(int i = 0; i < miplev; ++i) {
+         for (int i = 0; i < miplev; ++i) {
             mheight >>= 1;
             if (mheight < 1) {
                mheight = 1;
@@ -760,7 +770,7 @@ public class Vtf {
    public int CalcSize(int mwidth, int mheight, int mmipmaps, int mformat) {
       int size = 0;
       if (mheight != 0 && mwidth != 0) {
-         for(int i = 0; i < mmipmaps; ++i) {
+         for (int i = 0; i < mmipmaps; ++i) {
             size += this.CalcSize(mwidth, mheight, mformat);
             mwidth >>= 1;
             mheight >>= 1;

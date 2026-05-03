@@ -15,7 +15,7 @@ public class ZipDirModel extends AbstractTableModel {
    int offset;
    ArrayList<Zipf> zfl;
    public Unpak pakrat;
-   static String[] header = new String[]{"In", "Filename", "Path", "Size", "Type"};
+   static String[] header = new String[] { "In", "Filename", "Path", "Size", "Type" };
    static Object[] cols;
 
    public ZipDirModel(ArrayList<Zipf> zipfilelist, Unpak rat) {
@@ -28,7 +28,7 @@ public class ZipDirModel extends AbstractTableModel {
    }
 
    public Zipf getzipfile(int row) {
-      return this.zfl != null ? (Zipf)this.zfl.get(row) : null;
+      return this.zfl != null ? (Zipf) this.zfl.get(row) : null;
    }
 
    @Override
@@ -68,10 +68,10 @@ public class ZipDirModel extends AbstractTableModel {
    public void setValueAt(Object value, int row, int col) {
       switch (col) {
          case 1:
-            this.getzipfile(row).setfile((String)value);
+            this.getzipfile(row).setfile((String) value);
             break;
          case 2:
-            this.getzipfile(row).setpath((String)value);
+            this.getzipfile(row).setpath((String) value);
       }
 
       this.fireTableDataChanged();
@@ -109,7 +109,7 @@ public class ZipDirModel extends AbstractTableModel {
    }
 
    public Zipf getbyname(String fname) {
-      for(int i = 0; i < this.getRowCount(); ++i) {
+      for (int i = 0; i < this.getRowCount(); ++i) {
          if (fname.equalsIgnoreCase(this.getzipfile(i).getFullname())) {
             return this.getzipfile(i);
          }
@@ -119,7 +119,7 @@ public class ZipDirModel extends AbstractTableModel {
    }
 
    public Zipf getbyfilename(String fname) {
-      for(int i = 0; i < this.getRowCount(); ++i) {
+      for (int i = 0; i < this.getRowCount(); ++i) {
          if (fname.equalsIgnoreCase(this.getzipfile(i).getFilename())) {
             return this.getzipfile(i);
          }
@@ -135,7 +135,7 @@ public class ZipDirModel extends AbstractTableModel {
    public DefaultMutableTreeNode getTree(String file) {
       DefaultMutableTreeNode root = new DefaultMutableTreeNode(file);
 
-      for(Zipf z : this.zfl) {
+      for (Zipf z : this.zfl) {
          DefaultMutableTreeNode znode = new DefaultMutableTreeNode(z);
          if (z.getPathname().equals("")) {
             root.add(znode);
@@ -143,7 +143,7 @@ public class ZipDirModel extends AbstractTableModel {
             String[] dirs = z.getPathname().split("/");
             DefaultMutableTreeNode top = root;
 
-            for(String s : dirs) {
+            for (String s : dirs) {
                DefaultMutableTreeNode next = this.findMatchingChildNode(top, s);
                if (next == null) {
                   next = new DefaultMutableTreeNode(s);
@@ -163,8 +163,8 @@ public class ZipDirModel extends AbstractTableModel {
    public DefaultMutableTreeNode findMatchingChildNode(DefaultMutableTreeNode top, String s) {
       Enumeration<TreeNode> children = top.children();
 
-      while(children.hasMoreElements()) {
-         DefaultMutableTreeNode child = (DefaultMutableTreeNode)children.nextElement();
+      while (children.hasMoreElements()) {
+         DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
          if (child.getUserObject().getClass() == String.class && s.equalsIgnoreCase(child.toString())) {
             return child;
          }
@@ -174,11 +174,11 @@ public class ZipDirModel extends AbstractTableModel {
    }
 
    public void setTreeSelection(JTree tree, JTable table) {
-      TableSorter sorter = (TableSorter)table.getModel();
+      TableSorter sorter = (TableSorter) table.getModel();
       tree.clearSelection();
       int[] rows = sorter.modelIndex(table.getSelectedRows());
       if (rows.length != 0) {
-         for(int i = 0; i < rows.length; ++i) {
+         for (int i = 0; i < rows.length; ++i) {
             Zipf z = this.getzipfile(rows[i]);
             this.selectTreeNode(tree, z);
          }
@@ -187,9 +187,9 @@ public class ZipDirModel extends AbstractTableModel {
    }
 
    public void selectTreeNode(JTree tree, Zipf target) {
-      DefaultMutableTreeNode currentnode = (DefaultMutableTreeNode)tree.getModel().getRoot();
+      DefaultMutableTreeNode currentnode = (DefaultMutableTreeNode) tree.getModel().getRoot();
 
-      while(currentnode.getUserObject() != target) {
+      while (currentnode.getUserObject() != target) {
          currentnode = currentnode.getNextNode();
          if (currentnode == null) {
             Cons.println("SelectTreeNode: Couldn't find a match for " + target);
@@ -203,16 +203,16 @@ public class ZipDirModel extends AbstractTableModel {
    }
 
    public void setTableSelection(JTree tree, JTable table) {
-      TableSorter sorter = (TableSorter)table.getModel();
+      TableSorter sorter = (TableSorter) table.getModel();
       table.clearSelection();
       TreePath[] paths = tree.getSelectionPaths();
       if (paths != null) {
-         for(int i = 0; i < paths.length; ++i) {
-            Object sel = ((DefaultMutableTreeNode)paths[i].getLastPathComponent()).getUserObject();
+         for (int i = 0; i < paths.length; ++i) {
+            Object sel = ((DefaultMutableTreeNode) paths[i].getLastPathComponent()).getUserObject();
             if (sel.getClass() == Zipf.class) {
-               int row = this.getrow((Zipf)sel);
+               int row = this.getrow((Zipf) sel);
                if (row == -1) {
-                  Cons.println("SetTableSelection: Couldn't find a match for " + (Zipf)sel);
+                  Cons.println("SetTableSelection: Couldn't find a match for " + (Zipf) sel);
                } else {
                   row = sorter.viewIndex(row);
                   table.addRowSelectionInterval(row, row);
@@ -226,20 +226,20 @@ public class ZipDirModel extends AbstractTableModel {
    }
 
    public void printTree(DefaultMutableTreeNode root) {
-      for(int i = 0; i < root.getLevel(); ++i) {
+      for (int i = 0; i < root.getLevel(); ++i) {
          System.out.print(">");
       }
 
       System.out.println(root);
       Enumeration<TreeNode> e = root.children();
 
-      while(e.hasMoreElements()) {
-         this.printTree((DefaultMutableTreeNode)e.nextElement());
+      while (e.hasMoreElements()) {
+         this.printTree((DefaultMutableTreeNode) e.nextElement());
       }
 
    }
 
    static {
-      cols = new Object[]{Boolean.TRUE, "", "", "", ""};
+      cols = new Object[] { Boolean.TRUE, "", "", "", "" };
    }
 }

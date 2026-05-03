@@ -25,8 +25,8 @@ class FileTransferHandler extends TransferHandler {
       } else {
          try {
             @SuppressWarnings("unchecked")
-            List<File> files = (List<File>)t.getTransferData(this.fileFlavor);
-            File[] filearray = (File[])files.toArray(new File[0]);
+            List<File> files = (List<File>) t.getTransferData(this.fileFlavor);
+            File[] filearray = (File[]) files.toArray(new File[0]);
             this.pakrat.addfiletopak(filearray, this.pakrat.gamedir, false);
             return true;
          } catch (UnsupportedFlavorException var5) {
@@ -50,7 +50,7 @@ class FileTransferHandler extends TransferHandler {
    }
 
    private boolean hasFileFlavor(DataFlavor[] flavors) {
-      for(int i = 0; i < flavors.length; ++i) {
+      for (int i = 0; i < flavors.length; ++i) {
          if (this.fileFlavor.equals(flavors[i])) {
             return true;
          }

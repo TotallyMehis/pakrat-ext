@@ -27,7 +27,6 @@ public enum FileType {
         return this.name;
     }
 
-
     public static FileType from(String fileName) {
         String fname = fileName.toLowerCase();
 

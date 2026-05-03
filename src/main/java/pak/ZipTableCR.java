@@ -10,10 +10,11 @@ class ZipTableCR extends DefaultTableCellRenderer {
    }
 
    @Override
-   public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+   public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+         int row, int col) {
       Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
       if (value instanceof String && col == 1 && !isSelected) {
-         if ((Boolean)table.getValueAt(row, 0)) {
+         if ((Boolean) table.getValueAt(row, 0)) {
             cell.setForeground(table.getForeground());
          } else {
             cell.setForeground(Color.blue);

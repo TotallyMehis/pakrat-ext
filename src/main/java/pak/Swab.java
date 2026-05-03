@@ -6,6 +6,6 @@ public abstract class Swab {
    }
 
    public static final short S(int v) {
-      return (short)(('\uff00' & v) >>> 8 | v << 8 & '\uff00');
+      return (short) (('\uff00' & v) >>> 8 | v << 8 & '\uff00');
    }
 }

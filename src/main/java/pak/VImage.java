@@ -3,8 +3,6 @@ package pak;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -14,8 +12,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 class VImage extends JPanel {
    private final Vtf vtf;
@@ -25,13 +21,13 @@ class VImage extends JPanel {
    private int mip = 0;
    private int zoom = 2;
    private int chan = 0;
-   private double gamma = (double)1.5F;
-   private double brightness = (double)5.0F;
+   private double gamma = (double) 1.5F;
+   private double brightness = (double) 5.0F;
 
    private static final List<Float> zooms = List.of(0.25F, 0.5F, 1.0F, 2.0F, 4.0F, 8.0F);
-   private static final String[] zoomstr = new String[]{"25%", "50%", "100%", "200%", "400%", "800%"};
+   private static final String[] zoomstr = new String[] { "25%", "50%", "100%", "200%", "400%", "800%" };
 
-   private static final String[] chanstr = new String[]{"RGB", "RGBA", "Red", "Green", "Blue", "Alpha"};
+   private static final String[] chanstr = new String[] { "RGB", "RGBA", "Red", "Green", "Blue", "Alpha" };
 
    public VImage(Vtf vtf) {
       this.vtf = vtf;
@@ -43,7 +39,7 @@ class VImage extends JPanel {
       image.setRGB(0, 0, vwidth, vheight, data, 0, vwidth);
       this.jImage = new JImage(image, vwidth, vheight);
       JPanel jp = new JPanel();
-      ((FlowLayout)jp.getLayout()).setAlignment(0);
+      ((FlowLayout) jp.getLayout()).setAlignment(0);
       jp.add(this.jImage);
       jp.setBorder(BorderFactory.createEtchedBorder());
       this.setLayout(new BorderLayout());
@@ -55,8 +51,8 @@ class VImage extends JPanel {
       final SpinnerNumberModel facemod = new SpinnerNumberModel(0, 0, this.vtf.GetFaceCount() - 1, 1);
       final SpinnerNumberModel framemod = new SpinnerNumberModel(0, 0, this.vtf.numframes - 1, 1);
       final SpinnerNumberModel mipmod = new SpinnerNumberModel(0, 0, this.vtf.nummips - 1, 1);
-      final SpinnerNumberModel gammod = new SpinnerNumberModel(this.gamma, 0.1, (double)3.0F, 0.1);
-      final SpinnerNumberModel brimod = new SpinnerNumberModel(this.brightness, 0.1, (double)40.0F, 0.1);
+      final SpinnerNumberModel gammod = new SpinnerNumberModel(this.gamma, 0.1, (double) 3.0F, 0.1);
+      final SpinnerNumberModel brimod = new SpinnerNumberModel(this.brightness, 0.1, (double) 40.0F, 0.1);
       JSpinner facespin = new JSpinner(facemod);
       JSpinner framespin = new JSpinner(framemod);
       JSpinner mipspin = new JSpinner(mipmod);
@@ -84,41 +80,34 @@ class VImage extends JPanel {
       this.updateZoom();
       zoomcombo.setSelectedIndex(this.zoom);
       final JComboBox<String> chancombo = new JComboBox<>(chanstr);
-      facemod.addChangeListener(ce -> {
-            VImage.this.face = facemod.getNumber().intValue();
-            VImage.this.setImage();
-         }
-      );
-      framemod.addChangeListener(ce -> {
-            VImage.this.frame = framemod.getNumber().intValue();
-            VImage.this.setImage();
-         }
-      );
-      mipmod.addChangeListener(ce -> {
-            VImage.this.mip = mipmod.getNumber().intValue();
-            VImage.this.setImage();
-         }
-      );
-      gammod.addChangeListener(ce -> {
-            VImage.this.gamma = gammod.getNumber().doubleValue();
-            VImage.this.setImage();
-         }
-      );
-      brimod.addChangeListener(ce -> {
-            VImage.this.brightness = brimod.getNumber().doubleValue();
-            VImage.this.setImage();
-         }
-      );
-      zoomcombo.addActionListener(ae -> {
-            VImage.this.zoom = zoomcombo.getSelectedIndex();
-            VImage.this.updateZoom();
-         }
-      );
-      chancombo.addActionListener(ae -> {
-            VImage.this.chan = chancombo.getSelectedIndex();
-            VImage.this.setImage();
-         }
-      );
+      facemod.addChangeListener(_ -> {
+         VImage.this.face = facemod.getNumber().intValue();
+         VImage.this.setImage();
+      });
+      framemod.addChangeListener(_ -> {
+         VImage.this.frame = framemod.getNumber().intValue();
+         VImage.this.setImage();
+      });
+      mipmod.addChangeListener(_ -> {
+         VImage.this.mip = mipmod.getNumber().intValue();
+         VImage.this.setImage();
+      });
+      gammod.addChangeListener(_ -> {
+         VImage.this.gamma = gammod.getNumber().doubleValue();
+         VImage.this.setImage();
+      });
+      brimod.addChangeListener(_ -> {
+         VImage.this.brightness = brimod.getNumber().doubleValue();
+         VImage.this.setImage();
+      });
+      zoomcombo.addActionListener(_ -> {
+         VImage.this.zoom = zoomcombo.getSelectedIndex();
+         VImage.this.updateZoom();
+      });
+      chancombo.addActionListener(_ -> {
+         VImage.this.chan = chancombo.getSelectedIndex();
+         VImage.this.setImage();
+      });
       cpanel.setLayout(new GridLayout(0, 2));
       cpanel.add(new JLabel("Face "));
       cpanel.add(facespin);
@@ -143,8 +132,8 @@ class VImage extends JPanel {
       } else if (height >= 1024) {
          return 0;
       } else {
-         for(int i = 0; i < zooms.size(); ++i) {
-            if ((float)height * zooms.get(i) > 192.0F) {
+         for (int i = 0; i < zooms.size(); ++i) {
+            if ((float) height * zooms.get(i) > 192.0F) {
                return i;
             }
          }
@@ -180,11 +169,10 @@ class VImage extends JPanel {
 
    private void updateZoom() {
       float s = 1.0F;
-      
+
       if (this.zoom >= 0 && this.zoom < zooms.size()) {
          s = zooms.get(this.zoom);
       }
-      
 
       this.jImage.setScale(s);
       this.revalidate();

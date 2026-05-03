@@ -12,7 +12,7 @@ public class Cons {
 
    public Cons() {
    }
-   
+
    static void open(boolean iswindowed) {
       window = iswindowed;
       if (window) {

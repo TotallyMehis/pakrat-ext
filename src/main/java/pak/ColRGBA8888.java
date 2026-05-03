@@ -21,6 +21,7 @@ record ColRGBA8888(int r, int g, int b, int a, int c565) {
 
    @Override
    public String toString() {
-      return "[" + Integer.toHexString(this.r) + " " + Integer.toHexString(this.g) + " " + Integer.toHexString(this.b) + "]";
+      return "[" + Integer.toHexString(this.r) + " " + Integer.toHexString(this.g) + " " + Integer.toHexString(this.b)
+            + "]";
    }
 }

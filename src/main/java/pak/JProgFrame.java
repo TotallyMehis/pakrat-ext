@@ -13,7 +13,7 @@ public class JProgFrame extends JFrame {
    public JProgFrame(Component frame, String title) {
       super(title);
       if (frame instanceof Frame) {
-         this.setIconImage(((Frame)frame).getIconImage());
+         this.setIconImage(((Frame) frame).getIconImage());
       }
 
       this.frame = frame;
@@ -26,7 +26,7 @@ public class JProgFrame extends JFrame {
       this.setDefaultCloseOperation(0);
       this.pack();
       if (frame == null) {
-         this.setLocationRelativeTo((Component)null);
+         this.setLocationRelativeTo((Component) null);
       } else {
          int x = frame.getX() + (frame.getWidth() - this.getWidth()) / 2;
          int y = frame.getY() + (frame.getHeight() - this.getHeight()) / 2;
@@ -69,6 +69,6 @@ public class JProgFrame extends JFrame {
    }
 
    public void setValue(long val) {
-      this.setValue((int)val);
+      this.setValue((int) val);
    }
 }
