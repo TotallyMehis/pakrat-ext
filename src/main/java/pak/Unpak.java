@@ -1366,7 +1366,7 @@ public class Unpak {
       panel.setLayout(new BorderLayout());
       panel.add(textarea, "North");
       if (vtf.isValid) {
-         Vimage vim = new Vimage(vtf);
+         VImage vim = new VImage(vtf);
          panel.add(vim, "Center");
       }
 

@@ -9,34 +9,34 @@ import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import javax.swing.JComponent;
 
-class Jimage extends JComponent {
+class JImage extends JComponent {
    private BufferedImage image;
-   private BufferedImage viewimage;
+   private BufferedImage viewImage;
    private int owidth;
    private int oheight;
    private int width;
    private int height;
 
-   public Jimage(BufferedImage jimage, int jwidth, int jheight) {
-      this.image = jimage;
-      this.width = jwidth;
-      this.owidth = jwidth;
-      this.height = jheight;
-      this.oheight = jheight;
+   public JImage(BufferedImage image, int width, int height) {
+      this.image = image;
+      this.width = width;
+      this.owidth = width;
+      this.height = height;
+      this.oheight = height;
       this.setSize(new Dimension(this.width, this.height));
-      this.viewimage = this.image;
+      this.viewImage = this.image;
       this.repaint();
    }
 
-   public void update(BufferedImage jimage, int jwidth, int jheight) {
-      this.image = jimage;
-      this.owidth = jwidth;
-      this.oheight = jheight;
+   public void update(BufferedImage image, int width, int height) {
+      this.image = image;
+      this.owidth = width;
+      this.oheight = height;
    }
 
-   public void settrans(float scale) {
+   public void setScale(float scale) {
       BufferedImageOp op = new AffineTransformOp(AffineTransform.getScaleInstance((double)scale, (double)scale), (RenderingHints)null);
-      this.viewimage = op.filter(this.image, (BufferedImage)null);
+      this.viewImage = op.filter(this.image, (BufferedImage)null);
       this.width = (int)((float)this.owidth * scale);
       this.height = (int)((float)this.oheight * scale);
       this.revalidate();
@@ -45,7 +45,7 @@ class Jimage extends JComponent {
 
    @Override
    public void paint(Graphics g) {
-      g.drawImage(this.viewimage, 0, 0, this);
+      g.drawImage(this.viewImage, 0, 0, this);
    }
 
    @Override
