@@ -14,7 +14,7 @@ class BspFileFilter extends FileFilter {
             return true;
          }
 
-         String extension = this.getExtension(f);
+         String extension = Util.getExtension(f);
          if (extension != null && extension.equals("bsp")) {
             return true;
          }
@@ -26,17 +26,5 @@ class BspFileFilter extends FileFilter {
    @Override
    public String getDescription() {
       return "HL2 map file (*.bsp)";
-   }
-
-   public String getExtension(File f) {
-      if (f != null) {
-         String filename = f.getName();
-         int i = filename.lastIndexOf(46);
-         if (i > 0 && i < filename.length() - 1) {
-            return filename.substring(i + 1).toLowerCase();
-         }
-      }
-
-      return null;
    }
 }

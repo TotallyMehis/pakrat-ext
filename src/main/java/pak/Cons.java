@@ -6,17 +6,15 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 public class Cons {
-   static JFrame console;
-   static JTextArea text;
-   static boolean window;
-   static String newline = "\r\n";
+   private static JFrame console;
+   private static JTextArea text;
+   private static boolean window;
 
    public Cons() {
    }
-
+   
    static void open(boolean iswindowed) {
       window = iswindowed;
-      newline = System.getProperty("line.separator");
       if (window) {
          console = new JFrame();
          text = new JTextArea();
@@ -77,11 +75,11 @@ public class Cons {
    }
 
    static void println(String str) {
-      print(str + newline);
+      print(str + System.lineSeparator());
    }
 
    static void println() {
-      print(newline);
+      print(System.lineSeparator());
    }
 
    static void print(Object obj) {
@@ -91,5 +89,9 @@ public class Cons {
    static void println(Object obj) {
       print(obj);
       println();
+   }
+
+   static JFrame getConsole() {
+      return console;
    }
 }

@@ -6,21 +6,13 @@ public class Zipf {
    int size;
    int relofs;
    int datofs;
-   String fullname;
-   String filename;
-   String pathname;
-   int type;
+   private String fullname;
+   private String filename;
+   private String pathname;
+   private FileType type;
    boolean inpak;
    byte[] data;
    long CRC;
-   static final int OTHER = 0;
-   static final int MATERIAL = 1;
-   static final int TEXTURE = 2;
-   static final int MODEL = 3;
-   static final int MODEL_DAT = 4;
-   static final int TEXT = 5;
-   static final int SOUND = 6;
-   static String[] tstr = new String[]{"Other", "Material", "Texture", "Model", "Model", "Text", "Sound"};
 
    public Zipf() {
    }
@@ -31,15 +23,11 @@ public class Zipf {
    }
 
    public String getDetails() {
-      return this.filename + "   (" + this.getTypeStr() + ",  " + this.size + " bytes)";
+      return this.filename + "   (" + this.getType().getName() + ",  " + this.size + " bytes)";
    }
 
    public String getFullDetails() {
-      return this.fullname + "   (" + this.getTypeStr() + ",  " + this.size + " bytes)";
-   }
-
-   public String getTypeStr() {
-      return tstr[this.type];
+      return this.fullname + "   (" + this.getType().getName() + ",  " + this.size + " bytes)";
    }
 
    public void setfull(String fn) {
@@ -58,6 +46,7 @@ public class Zipf {
          this.pathname = "";
       }
 
+      this.type = FileType.from(this.filename);
    }
 
    public void setcfull(String fn) {
@@ -66,26 +55,7 @@ public class Zipf {
    }
 
    public String getrelfull(String rootdir) {
-      String full = this.fullname;
-      if (!rootdir.equals("") && full.startsWith(rootdir)) {
-         int index = rootdir.length() + 1;
-         if (index < full.length()) {
-            return full.substring(index);
-         }
-      }
-
-      int index = full.indexOf("/materials");
-      if (index != -1) {
-         return full.substring(index + 1);
-      } else {
-         index = full.indexOf("/models");
-         if (index != -1) {
-            return full.substring(index + 1);
-         } else {
-            index = full.indexOf("/sound");
-            return index != -1 ? full.substring(index + 1) : null;
-         }
-      }
+      return Util.getRelativePath(this.fullname, rootdir);
    }
 
    public void setfile(String fn) {
@@ -96,47 +66,19 @@ public class Zipf {
       this.setfull(pn + "/" + this.filename);
    }
 
-   public void settype() {
-      this.type = 0;
-      if (this.filename.toLowerCase().endsWith(".vmt")) {
-         this.type = 1;
-      }
+   public FileType getType() {
+      return this.type;
+   }
 
-      if (this.filename.toLowerCase().endsWith(".vtf")) {
-         this.type = 2;
-      }
+   public String getFullname() {
+      return this.fullname;
+   }
 
-      if (this.filename.toLowerCase().endsWith(".mdl")) {
-         this.type = 3;
-      }
+   public String getPathname() {
+      return this.pathname;
+   }
 
-      if (this.filename.toLowerCase().endsWith(".phy")) {
-         this.type = 4;
-      }
-
-      if (this.filename.toLowerCase().endsWith(".ani")) {
-         this.type = 4;
-      }
-
-      if (this.filename.toLowerCase().endsWith(".vtx")) {
-         this.type = 4;
-      }
-
-      if (this.filename.toLowerCase().endsWith(".vvd")) {
-         this.type = 4;
-      }
-
-      if (this.filename.toLowerCase().endsWith(".txt")) {
-         this.type = 5;
-      }
-
-      if (this.filename.toLowerCase().endsWith(".wav")) {
-         this.type = 6;
-      }
-
-      if (this.filename.toLowerCase().endsWith(".mp3")) {
-         this.type = 6;
-      }
-
+   public String getFilename() {
+      return this.filename;
    }
 }

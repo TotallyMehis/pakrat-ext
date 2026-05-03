@@ -1,9 +1,13 @@
 package pak;
 
 import java.io.File;
+import java.util.Set;
+
 import javax.swing.filechooser.FileFilter;
 
 class AllFileFilter extends FileFilter {
+   private static final Set<String> extensions = Set.of("vmt", "vtf", "wav", "mp3", "txt", "mdl", "vtx", "ani", "phy", "vvd", "ain", "nav");
+    
    AllFileFilter() {
    }
 
@@ -14,8 +18,8 @@ class AllFileFilter extends FileFilter {
             return true;
          }
 
-         String extension = this.getExtension(f);
-         if (extension != null && (extension.equals("vmt") || extension.equals("vtf") || extension.equals("wav") || extension.equals("mp3") || extension.equals("txt") || extension.equals("mdl") || extension.equals("vtx") || extension.equals("ani") || extension.equals("phy") || extension.equals("vvd") || extension.equals("ain") || extension.equals("nav"))) {
+         String extension = Util.getExtension(f);
+         if (extension != null && extensions.contains(extension)) {
             return true;
          }
       }
@@ -26,17 +30,5 @@ class AllFileFilter extends FileFilter {
    @Override
    public String getDescription() {
       return "All valid pak files";
-   }
-
-   public String getExtension(File f) {
-      if (f != null) {
-         String filename = f.getName();
-         int i = filename.lastIndexOf(46);
-         if (i > 0 && i < filename.length() - 1) {
-            return filename.substring(i + 1).toLowerCase();
-         }
-      }
-
-      return null;
    }
 }

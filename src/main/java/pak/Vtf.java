@@ -1,13 +1,7 @@
 package pak;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
 
 public class Vtf {
    static final int IF_RGBA8888 = 0;
@@ -64,21 +58,6 @@ public class Vtf {
    double bright = (double)1.0F;
 
    public Vtf() {
-   }
-
-   public void load(String filename) throws IOException {
-      File infile = new File(filename);
-      if (infile.exists() && infile.canRead()) {
-         System.out.println("Reading " + filename);
-         try (RandomAccessFile raf = new RandomAccessFile(infile, "r")) {
-            FileChannel rafch = raf.getChannel();
-            MappedByteBuffer mbuffer = rafch.map(MapMode.READ_ONLY, 0L, rafch.size());
-            ByteBuffer b = mbuffer.order(ByteOrder.LITTLE_ENDIAN);
-            this.read(b, rafch.size());
-         }
-      } else {
-         System.out.println("Can't open " + filename);
-      }
    }
 
    public void read(ByteBuffer b, long size) throws IOException {
@@ -504,38 +483,48 @@ public class Vtf {
       int bpp = 4;
       int bps = bpp * mwidth;
       ColRGBA8888[] colours = new ColRGBA8888[4];
-      new ColRGBA8888();
-
-      for(int i = 0; i < 4; ++i) {
-         colours[i] = new ColRGBA8888();
-      }
 
       int index = 0;
 
       for(int y = 0; y < mheight; y += 4) {
          for(int x = 0; x < mwidth; x += 4) {
-            colours[0].from565(data[index], data[index + 1]);
-            colours[1].from565(data[index + 2], data[index + 3]);
-            int bitmask = this.toInt(data, index + 4);
+            colours[0] = ColRGBA8888.from565(data[index], data[index + 1]);
+            colours[1] = ColRGBA8888.from565(data[index + 2], data[index + 3]);
+            int bitmask = toInt(data, index + 4);
             index += 8;
-            if (colours[0].c565 > colours[1].c565) {
-               colours[2].b = (2 * colours[0].b + colours[1].b + 1) / 3;
-               colours[2].g = (2 * colours[0].g + colours[1].g + 1) / 3;
-               colours[2].r = (2 * colours[0].r + colours[1].r + 1) / 3;
-               colours[2].a = -1;
-               colours[3].b = (colours[0].b + 2 * colours[1].b + 1) / 3;
-               colours[3].g = (colours[0].g + 2 * colours[1].g + 1) / 3;
-               colours[3].r = (colours[0].r + 2 * colours[1].r + 1) / 3;
-               colours[3].a = -1;
+            if (colours[0].c565() > colours[1].c565()) {
+               {
+                  int b = (2 * colours[0].b() + colours[1].b() + 1) / 3;
+                  int g = (2 * colours[0].g() + colours[1].g() + 1) / 3;
+                  int r = (2 * colours[0].r() + colours[1].r() + 1) / 3;
+                  int a = -1;
+                  colours[2] = new ColRGBA8888(r, g, b, a, 0);
+               }
+
+               {
+                  int b = (colours[0].b() + 2 * colours[1].b() + 1) / 3;
+                  int g = (colours[0].g() + 2 * colours[1].g() + 1) / 3;
+                  int r = (colours[0].r() + 2 * colours[1].r() + 1) / 3;
+                  int a = -1;
+                  colours[3] = new ColRGBA8888(r, g, b, a, 0);
+               }
+
             } else {
-               colours[2].b = (colours[0].b + colours[1].b) / 2;
-               colours[2].g = (colours[0].g + colours[1].g) / 2;
-               colours[2].r = (colours[0].r + colours[1].r) / 2;
-               colours[2].a = -1;
-               colours[3].b = (colours[0].b + 2 * colours[1].b + 1) / 3;
-               colours[3].g = (colours[0].g + 2 * colours[1].g + 1) / 3;
-               colours[3].r = (colours[0].r + 2 * colours[1].r + 1) / 3;
-               colours[3].a = 0;
+               {
+                  int b = (colours[0].b() + colours[1].b()) / 2;
+                  int g = (colours[0].g() + colours[1].g()) / 2;
+                  int r = (colours[0].r() + colours[1].r()) / 2;
+                  int a = -1;
+                  colours[2] = new ColRGBA8888(r, g, b, a, 0);
+               }
+
+               {
+                  int b = (colours[0].b() + 2 * colours[1].b() + 1) / 3;
+                  int g = (colours[0].g() + 2 * colours[1].g() + 1) / 3;
+                  int r = (colours[0].r() + 2 * colours[1].r() + 1) / 3;
+                  int a = 0;
+                  colours[3] = new ColRGBA8888(r, g, b, a, 0);
+               }
             }
 
             int k = 0;
@@ -546,10 +535,10 @@ public class Vtf {
                   ColRGBA8888 col = colours[select];
                   if (x + var19 < mwidth && y + j < mheight) {
                      int offset = (y + j) * bps + (x + var19) * bpp;
-                     dest[offset + 0] = this.toByte(col.r);
-                     dest[offset + 1] = this.toByte(col.g);
-                     dest[offset + 2] = this.toByte(col.b);
-                     dest[offset + 3] = this.toByte(col.a);
+                     dest[offset + 0] = toByte(col.r());
+                     dest[offset + 1] = toByte(col.g());
+                     dest[offset + 2] = toByte(col.b());
+                     dest[offset + 3] = toByte(col.a());
                   }
 
                   ++k;
@@ -568,11 +557,6 @@ public class Vtf {
       int bps = bpp * mwidth;
       int[] alphas = new int[8];
       ColRGBA8888[] colours = new ColRGBA8888[4];
-      new ColRGBA8888();
-
-      for(int i = 0; i < 4; ++i) {
-         colours[i] = new ColRGBA8888();
-      }
 
       int index = 0;
 
@@ -580,21 +564,30 @@ public class Vtf {
          for(int x = 0; x < mwidth; x += 4) {
             alphas[0] = data[index] & 255;
             alphas[1] = data[index + 1] & 255;
-            int alphamask0 = this.toInt3(data, index + 2);
-            int alphamask1 = this.toInt3(data, index + 5);
+            int alphamask0 = toInt3(data, index + 2);
+            int alphamask1 = toInt3(data, index + 5);
             index += 8;
-            colours[0].from565(data[index], data[index + 1]);
-            colours[1].from565(data[index + 2], data[index + 3]);
-            int bitmask = this.toInt(data, index + 4);
+            colours[0] = ColRGBA8888.from565(data[index], data[index + 1]);
+            colours[1] = ColRGBA8888.from565(data[index + 2], data[index + 3]);
+            int bitmask = toInt(data, index + 4);
             index += 8;
-            colours[2].b = (2 * colours[0].b + colours[1].b + 1) / 3;
-            colours[2].g = (2 * colours[0].g + colours[1].g + 1) / 3;
-            colours[2].r = (2 * colours[0].r + colours[1].r + 1) / 3;
-            colours[2].a = -1;
-            colours[3].b = (colours[0].b + 2 * colours[1].b + 1) / 3;
-            colours[3].g = (colours[0].g + 2 * colours[1].g + 1) / 3;
-            colours[3].r = (colours[0].r + 2 * colours[1].r + 1) / 3;
-            colours[3].a = -1;
+
+            {
+               int b = (2 * colours[0].b() + colours[1].b() + 1) / 3;
+               int g = (2 * colours[0].g() + colours[1].g() + 1) / 3;
+               int r = (2 * colours[0].r() + colours[1].r() + 1) / 3;
+               int a = -1;
+               colours[2] = new ColRGBA8888(r, g, b, a, 0);
+            }
+
+            {
+               int b = (colours[0].b() + 2 * colours[1].b() + 1) / 3;
+               int g = (colours[0].g() + 2 * colours[1].g() + 1) / 3;
+               int r = (colours[0].r() + 2 * colours[1].r() + 1) / 3;
+               int a = -1;
+               colours[3] = new ColRGBA8888(r, g, b, a, 0);
+            }
+
             int k = 0;
 
             for(int j = 0; j < 4; ++j) {
@@ -603,9 +596,9 @@ public class Vtf {
                   ColRGBA8888 col = colours[select];
                   if (x + var23 < mwidth && y + j < mheight) {
                      int offset = (y + j) * bps + (x + var23) * bpp;
-                     dest[offset + 0] = this.toByte(col.r);
-                     dest[offset + 1] = this.toByte(col.g);
-                     dest[offset + 2] = this.toByte(col.b);
+                     dest[offset + 0] = toByte(col.r());
+                     dest[offset + 1] = toByte(col.g());
+                     dest[offset + 2] = toByte(col.b());
                   }
 
                   ++k;
@@ -659,7 +652,7 @@ public class Vtf {
       return dest;
    }
 
-   public int toInt(byte[] data, int index) {
+   private static int toInt(byte[] data, int index) {
       int ret = (255 & data[index + 3]) << 24;
       ret |= (255 & data[index + 2]) << 16;
       ret |= (255 & data[index + 1]) << 8;
@@ -667,20 +660,15 @@ public class Vtf {
       return ret;
    }
 
-   public int toInt3(byte[] data, int index) {
+   private static int toInt3(byte[] data, int index) {
       int ret = (255 & data[index + 2]) << 16;
       ret |= (255 & data[index + 1]) << 8;
       ret |= 255 & data[index + 0];
       return ret;
    }
 
-   public byte toByte(int in) {
-      return (byte)(in & 255);
-   }
-
-   public String toHex(byte b) {
-      int c = b & 255;
-      return (c < 16 ? "0" : "") + Integer.toHexString(c);
+   private static byte toByte(int in) {
+      return (byte) (in & 255);
    }
 
    public byte[] GetData(int frame, int face, int miplevel) {

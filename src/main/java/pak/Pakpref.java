@@ -3,7 +3,7 @@ package pak;
 import java.util.prefs.Preferences;
 
 public class Pakpref {
-   static Preferences prefs;
+   private static Preferences prefs;
    static String gamedir;
    static String mapdir;
    static String adddir;

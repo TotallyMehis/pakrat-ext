@@ -1,0 +1,65 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
+      
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      - name: Build image
+        run: mvn verify -Pruntime-image --batch-mode -Druntime-image.classifier=linux -Dchangelist=-${GITHUB_SHA::7}
+        shell: bash
+
+      - name: Upload jar artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pakrat-jar
+          path: target/pakrat-*.jar
+          archive: false
+
+      - name: Upload runtime artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pakrat-linux
+          path: target/pakrat-*.zip
+          archive: false
+
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
+      
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      - name: Build image
+        run: mvn verify -Pruntime-image --batch-mode "-Druntime-image.classifier=windows" -Dchangelist="-$($env:GITHUB_SHA.Substring(0,7))"
+        shell: powershell
+
+      - name: Upload runtime artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pakrat-windows
+          path: target/pakrat-*.zip
+          archive: false

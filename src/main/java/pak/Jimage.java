@@ -10,12 +10,12 @@ import java.awt.image.BufferedImageOp;
 import javax.swing.JComponent;
 
 class Jimage extends JComponent {
-   BufferedImage image;
-   BufferedImage viewimage;
-   int owidth;
-   int oheight;
-   int width;
-   int height;
+   private BufferedImage image;
+   private BufferedImage viewimage;
+   private int owidth;
+   private int oheight;
+   private int width;
+   private int height;
 
    public Jimage(BufferedImage jimage, int jwidth, int jheight) {
       this.image = jimage;

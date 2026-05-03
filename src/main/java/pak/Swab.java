@@ -1,9 +1,6 @@
 package pak;
 
-public class Swab {
-   public Swab() {
-   }
-
+public abstract class Swab {
    public static final int I(int v) {
       return v >>> 24 | v << 24 | v << 8 & 16711680 | v >> 8 & '\uff00';
    }

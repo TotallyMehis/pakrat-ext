@@ -66,14 +66,15 @@ public class Mappak {
 
       for(int i = 0; i < 64; ++i) {
          Lump l = this.lump[i];
-         if (l.ofs > this.lump[40].ofs) {
-            l.ofs = (int)((long)l.ofs + pakdiff);
+         if (l.ofs() > this.lump[40].ofs()) {
+            int newOfs = (int)((long)l.ofs() + pakdiff);
+            l = this.lump[i] = new Lump(newOfs, l.len(), l.vers(), l.fourCC());
          }
 
-         b.putInt(l.ofs);
-         b.putInt(l.len);
-         b.putInt(l.vers);
-         b.putInt(l.fourCC);
+         b.putInt(l.ofs());
+         b.putInt(l.len());
+         b.putInt(l.vers());
+         b.putInt(l.fourCC());
       }
 
       b.putInt(this.maprev);
@@ -97,9 +98,9 @@ public class Mappak {
          bout.writeInt(Swab.I((int)z.CRC));
          bout.writeInt(Swab.I(z.size));
          bout.writeInt(Swab.I(z.size));
-         bout.writeShort(Swab.S(z.fullname.length()));
+         bout.writeShort(Swab.S(z.getFullname().length()));
          bout.writeShort(0);
-         this.writestr(bout, z.fullname);
+         this.writestr(bout, z.getFullname());
          z.datofs = (int)bout.getFilePointer() - newoffset;
          if (z.inpak) {
             bin.seek((long)(this.offset + z.datofs));
@@ -125,14 +126,14 @@ public class Mappak {
          bout.writeInt(Swab.I((int)z.CRC));
          bout.writeInt(Swab.I(z.size));
          bout.writeInt(Swab.I(z.size));
-         bout.writeShort(Swab.S(z.fullname.length()));
+         bout.writeShort(Swab.S(z.getFullname().length()));
          bout.writeShort(0);
          bout.writeShort(0);
          bout.writeShort(0);
          bout.writeShort(0);
          bout.writeInt(0);
          bout.writeInt(Swab.I(z.relofs));
-         this.writestr(bout, z.fullname);
+         this.writestr(bout, z.getFullname());
       }
 
       int cdend = (int)bout.getFilePointer() - newoffset;
@@ -144,13 +145,13 @@ public class Mappak {
       bout.writeInt(Swab.I(cdend - this.cdoffs));
       bout.writeInt(Swab.I(this.cdoffs));
       bout.writeShort(0);
-      this.lump[40].ofs = newoffset;
-      this.lump[40].len = (int)bout.getFilePointer() - newoffset;
-      this.offset = this.lump[40].ofs;
-      this.length = this.lump[40].len;
+      int newlen = (int)bout.getFilePointer() - newoffset;
+      this.lump[40] = new Lump(newoffset, newlen, this.lump[40].vers(), this.lump[40].fourCC());
+      this.offset = this.lump[40].ofs();
+      this.length = this.lump[40].len();
       bout.seek(648L);
-      bout.writeInt(Swab.I(this.lump[40].ofs));
-      bout.writeInt(Swab.I(this.lump[40].len));
+      bout.writeInt(Swab.I(this.lump[40].ofs()));
+      bout.writeInt(Swab.I(this.lump[40].len()));
    }
 
    public void loadmap(RandomAccessFile b) throws IOException {
@@ -163,17 +164,18 @@ public class Mappak {
    }
 
    public void loadgamelump(RandomAccessFile raf) throws IOException {
-      raf.seek((long)this.lump[35].ofs);
+      raf.seek((long)this.lump[35].ofs());
       this.glumps = Swab.I(raf.readInt());
       this.gl = new GameLump[this.glumps];
 
       for(int i = 0; i < this.glumps; ++i) {
-         this.gl[i] = new GameLump();
-         this.gl[i].id = Swab.I(raf.readInt());
-         this.gl[i].flags = Swab.S(raf.readShort());
-         this.gl[i].vers = Swab.S(raf.readShort());
-         this.gl[i].ofs = Swab.I(raf.readInt());
-         this.gl[i].len = Swab.I(raf.readInt());
+         int id = Swab.I(raf.readInt());
+         short flags = Swab.S(raf.readShort());
+         short vers = Swab.S(raf.readShort());
+         int ofs = Swab.I(raf.readInt());
+         int len = Swab.I(raf.readInt());
+
+         this.gl[i] = new GameLump(id, flags, vers, ofs, len);
       }
 
    }
@@ -182,13 +184,13 @@ public class Mappak {
       int spid = -1;
 
       for(int i = 0; i < this.glumps; ++i) {
-         if (this.gl[i].id == 1936749168) {
+         if (this.gl[i].id() == 1936749168) {
             spid = i;
          }
       }
 
       if (spid >= 0) {
-         raf.seek((long)this.gl[spid].ofs);
+         raf.seek((long)this.gl[spid].ofs());
          int psnames = Swab.I(raf.readInt());
          this.staticname = new String[psnames];
 
@@ -203,13 +205,13 @@ public class Mappak {
       int dpid = -1;
 
       for(int i = 0; i < this.glumps; ++i) {
-         if (this.gl[i].id == 1685090928) {
+         if (this.gl[i].id() == 1685090928) {
             dpid = i;
          }
       }
 
       if (dpid >= 0) {
-         raf.seek((long)this.gl[dpid].ofs);
+         raf.seek((long)this.gl[dpid].ofs());
          int pdnames = Swab.I(raf.readInt());
          this.detailname = new String[pdnames];
 
@@ -221,12 +223,12 @@ public class Mappak {
    }
 
    public void loadtexstring(RandomAccessFile raf) throws IOException {
-      int sofs = this.lump[43].ofs;
-      int slen = this.lump[43].len;
+      int sofs = this.lump[43].ofs();
+      int slen = this.lump[43].len();
       raf.seek((long)sofs);
       this.tdsd = this.readstr(raf, slen);
-      int ofs = this.lump[44].ofs;
-      int len = this.lump[44].len;
+      int ofs = this.lump[44].ofs();
+      int len = this.lump[44].len();
       int numtdst = len / Lump.size(44);
       this.tdst = new int[numtdst];
       this.texname = new String[numtdst];
@@ -251,11 +253,11 @@ public class Mappak {
       ArrayList<String> keylist = new ArrayList<>();
       ArrayList<String> vallist = new ArrayList<>();
       String classname = "";
-      int ofs = this.lump[0].ofs;
-      int end = ofs + this.lump[0].len;
+      int ofs = this.lump[0].ofs();
+      int end = ofs + this.lump[0].len();
       raf.seek((long)ofs);
       if (!this.auton) {
-         prog.setMaximum(this.lump[0].len);
+         prog.setMaximum(this.lump[0].len());
       }
 
       long fp;
@@ -357,16 +359,21 @@ public class Mappak {
          this.lump = new Lump[64];
 
          for(int i = 0; i < 64; ++i) {
-            this.lump[i] = new Lump();
-            this.lump[i].ofs = Swab.I(bb.readInt());
-            this.lump[i].len = Swab.I(bb.readInt());
-            this.lump[i].vers = Swab.I(bb.readInt());
-            this.lump[i].fourCC = Swab.I(bb.readInt());
-            if (this.lump[i].len > 0 && !this.auton) {
+            int ofs = Swab.I(bb.readInt());
+            int len = Swab.I(bb.readInt());
+            int vers = Swab.I(bb.readInt());
+            int fourCC = Swab.I(bb.readInt());
+
+            Lump lump = new Lump(ofs, len, vers, fourCC);
+
+
+            if (lump.len() > 0 && !this.auton) {
                Cons.print("Lump " + i + ": ");
-               Cons.print(this.lump[i].ofs + ", " + this.lump[i].len + ", " + this.lump[i].vers + ", " + this.lump[i].fourCC);
-               Cons.println(" " + Lump.name(i) + "  " + this.lump[i].len / Lump.size(i) + (Lump.size(i) == 1 ? " bytes" : ""));
+               Cons.print(lump.ofs() + ", " + lump.len() + ", " + lump.vers() + ", " + lump.fourCC());
+               Cons.println(" " + Lump.name(i) + "  " + lump.len() / Lump.size(i) + (Lump.size(i) == 1 ? " bytes" : ""));
             }
+
+            this.lump[i] = lump;
          }
 
          this.maprev = Swab.I(bb.readInt());
@@ -377,13 +384,13 @@ public class Mappak {
          int last = 0;
 
          for(int i = 0; i < 64; ++i) {
-            if (this.lump[i].ofs > this.lump[last].ofs) {
+            if (this.lump[i].ofs() > this.lump[last].ofs()) {
                last = i;
             }
          }
 
-         this.offset = this.lump[40].ofs;
-         this.length = this.lump[40].len;
+         this.offset = this.lump[40].ofs();
+         this.length = this.lump[40].len();
          if (this.length == 0) {
             Cons.println("Map contains no pakfile!");
          } else {
@@ -485,7 +492,6 @@ public class Mappak {
                z.datofs = zfdo[i];
                z.CRC = (long)zcrc[i];
                z.setfull(zffn[i]);
-               z.settype();
                z.inpak = true;
                z.data = null;
                this.zf.add(z);

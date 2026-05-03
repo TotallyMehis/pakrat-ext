@@ -1,13 +1,7 @@
 package pak;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
 
 public class Phymdl {
@@ -20,21 +14,6 @@ public class Phymdl {
    ArrayList<String> gibmodel;
 
    public Phymdl() {
-   }
-
-   public void load(String filename) throws IOException {
-      File infile = new File(filename);
-      if (infile.exists() && infile.canRead()) {
-         System.out.println("Reading " + filename);
-         try (RandomAccessFile raf = new RandomAccessFile(infile, "r")) {
-            FileChannel rafch = raf.getChannel();
-            MappedByteBuffer mbuffer = rafch.map(MapMode.READ_ONLY, 0L, rafch.size());
-            ByteBuffer b = mbuffer.order(ByteOrder.LITTLE_ENDIAN);
-            this.read(b);
-         }
-      } else {
-         System.out.println("Can't open " + filename);
-      }
    }
 
    public void read(ByteBuffer b) throws IOException {

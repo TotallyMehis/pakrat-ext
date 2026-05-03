@@ -52,13 +52,13 @@ public class ZipDirModel extends AbstractTableModel {
          case 0:
             return this.getzipfile(row).inpak;
          case 1:
-            return this.getzipfile(row).filename;
+            return this.getzipfile(row).getFilename();
          case 2:
-            return this.getzipfile(row).pathname;
+            return this.getzipfile(row).getPathname();
          case 3:
             return this.getzipfile(row).size;
          case 4:
-            return this.getzipfile(row).getTypeStr();
+            return this.getzipfile(row).getType().getName();
          default:
             return null;
       }
@@ -69,7 +69,6 @@ public class ZipDirModel extends AbstractTableModel {
       switch (col) {
          case 1:
             this.getzipfile(row).setfile((String)value);
-            this.getzipfile(row).settype();
             break;
          case 2:
             this.getzipfile(row).setpath((String)value);
@@ -96,14 +95,6 @@ public class ZipDirModel extends AbstractTableModel {
       return this.offset;
    }
 
-   public int gettype(int i) {
-      return this.getzipfile(i).type;
-   }
-
-   public String getfilename(int i) {
-      return this.getzipfile(i).filename;
-   }
-
    public void deletefile(int row) {
       if (row >= 0 && row < this.zfl.size()) {
          this.zfl.remove(row);
@@ -119,7 +110,7 @@ public class ZipDirModel extends AbstractTableModel {
 
    public Zipf getbyname(String fname) {
       for(int i = 0; i < this.getRowCount(); ++i) {
-         if (fname.equalsIgnoreCase(this.getzipfile(i).fullname)) {
+         if (fname.equalsIgnoreCase(this.getzipfile(i).getFullname())) {
             return this.getzipfile(i);
          }
       }
@@ -129,7 +120,7 @@ public class ZipDirModel extends AbstractTableModel {
 
    public Zipf getbyfilename(String fname) {
       for(int i = 0; i < this.getRowCount(); ++i) {
-         if (fname.equalsIgnoreCase(this.getzipfile(i).filename)) {
+         if (fname.equalsIgnoreCase(this.getzipfile(i).getFilename())) {
             return this.getzipfile(i);
          }
       }
@@ -146,10 +137,10 @@ public class ZipDirModel extends AbstractTableModel {
 
       for(Zipf z : this.zfl) {
          DefaultMutableTreeNode znode = new DefaultMutableTreeNode(z);
-         if (z.pathname.equals("")) {
+         if (z.getPathname().equals("")) {
             root.add(znode);
          } else {
-            String[] dirs = z.pathname.split("/");
+            String[] dirs = z.getPathname().split("/");
             DefaultMutableTreeNode top = root;
 
             for(String s : dirs) {

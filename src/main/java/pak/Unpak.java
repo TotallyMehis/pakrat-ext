@@ -71,7 +71,6 @@ public class Unpak {
    Scan scan;
    boolean dirty = false;
    boolean auton = false;
-   static final String VERSION = "v0.95";
 
    public Unpak() {
    }
@@ -84,7 +83,7 @@ public class Unpak {
       this.auton = true;
       Cons.open(false);
       long starttime = System.currentTimeMillis();
-      Cons.println("**** Pakrat v0.95 - by Rof (rof@mellish.org.uk)");
+      Cons.println("**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
       Cons.println("Game base directory " + basename);
       Cons.println("Perfoming autoscan of " + filename);
 
@@ -163,12 +162,12 @@ public class Unpak {
          Pakpref.getInit();
          this.gamedir = Pakpref.gamedir;
          Cons.settitle("Pakrat - console");
-         Cons.println("Pakrat v0.95 - by Rof (rof@mellish.org.uk)");
+         Cons.println("Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
          if (filename == null) {
             JFileChooser chooser = new JFileChooser(Pakpref.mapdir);
             chooser.setDialogTitle("Open a map file");
             chooser.setFileFilter(new BspFileFilter());
-            int result = chooser.showOpenDialog(Cons.console);
+            int result = chooser.showOpenDialog(Cons.getConsole());
             if (result == 1) {
                System.exit(0);
             }
@@ -190,7 +189,7 @@ public class Unpak {
             this.raf = new RandomAccessFile(this.infile, "r");
             this.m = new Mappak();
             this.m.loadmap(this.raf);
-            this.frame = new JFrame("Pakrat - " + filename);
+            this.frame = new JFrame("Pakrat %s - %s".formatted(Version.getVersion(), filename));
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
             JMenu filemenu = new JMenu("File");
@@ -429,9 +428,9 @@ public class Unpak {
                   if (rows.length != 0) {
                      if (rows.length == 1) {
                         Zipf z = Unpak.this.zmodel.getzipfile(rows[0]);
-                        File sfile = new File(z.fullname);
+                        File sfile = new File(z.getFullname());
                         JFileChooser schooser = new JFileChooser(Pakpref.adddir);
-                        schooser.setDialogTitle("Save selected file - " + z.fullname);
+                        schooser.setDialogTitle("Save selected file - " + z.getFullname());
                         schooser.setSelectedFile(sfile);
                         int result = schooser.showSaveDialog(Unpak.this.frame);
                         if (result == 1) {
@@ -453,7 +452,7 @@ public class Unpak {
 
                         for(int r = 0; r < rows.length; ++r) {
                            Zipf z = Unpak.this.zmodel.getzipfile(rows[r]);
-                           File sfile = new File(path, z.filename);
+                           File sfile = new File(path, z.getFilename());
                            if (!Unpak.this.savepakfile(z, sfile, true)) {
                               break;
                            }
@@ -502,8 +501,8 @@ public class Unpak {
                   int[] rows = Unpak.this.getSelection();
                   if (rows.length != 0) {
                      Zipf z = Unpak.this.zmodel.getzipfile(rows[0]);
-                     JTextField filetext = new JTextField(z.filename);
-                     JTextField pathtext = new JTextField(z.pathname);
+                     JTextField filetext = new JTextField(z.getFilename());
+                     JTextField pathtext = new JTextField(z.getPathname());
                      Container cbox = Box.createHorizontalBox();
                      cbox.add(new JLabel("Size: " + z.size + "  CRC32: " + Integer.toHexString((int)z.CRC)));
                      Container fbox = Box.createHorizontalBox();
@@ -512,10 +511,9 @@ public class Unpak {
                      Container pbox = Box.createHorizontalBox();
                      pbox.add(new JLabel("Path : "));
                      pbox.add(pathtext);
-                     int result = JOptionPane.showOptionDialog(Unpak.this.frame, new Object[]{z.fullname, cbox, fbox, pbox}, "Edit file parameters", 2, -1, (Icon)null, (Object[])null, (Object)null);
+                     int result = JOptionPane.showOptionDialog(Unpak.this.frame, new Object[]{z.getFullname(), cbox, fbox, pbox}, "Edit file parameters", 2, -1, (Icon)null, (Object[])null, (Object)null);
                      if (result != 2) {
                         z.setfull(pathtext.getText() + "/" + filetext.getText());
-                        z.settype();
                         Unpak.this.tmodel.fireTableDataChanged();
                         Unpak.this.dirty = true;
                         if (Unpak.this.treeview) {
@@ -685,7 +683,81 @@ public class Unpak {
             });
             mhelp.addActionListener(new ActionListener() {
                public void actionPerformed(ActionEvent e) {
-                  String help = " Pakrat v0.95 -- by Rof (rof@mellish.org.uk)\n\n A program for managing Half-Life 2 BSP PAK archives\n\n File menu:\n  Load BSP     - load a new BSP file\n  Save BSP     - save the current BSP file, writing any changes to pak\n  Preferences  - set the game base directory, path-fixup, and autoscan options\n  Quit         - quit Pakrat\n\n View menu:\n  As Tree      - view pak list as a directory tree\n  Sort...      - sort the pak list via columns\n\n Help menu:\n  Console      - show console window\n  About Pakrat - this information\n\n Button controls:\n  View         - view the selected pak entry\n  Edit         - edit the selected entry's file and path name\n  Add          - add a file or files to the pak\n  Delete       - delete the selected entry from the pak\n  Save         - save the selected entry to disk\n  Scan         - scan for all files used in map\n  Auto         - automatically scan and add all files used in map to the pak\n\n About Pakrat\n Pakrat is a graphical replacement for the command-line bspzip program.\n HL2 map (.bsp) files contain a general file storage area, known as the\n pak. Usually this area contains special material (.vmt) and texture\n (.vtf) files which store the environment reflection maps from\n env_cubemap entities generated when the console command buildcubemaps\n is run. These files will be visible in the pak list of opened maps.\n\n Pakrat allows you to add files to the pak, such as texture, material,\n sound and model files. If these files are used in the map, they will\n be preferentially loaded from the map's pak, allowing you to make\n maps with custom textures, etc., embedded into the map .bsp file.\n These maps therefore do not need to be distributed with extra files\n to include custom components.\n\n Path fixup\n The Source engine looks for files in the pak with a certain relative\n paths. For example, material and texture files should have a path\n starting with the \"materials\" folder. If set to do so, Pakrat can\n attempt to change the path of any file added to the pak such that it\n is correct. The best way to do this is set the Game Root directory\n under the Preferences menu item. This should be, for example:\n \"C:\\Games\\Steam\\SteamApps\\<your steam name>\\half life 2\\hl2\"\n for a typical HL2 installation. If mapping for CS:S or HL2DM, change\n the Game Root appropriately. If the Game Root is not set, Pakrat\n can attempt to guess the correct path from the file name and location.\n You may also edit each pak entry's filename and path directly, using\n the Edit button.\n\n The View button shows the contents of the selected file(s). For material\n (.vmt) files, the file is displayed as text. For textures (.vtf), a\n summary of the texture properties is printed, and the texture bitmap\n is displayed below. Unrecognised file types are displayed as ASCII\n text or as a hex dump depending on which tab is selected.\n\n The Scan button opens a new window which allows all files referenced\n in the map geometry and entities to be scanned for. Files that can be\n found on disk can be added to the pack by using the Add Selected button.\n\n The Auto button performs a scan of used files and automatically adds any\n file found on disk to the pak.\n\n";
+                  String help =
+                  """
+                   Pakrat %s
+                   Original Pakrat 0.95 by Rof (rof@mellish.org.uk)
+                   Edited by Mehis
+                   
+                   A program for managing Half-Life 2 BSP PAK archives
+                   
+                   File menu:
+                    Load BSP     - load a new BSP file
+                    Save BSP     - save the current BSP file, writing any changes to pak
+                    Preferences  - set the game base directory, path-fixup, and autoscan options
+                    Quit         - quit Pakrat
+                    
+                   View menu:
+                    As Tree      - view pak list as a directory tree
+                    Sort...      - sort the pak list via columns
+                    
+                   Help menu:
+                    Console      - show console window
+                    About Pakrat - this information
+                    
+                   Button controls:
+                    View         - view the selected pak entry
+                    Edit         - edit the selected entry's file and path name
+                    Add          - add a file or files to the pak
+                    Delete       - delete the selected entry from the pak
+                    Save         - save the selected entry to disk
+                    Scan         - scan for all files used in map
+                    Auto         - automatically scan and add all files used in map to the pak
+                    
+                   About Pakrat
+                    Pakrat is a graphical replacement for the command-line bspzip program.
+                    HL2 map (.bsp) files contain a general file storage area, known as the
+                    pak. Usually this area contains special material (.vmt) and texture
+                    (.vtf) files which store the environment reflection maps from
+                    env_cubemap entities generated when the console command buildcubemaps
+                    is run. These files will be visible in the pak list of opened maps.
+                    
+                    Pakrat allows you to add files to the pak, such as texture, material,
+                    sound and model files. If these files are used in the map, they will
+                    be preferentially loaded from the map's pak, allowing you to make
+                    maps with custom textures, etc., embedded into the map .bsp file.
+                    These maps therefore do not need to be distributed with extra files
+                    to include custom components.
+                    
+                   Path fixup
+                    The Source engine looks for files in the pak with a certain relative
+                    paths. For example, material and texture files should have a path
+                    starting with the "materials" folder. If set to do so, Pakrat can
+                    attempt to change the path of any file added to the pak such that it
+                    is correct. The best way to do this is set the Game Root directory
+                    under the Preferences menu item. This should be, for example:
+                    "C:\\Games\\Steam\\SteamApps\\common\\Half-Life 2\\hl2"
+                    for a typical HL2 installation. If mapping for CS:S or HL2DM, change
+                    the Game Root appropriately. If the Game Root is not set, Pakrat
+                    can attempt to guess the correct path from the file name and location.
+                    You may also edit each pak entry's filename and path directly, using
+                    the Edit button.
+                    
+                   The View button shows the contents of the selected file(s). For material
+                   (.vmt) files, the file is displayed as text. For textures (.vtf), a
+                   summary of the texture properties is printed, and the texture bitmap
+                   is displayed below. Unrecognised file types are displayed as ASCII
+                   text or as a hex dump depending on which tab is selected.
+                    
+                   The Scan button opens a new window which allows all files referenced
+                   in the map geometry and entities to be scanned for. Files that can be
+                   found on disk can be added to the pack by using the Add Selected button.
+                   
+                   The Auto button performs a scan of used files and automatically adds any
+                   file found on disk to the pak.
+
+                  
+                  """.formatted(Version.getFullVersion());
                   Unpak.this.TextBox("About Pakrat", help);
                }
             });
@@ -705,7 +777,7 @@ public class Unpak {
       this.auton = true;
       Cons.open(false);
       long starttime = System.currentTimeMillis();
-      Cons.println("**** Pakrat v0.95 - by Rof (rof@mellish.org.uk)");
+      Cons.println("**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
       Cons.println("Saving " + pakfile + " from " + filename);
 
       try {
@@ -727,7 +799,7 @@ public class Unpak {
             if (match == null) {
                Cons.println("Can't find file " + pakfile + " in Pak.");
             } else {
-               File mfile = new File(match.filename);
+               File mfile = new File(match.getFilename());
                this.savepakfile(match, mfile, false);
                this.raf.close();
                long duration = System.currentTimeMillis() - starttime;
@@ -745,7 +817,7 @@ public class Unpak {
       this.auton = true;
       Cons.open(false);
       long starttime = System.currentTimeMillis();
-      Cons.println("**** Pakrat v0.95 - by Rof (rof@mellish.org.uk)");
+      Cons.println("**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
       Cons.println("Dumping pak lump from " + filename);
 
       try {
@@ -784,7 +856,7 @@ public class Unpak {
    public void printlist(String filename) throws Exception {
       this.auton = true;
       Cons.open(false);
-      Cons.println("Pakrat v0.95 - by Rof (rof@mellish.org.uk)");
+      Cons.println("Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
       Cons.println("Listing pak files from " + filename);
 
       try {
@@ -839,7 +911,7 @@ public class Unpak {
                      String relfull = z.getrelfull(base);
                      if (relfull != null) {
                         if (Pakpref.fixup == 1 && !all) {
-                           int result = JOptionPane.showOptionDialog(this.frame, z.fullname + "\nFix-up path to: \"" + relfull + "\" ?", "Add file " + (i + 1) + " of " + tfile.length, 0, 3, (Icon)null, new String[]{"Yes", "Yes to All", "No", "Skip", "Cancel"}, (Object)null);
+                           int result = JOptionPane.showOptionDialog(this.frame, z.getFullname() + "\nFix-up path to: \"" + relfull + "\" ?", "Add file " + (i + 1) + " of " + tfile.length, 0, 3, (Icon)null, new String[]{"Yes", "Yes to All", "No", "Skip", "Cancel"}, (Object)null);
                            if (result == 0 || result == 1) {
                               z.setfull(relfull);
                            }
@@ -864,7 +936,6 @@ public class Unpak {
                   Cons.println("Reading " + tfilename);
                   z.size = (int)tfile[i].length();
                   z.datofs = z.relofs = 0;
-                  z.settype();
                   z.inpak = false;
                   z.data = new byte[z.size];
                   FileInputStream fis = new FileInputStream(tfile[i]);
@@ -904,7 +975,7 @@ public class Unpak {
    public void checknav() {
       for(int i = 0; i < this.m.zf.size(); ++i) {
          Zipf z = (Zipf)this.m.zf.get(i);
-         if (z.filename.toLowerCase().endsWith(".nav")) {
+         if (z.getFilename().toLowerCase().endsWith(".nav")) {
             try {
                this.raf.seek((long)(this.m.offset + z.datofs));
                byte[] buffer = new byte[z.size];
@@ -913,20 +984,20 @@ public class Unpak {
                zb.order(ByteOrder.LITTLE_ENDIAN);
                long magic = (long)zb.getInt() & -1L;
                if (magic != -17958194L) {
-                  Cons.println("Nav file " + z.fullname + " is invalid.");
+                  Cons.println("Nav file " + z.getFullname() + " is invalid.");
                } else {
                   zb.getInt();
                   long nlen = (long)zb.getInt() & -1L;
                   long blen = this.raf.length();
                   if (nlen != blen) {
                      if (!this.auton) {
-                        int result = JOptionPane.showConfirmDialog(this.frame, "Nav file \"" + z.fullname + "\" version does not match this bsp file.\n" + "Do you want to update it?", "Check NAV file", 0);
+                        int result = JOptionPane.showConfirmDialog(this.frame, "Nav file \"" + z.getFullname() + "\" version does not match this bsp file.\n" + "Do you want to update it?", "Check NAV file", 0);
                         if (result == 1) {
                            break;
                         }
                      }
 
-                     Cons.print("Updating " + z.fullname + "...");
+                     Cons.print("Updating " + z.getFullname() + "...");
                      zb.position(8);
                      zb.putInt((int)blen);
                      CRC32 crc = new CRC32();
@@ -940,7 +1011,7 @@ public class Unpak {
 
                      for(int j = 0; j < i; ++j) {
                         Zipf zj = (Zipf)this.m.zf.get(j);
-                        cdpos += (long)(46 + zj.fullname.length());
+                        cdpos += (long)(46 + zj.getFullname().length());
                      }
 
                      cdpos += 16L;
@@ -948,7 +1019,7 @@ public class Unpak {
                      this.raf.writeInt(Swab.I((int)z.CRC));
                      Cons.println("Done");
                   } else {
-                     Cons.println("Nav file " + z.fullname + " matches BSP.");
+                     Cons.println("Nav file " + z.getFullname() + " matches BSP.");
                   }
                }
             } catch (IOException ex) {
@@ -1013,7 +1084,7 @@ public class Unpak {
       for(int i = rows.length - 1; i >= 0; --i) {
          Zipf z = this.zmodel.getzipfile(rows[i]);
          if (!all) {
-            int result = JOptionPane.showOptionDialog(this.frame, "Remove file " + z.filename + " from the pak?", "Delete file " + (rows.length - i) + " of " + rows.length, 1, 3, (Icon)null, options, options[0]);
+            int result = JOptionPane.showOptionDialog(this.frame, "Remove file " + z.getFilename() + " from the pak?", "Delete file " + (rows.length - i) + " of " + rows.length, 1, 3, (Icon)null, options, options[0]);
             if (result == 2) {
                continue;
             }
@@ -1213,28 +1284,27 @@ public class Unpak {
          }
 
          zb.order(ByteOrder.LITTLE_ENDIAN);
-         switch (z.type) {
-            case 0:
-            case 6:
-            default:
-               this.hexlist(this.readstr(zb, z.size), z.fullname);
+         switch (z.getType()) {
+            case FileType.OTHER:
+            case FileType.SOUND:
+               this.hexlist(this.readstr(zb, z.size), z.getFullname());
                break;
-            case 1:
-            case 5:
+            case FileType.MATERIAL:
+            case FileType.TEXT:
                String text = this.readstr(zb, z.size);
-               this.TextBox("Pakrat - " + z.fullname, text);
+               this.TextBox("Pakrat - " + z.getFullname(), text);
                break;
-            case 2:
-               this.vtfinfo(zb, z.fullname, z.size);
+            case FileType.TEXTURE:
+               this.vtfinfo(zb, z.getFullname(), z.size);
                break;
-            case 3:
-               this.mdlinfo(zb, z.fullname, z.size);
+            case FileType.MODEL:
+               this.mdlinfo(zb, z.getFullname(), z.size);
                break;
-            case 4:
-               if (z.fullname.toLowerCase().endsWith(".phy")) {
-                  this.phyinfo(zb, z.fullname, z.size);
+            case FileType.MODEL_DAT:
+               if (z.getFullname().toLowerCase().endsWith(".phy")) {
+                  this.phyinfo(zb, z.getFullname(), z.size);
                } else {
-                  this.hexlist(this.readstr(zb, z.size), z.fullname);
+                  this.hexlist(this.readstr(zb, z.size), z.getFullname());
                }
          }
       } catch (Exception ex) {
@@ -1507,13 +1577,16 @@ public class Unpak {
          }
 
          if (args.length != 1) {
-            System.out.println("Pakrat v0.95 - by Rof (rof@mellish.org.uk)");
-            System.out.println("Usage:");
-            System.out.println("  Pakrat [<filename.bsp>]");
-            System.out.println("  Pakrat -auto <base directory> <filename.bsp>");
-            System.out.println("  Pakrat -list <filename.bsp>");
-            System.out.println("  Pakrat -save <filename.bsp> <pakfile>");
-            System.out.println("  Pakrat -dump <filename.bsp>");
+            System.out.println(
+               """
+               Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)
+               Usage:
+                 pakrat [<filename.bsp>]
+                 pakrat -auto <base directory> <filename.bsp>
+                 pakrat -list <filename.bsp>
+                 pakrat -save <filename.bsp> <pakfile>
+                 pakrat -dump <filename.bsp>
+               """.formatted(Version.getFullVersion()));
             return;
          }
 

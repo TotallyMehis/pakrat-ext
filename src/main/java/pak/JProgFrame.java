@@ -7,8 +7,8 @@ import javax.swing.JFrame;
 import javax.swing.JProgressBar;
 
 public class JProgFrame extends JFrame {
-   JProgressBar progbar;
-   Component frame;
+   private JProgressBar progbar;
+   private Component frame;
 
    public JProgFrame(Component frame, String title) {
       super(title);
