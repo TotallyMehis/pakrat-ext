@@ -44,17 +44,24 @@ public abstract class Util {
     }
 
     public static void copyBlock(RandomAccessFile in, RandomAccessFile out, long length) throws IOException {
+        assert length >= 0;
+        assert length <= Integer.MAX_VALUE;
+        assert in != null;
+        assert out != null;
+
+        if (in.getFilePointer() + length > in.length()) {
+            throw new RuntimeException("Failed to copy " + length + " bytes, input file is not long enough.");
+        }
+
         int size = (int) length;
 
-        int bytesread;
-        for (byte[] buffer = new byte[1024]; size > 0; size -= bytesread) {
-            if (size > 1024) {
-                bytesread = in.read(buffer, 0, 1024);
-                out.write(buffer, 0, bytesread);
-            } else {
-                bytesread = in.read(buffer, 0, size);
-                out.write(buffer, 0, bytesread);
-            }
+        final int BUFFER_SIZE = 1024;
+
+        int bytesRead;
+        for (byte[] buffer = new byte[BUFFER_SIZE]; size > 0; size -= bytesRead) {
+            int toRead = Math.min(size, BUFFER_SIZE);
+            bytesRead = in.read(buffer, 0, toRead);
+            out.write(buffer, 0, bytesRead);
         }
     }
 }
