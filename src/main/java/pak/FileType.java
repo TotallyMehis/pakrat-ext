@@ -3,13 +3,8 @@ package pak;
 import java.util.List;
 
 public enum FileType {
-    OTHER(0, "Other"),
-    MATERIAL(1, "Material"),
-    TEXTURE(2, "Texture"),
-    MODEL(3, "Model"),
-    MODEL_DAT(4, "Model"),
-    TEXT(5, "Text"),
-    SOUND(6, "Sound");
+    OTHER(0, "Other"), MATERIAL(1, "Material"), TEXTURE(2, "Texture"), MODEL(3, "Model"), MODEL_DAT(4, "Model"), TEXT(5,
+            "Text"), SOUND(6, "Sound");
 
     private final int value;
     private final String name;

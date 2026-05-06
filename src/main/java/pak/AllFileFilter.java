@@ -6,30 +6,30 @@ import java.util.Set;
 import javax.swing.filechooser.FileFilter;
 
 class AllFileFilter extends FileFilter {
-   private static final Set<String> extensions = Set.of("vmt", "vtf", "wav", "mp3", "txt", "mdl", "vtx", "ani", "phy",
-         "vvd", "ain", "nav");
+    private static final Set<String> extensions = Set.of("vmt", "vtf", "wav", "mp3", "txt", "mdl", "vtx", "ani", "phy",
+            "vvd", "ain", "nav");
 
-   AllFileFilter() {
-   }
+    AllFileFilter() {
+    }
 
-   @Override
-   public boolean accept(File f) {
-      if (f != null) {
-         if (f.isDirectory()) {
-            return true;
-         }
+    @Override
+    public boolean accept(File f) {
+        if (f != null) {
+            if (f.isDirectory()) {
+                return true;
+            }
 
-         String extension = Util.getExtension(f);
-         if (extension != null && extensions.contains(extension)) {
-            return true;
-         }
-      }
+            String extension = Util.getExtension(f);
+            if (extension != null && extensions.contains(extension)) {
+                return true;
+            }
+        }
 
-      return false;
-   }
+        return false;
+    }
 
-   @Override
-   public String getDescription() {
-      return "All valid pak files";
-   }
+    @Override
+    public String getDescription() {
+        return "All valid pak files";
+    }
 }

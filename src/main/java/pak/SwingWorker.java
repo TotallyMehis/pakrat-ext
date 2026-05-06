@@ -3,89 +3,89 @@ package pak;
 import javax.swing.SwingUtilities;
 
 public abstract class SwingWorker {
-   private Object value;
-   private ThreadVar threadVar;
+    private Object value;
+    private ThreadVar threadVar;
 
-   protected synchronized Object getValue() {
-      return this.value;
-   }
+    protected synchronized Object getValue() {
+        return this.value;
+    }
 
-   private synchronized void setValue(Object x) {
-      this.value = x;
-   }
+    private synchronized void setValue(Object x) {
+        this.value = x;
+    }
 
-   public abstract Object construct();
+    public abstract Object construct();
 
-   public void finished() {
-   }
+    public void finished() {
+    }
 
-   public void interrupt() {
-      Thread t = this.threadVar.get();
-      if (t != null) {
-         t.interrupt();
-      }
+    public void interrupt() {
+        Thread t = this.threadVar.get();
+        if (t != null) {
+            t.interrupt();
+        }
 
-      this.threadVar.clear();
-   }
+        this.threadVar.clear();
+    }
 
-   public Object get() {
-      while (true) {
-         Thread t = this.threadVar.get();
-         if (t == null) {
-            return this.getValue();
-         }
-
-         try {
-            t.join();
-         } catch (InterruptedException var3) {
-            Thread.currentThread().interrupt();
-            return null;
-         }
-      }
-   }
-
-   public SwingWorker() {
-      final Runnable doFinished = new Runnable() {
-         public void run() {
-            SwingWorker.this.finished();
-         }
-      };
-      Runnable doConstruct = new Runnable() {
-         public void run() {
-            try {
-               SwingWorker.this.setValue(SwingWorker.this.construct());
-            } finally {
-               SwingWorker.this.threadVar.clear();
+    public Object get() {
+        while (true) {
+            Thread t = this.threadVar.get();
+            if (t == null) {
+                return this.getValue();
             }
 
-            SwingUtilities.invokeLater(doFinished);
-         }
-      };
-      Thread t = new Thread(doConstruct);
-      this.threadVar = new ThreadVar(t);
-   }
+            try {
+                t.join();
+            } catch (InterruptedException var3) {
+                Thread.currentThread().interrupt();
+                return null;
+            }
+        }
+    }
 
-   public void start() {
-      Thread t = this.threadVar.get();
-      if (t != null) {
-         t.start();
-      }
+    public SwingWorker() {
+        final Runnable doFinished = new Runnable() {
+            public void run() {
+                SwingWorker.this.finished();
+            }
+        };
+        Runnable doConstruct = new Runnable() {
+            public void run() {
+                try {
+                    SwingWorker.this.setValue(SwingWorker.this.construct());
+                } finally {
+                    SwingWorker.this.threadVar.clear();
+                }
 
-   }
+                SwingUtilities.invokeLater(doFinished);
+            }
+        };
+        Thread t = new Thread(doConstruct);
+        this.threadVar = new ThreadVar(t);
+    }
 
-   private static class ThreadVar {
-      private Thread thread;
+    public void start() {
+        Thread t = this.threadVar.get();
+        if (t != null) {
+            t.start();
+        }
 
-      ThreadVar(Thread t) {
-         this.thread = t;
-      }
+    }
 
-      synchronized Thread get() {
-         return this.thread;
-      }
+    private static class ThreadVar {
+        private Thread thread;
 
-      synchronized void clear() {
-         this.thread = null;
-      }
-   }
+        ThreadVar(Thread t) {
+            this.thread = t;
+        }
+
+        synchronized Thread get() {
+            return this.thread;
+        }
+
+        synchronized void clear() {
+            this.thread = null;
+        }
+    }
 }

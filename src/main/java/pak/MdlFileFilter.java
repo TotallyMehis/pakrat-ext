@@ -6,29 +6,29 @@ import java.util.Set;
 import javax.swing.filechooser.FileFilter;
 
 class MdlFileFilter extends FileFilter {
-   private static final Set<String> extensions = Set.of("mdl", "vtx", "ani", "phy", "vvd");
+    private static final Set<String> extensions = Set.of("mdl", "vtx", "ani", "phy", "vvd");
 
-   MdlFileFilter() {
-   }
+    MdlFileFilter() {
+    }
 
-   @Override
-   public boolean accept(File f) {
-      if (f != null) {
-         if (f.isDirectory()) {
-            return true;
-         }
+    @Override
+    public boolean accept(File f) {
+        if (f != null) {
+            if (f.isDirectory()) {
+                return true;
+            }
 
-         String extension = Util.getExtension(f);
-         if (extension != null && extensions.contains(extension)) {
-            return true;
-         }
-      }
+            String extension = Util.getExtension(f);
+            if (extension != null && extensions.contains(extension)) {
+                return true;
+            }
+        }
 
-      return false;
-   }
+        return false;
+    }
 
-   @Override
-   public String getDescription() {
-      return "Valve model file (*.mdl, *.vtx, *.vvd, *.phy, *.ani)";
-   }
+    @Override
+    public String getDescription() {
+        return "Valve model file (*.mdl, *.vtx, *.vvd, *.phy, *.ani)";
+    }
 }
