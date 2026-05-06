@@ -48,23 +48,22 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 public class Unpak {
-    Mappak m;
-    String currentdir;
-    File infile;
-    RandomAccessFile raf;
-    boolean treeview = false;
-    String gamedir;
-    JFrame frame;
-    JScrollPane mainsp;
-    JTable table;
-    ZipDirModel zmodel;
-    TableSorter tmodel;
-    JTree tree;
-    DefaultTreeModel treemodel;
-    DefaultMutableTreeNode root;
-    Scan scan;
-    boolean dirty = false;
-    boolean auton = false;
+    private Mappak m;
+    private File infile;
+    private RandomAccessFile raf;
+    private boolean treeview = false;
+    private String gamedir;
+    private JFrame frame;
+    private JScrollPane mainsp;
+    private JTable table;
+    private ZipDirModel zmodel;
+    private TableSorter tmodel;
+    private JTree tree;
+    private DefaultTreeModel treemodel;
+    private DefaultMutableTreeNode root;
+    private Scan scan;
+    private boolean dirty = false;
+    private boolean auton = false;
 
     public Unpak() {
     }
@@ -152,7 +151,6 @@ public class Unpak {
     private void exec(String filename) throws Exception {
         try {
             Cons.open(true);
-            this.currentdir = System.getProperty("user.dir");
             Pakpref.getInit();
             this.gamedir = Pakpref.gamedir;
             Cons.settitle("Pakrat - console");
@@ -243,7 +241,13 @@ public class Unpak {
                 this.table.getColumn("In").setMaxWidth(20);
                 this.table.getColumn(ZipDirModel.header[1]).setCellRenderer(new ZipTableCR());
                 this.table.setSelectionMode(2);
-                TransferHandler fileth = new FileTransferHandler(this);
+                TransferHandler fileth = new FileTransferHandler(files -> {
+                    try {
+                        addFileToPak(files, this.gamedir, false);
+                    } catch (IOException e) {
+                        System.out.println(e);
+                    }
+                });
                 this.table.setTransferHandler(fileth);
                 this.mainsp = new JScrollPane(this.table);
                 this.mainsp.setTransferHandler(fileth);
@@ -525,7 +529,6 @@ public class Unpak {
                         Unpak.this.closeScan();
                         Unpak.this.infile = rchooser.getSelectedFile();
                         String filename_ = Unpak.this.infile.getName();
-                        Unpak.this.currentdir = Unpak.this.infile.getPath();
                         if (!Unpak.this.infile.exists() || !Unpak.this.infile.canRead()) {
                             Cons.println("Can't open " + filename_);
                             return;
@@ -1496,6 +1499,10 @@ public class Unpak {
         filename = filename.replace(File.separatorChar, '/');
         Zipf f = this.zmodel.getbyname(filename);
         return f != null;
+    }
+
+    public File getInfile() {
+        return this.infile;
     }
 
     public static void main(String[] args) throws Exception {

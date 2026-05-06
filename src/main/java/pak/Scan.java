@@ -260,7 +260,7 @@ public class Scan {
         }
 
         this.dirset.add(gamedir);
-        String mapbase = this.pakrat.infile.getPath().replace(File.separatorChar, '/');
+        String mapbase = this.pakrat.getInfile().getPath().replace(File.separatorChar, '/');
         int im = mapbase.toLowerCase().lastIndexOf("maps/");
         if (im > 0) {
             mapbase = mapbase.substring(0, im - 1);
@@ -332,7 +332,7 @@ public class Scan {
 
     public void doautoscan(final Component parent) {
         if (this.basedir.equals("")) {
-            String mapbase = this.pakrat.infile.getPath().replace(File.separatorChar, '/');
+            String mapbase = this.pakrat.getInfile().getPath().replace(File.separatorChar, '/');
             int im = mapbase.toLowerCase().lastIndexOf("maps/");
             if (im > 0) {
                 mapbase = mapbase.substring(0, im - 1);
@@ -464,7 +464,7 @@ public class Scan {
             if (!this.auton) {
                 int pakfiles = this.tmod.getRowCount();
                 boolean[] refd = new boolean[pakfiles];
-                String mapname = this.pakrat.infile.getName().toLowerCase();
+                String mapname = this.pakrat.getInfile().getName().toLowerCase();
                 String cubemappath = "materials/maps/" + mapname.substring(0, mapname.lastIndexOf(".bsp"));
 
                 for (int i = 0; i < pakfiles; ++i) {
@@ -520,7 +520,7 @@ public class Scan {
             this.prog.setMaximum(7);
         }
 
-        String mapname = this.pakrat.infile.getName().toLowerCase();
+        String mapname = this.pakrat.getInfile().getName().toLowerCase();
         mapname = mapname.substring(0, mapname.lastIndexOf(".bsp"));
         if (!this.auton) {
             if (Pakpref.navfile) {
