@@ -27,7 +27,7 @@ class FileTransferHandler extends TransferHandler {
             @SuppressWarnings("unchecked")
             List<File> files = (List<File>) t.getTransferData(FILE_FLAVOR);
             File[] filearray = (File[]) files.toArray(new File[0]);
-            this.pakrat.addfiletopak(filearray, this.pakrat.gamedir, false);
+            this.pakrat.addFileToPak(filearray, this.pakrat.gamedir, false);
             return true;
         } catch (UnsupportedFlavorException var5) {
             Cons.println("importData: unsupported data flavor");

@@ -69,11 +69,7 @@ public class Unpak {
     public Unpak() {
     }
 
-    public int ubyte(byte b) {
-        return b & 255;
-    }
-
-    public void exec(String basename, String filename) throws Exception {
+    private void exec(String basename, String filename) throws Exception {
         this.auton = true;
         Cons.open(false);
         long starttime = System.currentTimeMillis();
@@ -137,7 +133,7 @@ public class Unpak {
                         this.infile = sfile;
                         this.raf = new RandomAccessFile(this.infile, "rw");
                         this.zmodel.setfileparams(this.raf, this.m.getOffset());
-                        this.checknav();
+                        this.checkNav();
                         this.raf.close();
                         long duration = System.currentTimeMillis() - starttime;
                         Cons.println("**** Pakrat autoscan complete in "
@@ -153,7 +149,7 @@ public class Unpak {
         }
     }
 
-    public void exec(String filename) throws Exception {
+    private void exec(String filename) throws Exception {
         try {
             Cons.open(true);
             this.currentdir = System.getProperty("user.dir");
@@ -391,7 +387,7 @@ public class Unpak {
                         }
 
                         Cons.print("Writing " + sfilename + "...");
-                        Unpak.this.closescan();
+                        Unpak.this.closeScan();
                         Unpak.this.raf.seek(0L);
                         RandomAccessFile outraf = new RandomAccessFile(sfile, "rw");
                         outraf.setLength(0L);
@@ -405,7 +401,7 @@ public class Unpak {
                         Unpak.this.frame.setCursor(Cursor.getDefaultCursor());
                         Unpak.this.infile = sfile;
                         Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "rw");
-                        Unpak.this.checknav();
+                        Unpak.this.checkNav();
                         Unpak.this.raf.close();
                         Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "r");
                         Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.getOffset());
@@ -432,7 +428,7 @@ public class Unpak {
                             }
 
                             sfile = schooser.getSelectedFile();
-                            Unpak.this.savepakfile(z, sfile, false);
+                            Unpak.this.savePakFile(z, sfile, false);
                         } else {
                             JFileChooser sc = new JFileChooser(Pakpref.adddir);
                             sc.setDialogTitle("Select location to save " + rows.length + " files");
@@ -447,7 +443,7 @@ public class Unpak {
                             for (int r = 0; r < rows.length; ++r) {
                                 Zipf z = Unpak.this.zmodel.getzipfile(rows[r]);
                                 File sfile = new File(path, z.getFilename());
-                                if (!Unpak.this.savepakfile(z, sfile, true)) {
+                                if (!Unpak.this.savePakFile(z, sfile, true)) {
                                     break;
                                 }
                             }
@@ -473,7 +469,7 @@ public class Unpak {
                         File[] tfile = fchooser.getSelectedFiles();
                         Pakpref.adddir = fchooser.getCurrentDirectory().getPath();
                         Pakpref.put("Adddir", Pakpref.adddir);
-                        Unpak.this.addfiletopak(tfile, Unpak.this.gamedir, false);
+                        Unpak.this.addFileToPak(tfile, Unpak.this.gamedir, false);
                     } catch (Exception ex) {
                         System.out.println(ex);
                     }
@@ -482,7 +478,7 @@ public class Unpak {
                 delfile.addActionListener(_ -> {
                     int[] rows = Unpak.this.getSelection();
                     if (rows.length != 0) {
-                        Unpak.this.deletepakfiles(rows);
+                        Unpak.this.deletePakFiles(rows);
                     }
                 });
                 editfile.addActionListener(_ -> {
@@ -514,7 +510,7 @@ public class Unpak {
                     }
                 });
                 mpref.addActionListener(_ -> {
-                    Unpak.this.dopreferences();
+                    Unpak.this.doPreferences();
                 });
                 mload.addActionListener(_ -> {
                     try {
@@ -526,7 +522,7 @@ public class Unpak {
                             return;
                         }
 
-                        Unpak.this.closescan();
+                        Unpak.this.closeScan();
                         Unpak.this.infile = rchooser.getSelectedFile();
                         String filename_ = Unpak.this.infile.getName();
                         Unpak.this.currentdir = Unpak.this.infile.getPath();
@@ -631,18 +627,18 @@ public class Unpak {
                     int[] rows = Unpak.this.getSelection();
                     if (rows.length != 0) {
                         for (int i = 0; i < rows.length; ++i) {
-                            Unpak.this.viewfile(Unpak.this.zmodel.getzipfile(rows[i]));
+                            Unpak.this.viewFile(Unpak.this.zmodel.getzipfile(rows[i]));
                         }
 
                     }
                 });
                 ascan.addActionListener(_ -> {
-                    Unpak.this.closescan();
+                    Unpak.this.closeScan();
                     Unpak.this.scan = new Scan(Unpak.this, Unpak.this.frame, Unpak.this.m, Unpak.this.zmodel,
                             Unpak.this.infile.getName(), Unpak.this.gamedir);
                 });
                 auto.addActionListener(_ -> {
-                    Unpak.this.closescan();
+                    Unpak.this.closeScan();
                     Unpak.this.scan = new Scan(Unpak.this, Unpak.this.frame, Unpak.this.m, Unpak.this.zmodel,
                             Unpak.this.infile.getName(), Unpak.this.gamedir, true);
                 });
@@ -738,7 +734,7 @@ public class Unpak {
         }
     }
 
-    public void save(String filename, String pakfile) throws Exception {
+    private void save(String filename, String pakfile) throws Exception {
         this.auton = true;
         Cons.open(false);
         long starttime = System.currentTimeMillis();
@@ -766,7 +762,7 @@ public class Unpak {
                     Cons.println("Can't find file " + pakfile + " in Pak.");
                 } else {
                     File mfile = new File(match.getFilename());
-                    this.savepakfile(match, mfile, false);
+                    this.savePakFile(match, mfile, false);
                     this.raf.close();
                     long duration = System.currentTimeMillis() - starttime;
                     Cons.println("**** Pakrat file save complete in "
@@ -780,7 +776,7 @@ public class Unpak {
         }
     }
 
-    public void dump(String filename) throws Exception {
+    private void dump(String filename) throws Exception {
         this.auton = true;
         Cons.open(false);
         long starttime = System.currentTimeMillis();
@@ -822,7 +818,7 @@ public class Unpak {
         }
     }
 
-    public void printlist(String filename) throws Exception {
+    private void printList(String filename) throws Exception {
         this.auton = true;
         Cons.open(false);
         Cons.println(
@@ -857,13 +853,13 @@ public class Unpak {
         }
     }
 
-    public int addfiletopak(File[] tfile, String base, boolean yta) throws IOException {
+    public int addFileToPak(File[] tfile, String base, boolean yta) throws IOException {
         boolean all = yta;
 
         for (int i = 0; i < tfile.length; ++i) {
             if (tfile[i] != null) {
                 if (tfile[i].isDirectory()) {
-                    int res = this.addfiletopak(tfile[i].listFiles(), base, all);
+                    int res = this.addFileToPak(tfile[i].listFiles(), base, all);
                     if (res == -1) {
                         return -1;
                     }
@@ -942,7 +938,7 @@ public class Unpak {
         }
     }
 
-    public void checknav() {
+    private void checkNav() {
         List<Zipf> fileList = this.m.getZf();
         for (int i = 0; i < fileList.size(); ++i) {
             Zipf z = fileList.get(i);
@@ -1006,7 +1002,7 @@ public class Unpak {
 
     }
 
-    public void closescan() {
+    private void closeScan() {
         if (this.scan != null) {
             this.scan.close();
         }
@@ -1014,7 +1010,7 @@ public class Unpak {
         this.scan = null;
     }
 
-    public void TextBox(String title, String text) {
+    private void TextBox(String title, String text) {
         JTextArea textarea = new JTextArea(text);
         textarea.setFont(new Font("Monospaced", 0, 14));
         textarea.setTabSize(4);
@@ -1027,7 +1023,7 @@ public class Unpak {
         tframe.setVisible(true);
     }
 
-    public int[] getSelection() {
+    private int[] getSelection() {
         if (this.treeview) {
             TreePath[] paths = this.tree.getSelectionPaths();
             if (paths == null) {
@@ -1052,7 +1048,7 @@ public class Unpak {
         }
     }
 
-    public void deletepakfiles(int[] rows) {
+    private void deletePakFiles(int[] rows) {
         Object[] options = new Object[] { "Yes", "Yes to All", "No", "Cancel" };
         boolean all = false;
         Arrays.sort(rows);
@@ -1087,14 +1083,14 @@ public class Unpak {
 
     }
 
-    public void updateTree() {
+    private void updateTree() {
         this.root = this.zmodel.getTree(this.infile.getName());
         this.treemodel.nodeStructureChanged(this.root);
         this.treemodel = new DefaultTreeModel(this.root);
         this.tree.setModel(this.treemodel);
     }
 
-    public boolean savepakfile(Zipf z, File sfile, boolean multi) {
+    private boolean savePakFile(Zipf z, File sfile, boolean multi) {
         int off = this.zmodel.getoffset();
 
         try {
@@ -1147,7 +1143,7 @@ public class Unpak {
         }
     }
 
-    public void dopreferences() {
+    private void doPreferences() {
         final JTextField gdirtext = new JTextField(this.gamedir);
         gdirtext.setPreferredSize(new Dimension(200, -1));
         gdirtext.setToolTipText("The directory to strip off path of files added to the pak");
@@ -1215,18 +1211,7 @@ public class Unpak {
         }
     }
 
-    public String readstr(RandomAccessFile r, int len) throws IOException {
-        StringBuilder linebuff = new StringBuilder();
-
-        for (int i = 0; i < len; ++i) {
-            char c = (char) r.readUnsignedByte();
-            linebuff.append(c);
-        }
-
-        return linebuff.toString();
-    }
-
-    public String readstr(ByteBuffer b, int len) {
+    private static String readString(ByteBuffer b, int len) {
         StringBuilder linebuff = new StringBuilder();
 
         for (int i = 0; i < len; ++i) {
@@ -1237,20 +1222,7 @@ public class Unpak {
         return linebuff.toString();
     }
 
-    public String readstr(ByteBuffer b) {
-        StringBuilder linebuff = new StringBuilder();
-
-        while (true) {
-            char c = (char) b.get();
-            if (c == 0) {
-                return linebuff.toString();
-            }
-
-            linebuff.append(c);
-        }
-    }
-
-    public void viewfile(Zipf z) {
+    private void viewFile(Zipf z) {
         try {
             ByteBuffer zb;
             if (z.inpak) {
@@ -1266,24 +1238,24 @@ public class Unpak {
             switch (z.getType()) {
                 case FileType.OTHER:
                 case FileType.SOUND:
-                    this.hexlist(this.readstr(zb, z.size), z.getFullname());
+                    this.hexList(readString(zb, z.size), z.getFullname());
                     break;
                 case FileType.MATERIAL:
                 case FileType.TEXT:
-                    String text = this.readstr(zb, z.size);
+                    String text = readString(zb, z.size);
                     this.TextBox("Pakrat - " + z.getFullname(), text);
                     break;
                 case FileType.TEXTURE:
-                    this.vtfinfo(zb, z.getFullname(), z.size);
+                    this.vtfInfo(zb, z.getFullname(), z.size);
                     break;
                 case FileType.MODEL:
-                    this.mdlinfo(zb, z.getFullname(), z.size);
+                    this.mdlInfo(zb, z.getFullname(), z.size);
                     break;
                 case FileType.MODEL_DAT:
                     if (z.getFullname().toLowerCase().endsWith(".phy")) {
-                        this.phyinfo(zb, z.getFullname(), z.size);
+                        this.phyInfo(zb, z.getFullname(), z.size);
                     } else {
-                        this.hexlist(this.readstr(zb, z.size), z.getFullname());
+                        this.hexList(readString(zb, z.size), z.getFullname());
                     }
             }
         } catch (Exception ex) {
@@ -1292,7 +1264,7 @@ public class Unpak {
 
     }
 
-    public void vtfinfo(ByteBuffer b, String filename, int size) {
+    private void vtfInfo(ByteBuffer b, String filename, int size) {
         StringBuilder t = new StringBuilder();
         Vtf vtf = new Vtf();
 
@@ -1358,7 +1330,7 @@ public class Unpak {
         vframe.setVisible(true);
     }
 
-    public void phyinfo(ByteBuffer b, String filename, int size) {
+    private void phyInfo(ByteBuffer b, String filename, int size) {
         StringBuilder t = new StringBuilder();
         Phymdl phy = new Phymdl();
 
@@ -1385,7 +1357,7 @@ public class Unpak {
             for (int i = 0; i < phy.gibmodel.size(); ++i) {
                 String gib = (String) phy.gibmodel.get(i);
                 t.append("    " + gib + ".mdl");
-                if (this.isinpak("models/" + gib + ".mdl")) {
+                if (this.isInPak("models/" + gib + ".mdl")) {
                     t.append(" - in pak\n");
                 } else {
                     t.append(" - not in pak\n");
@@ -1399,7 +1371,7 @@ public class Unpak {
         this.TextBox("Pakrat - " + filename, t.toString());
     }
 
-    public void mdlinfo(ByteBuffer b, String filename, int size) {
+    private void mdlInfo(ByteBuffer b, String filename, int size) {
         StringBuilder t = new StringBuilder();
         Mdl model = new Mdl();
 
@@ -1426,7 +1398,7 @@ public class Unpak {
 
             for (int i = 0; i < model.numtextures; ++i) {
                 t.append("    " + model.textures[i]);
-                if (this.isinpak("materials/" + model.texpaths[0] + model.textures[i] + ".vmt")) {
+                if (this.isInPak("materials/" + model.texpaths[0] + model.textures[i] + ".vmt")) {
                     t.append(" - in pak\n");
                 } else {
                     t.append(" - not in pak\n");
@@ -1437,7 +1409,7 @@ public class Unpak {
 
             for (int i = 0; i < model.numincmodels; ++i) {
                 t.append("    " + model.incmodelfile[i]);
-                if (this.isinpak(model.incmodelfile[i])) {
+                if (this.isInPak(model.incmodelfile[i])) {
                     t.append(" - in pak\n");
                 } else {
                     t.append(" - not in pak\n");
@@ -1449,9 +1421,9 @@ public class Unpak {
         t.append("Associated files\n");
 
         for (int i = 0; i < modelexts.length; ++i) {
-            String amfname = this.strsubext(filename, modelexts[i]);
+            String amfname = strsubext(filename, modelexts[i]);
             t.append("    " + amfname);
-            if (this.isinpak(amfname)) {
+            if (this.isInPak(amfname)) {
                 t.append(" - in pak\n");
             } else {
                 t.append(" - not in pak\n");
@@ -1461,7 +1433,7 @@ public class Unpak {
         this.TextBox("Pakrat - " + filename, t.toString());
     }
 
-    public void hexlist(String input, String filename) {
+    private void hexList(String input, String filename) {
         StringBuilder text = new StringBuilder();
         StringBuilder hext = new StringBuilder();
 
@@ -1513,14 +1485,14 @@ public class Unpak {
         tframe.setVisible(true);
     }
 
-    public String strsubext(String file, String ext) {
+    private static String strsubext(String file, String ext) {
         file = file.replace(File.separatorChar, '/');
         int idot = file.lastIndexOf(".");
         int isep = file.lastIndexOf("/");
         return idot >= 0 && idot >= isep ? file.substring(0, idot) + ext : file + ext;
     }
 
-    public boolean isinpak(String filename) {
+    public boolean isInPak(String filename) {
         filename = filename.replace(File.separatorChar, '/');
         Zipf f = this.zmodel.getbyname(filename);
         return f != null;
@@ -1541,7 +1513,7 @@ public class Unpak {
 
             if (args[0].equalsIgnoreCase("-list")) {
                 fn = args[1];
-                inst.printlist(fn);
+                inst.printList(fn);
                 return;
             }
 

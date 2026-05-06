@@ -323,7 +323,7 @@ public class Scan {
                 }
             }
 
-            this.pakrat.addfiletopak(filearray, this.basedir, false);
+            this.pakrat.addFileToPak(filearray, this.basedir, false);
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -408,7 +408,7 @@ public class Scan {
             }
 
             try {
-                this.pakrat.addfiletopak(farray, this.basedir, true);
+                this.pakrat.addFileToPak(farray, this.basedir, true);
             } catch (IOException e) {
                 System.out.println(e);
             }
