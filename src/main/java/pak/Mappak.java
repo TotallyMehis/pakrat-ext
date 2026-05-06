@@ -494,7 +494,7 @@ public class Mappak {
     }
 
     private static String readString(RandomAccessFile b, int len) throws IOException {
-        StringBuffer linebuff = new StringBuffer();
+        StringBuilder linebuff = new StringBuilder();
 
         for (int i = 0; i < len; ++i) {
             char c = (char) b.readUnsignedByte();

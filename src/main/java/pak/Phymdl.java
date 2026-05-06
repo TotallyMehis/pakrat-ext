@@ -51,7 +51,7 @@ public class Phymdl {
     }
 
     public String readstr(ByteBuffer b) {
-        StringBuffer linebuff = new StringBuffer();
+        StringBuilder linebuff = new StringBuilder();
 
         while (true) {
             char c = (char) b.get();

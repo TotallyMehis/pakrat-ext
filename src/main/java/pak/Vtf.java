@@ -117,7 +117,7 @@ public class Vtf {
 
     public String GetFlagStr() {
         int bflags = this.flags;
-        StringBuffer str = new StringBuffer();
+        StringBuilder str = new StringBuilder();
 
         for (int i = 0; i < 25; ++i) {
             if ((bflags & 1) == 1) {

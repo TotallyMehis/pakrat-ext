@@ -197,7 +197,7 @@ public class Scan {
     }
 
     public void docheck(Scanfile s) {
-        StringBuffer t = new StringBuffer("File: " + s.fullname + "\n");
+        StringBuilder t = new StringBuilder("File: " + s.fullname + "\n");
         t.append("Type: " + ScanModel.tstr[s.type] + "\n");
         t.append("Diskname: " + s.diskname + "\n");
         t.append("Location: ");
@@ -227,7 +227,7 @@ public class Scan {
         tframe.setVisible(true);
     }
 
-    public void checkparent(Scanfile s, StringBuffer t) {
+    public void checkparent(Scanfile s, StringBuilder t) {
         if (s != null) {
             if (s.parent != null) {
                 t.append("\nReferenced from:\n");
@@ -918,7 +918,7 @@ public class Scan {
     }
 
     public String readline(ByteBuffer b) {
-        StringBuffer linebuff = new StringBuffer();
+        StringBuilder linebuff = new StringBuilder();
 
         try {
             while (true) {
@@ -935,7 +935,7 @@ public class Scan {
     }
 
     public String readstr(ByteBuffer b) {
-        StringBuffer linebuff = new StringBuffer();
+        StringBuilder linebuff = new StringBuilder();
 
         while (true) {
             char c = (char) b.get();

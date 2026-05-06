@@ -1216,7 +1216,7 @@ public class Unpak {
     }
 
     public String readstr(RandomAccessFile r, int len) throws IOException {
-        StringBuffer linebuff = new StringBuffer();
+        StringBuilder linebuff = new StringBuilder();
 
         for (int i = 0; i < len; ++i) {
             char c = (char) r.readUnsignedByte();
@@ -1227,7 +1227,7 @@ public class Unpak {
     }
 
     public String readstr(ByteBuffer b, int len) {
-        StringBuffer linebuff = new StringBuffer();
+        StringBuilder linebuff = new StringBuilder();
 
         for (int i = 0; i < len; ++i) {
             char c = (char) b.get();
@@ -1238,7 +1238,7 @@ public class Unpak {
     }
 
     public String readstr(ByteBuffer b) {
-        StringBuffer linebuff = new StringBuffer();
+        StringBuilder linebuff = new StringBuilder();
 
         while (true) {
             char c = (char) b.get();
@@ -1293,7 +1293,7 @@ public class Unpak {
     }
 
     public void vtfinfo(ByteBuffer b, String filename, int size) {
-        StringBuffer t = new StringBuffer();
+        StringBuilder t = new StringBuilder();
         Vtf vtf = new Vtf();
 
         try {
@@ -1359,7 +1359,7 @@ public class Unpak {
     }
 
     public void phyinfo(ByteBuffer b, String filename, int size) {
-        StringBuffer t = new StringBuffer();
+        StringBuilder t = new StringBuilder();
         Phymdl phy = new Phymdl();
 
         try {
@@ -1400,7 +1400,7 @@ public class Unpak {
     }
 
     public void mdlinfo(ByteBuffer b, String filename, int size) {
-        StringBuffer t = new StringBuffer();
+        StringBuilder t = new StringBuilder();
         Mdl model = new Mdl();
 
         try {
@@ -1462,8 +1462,8 @@ public class Unpak {
     }
 
     public void hexlist(String input, String filename) {
-        StringBuffer text = new StringBuffer();
-        StringBuffer hext = new StringBuffer();
+        StringBuilder text = new StringBuilder();
+        StringBuilder hext = new StringBuilder();
 
         for (int i = 0; i < input.length(); ++i) {
             if (i % 32 == 0) {
