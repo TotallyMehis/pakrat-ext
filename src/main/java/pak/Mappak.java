@@ -28,6 +28,10 @@ public class Mappak {
 
     private static final List<String> entext = List.of(".vmt", ".mdl", ".spr", ".wav", ".mp3", ".txt");
 
+    private static final int CENTRAL_DIRECTORY_SIGNATURE = 101010256; // PK56
+    private static final int LOCAL_FILEHEADER_SIGNATURE = 67324752; // PK34
+    private static final int FILEHEADER_SIGNATURE = 33639248; // PK12
+
     public Mappak(boolean auton) {
         this.auton = auton;
     }
@@ -74,7 +78,7 @@ public class Mappak {
         for (int i = 0; i < numzips; ++i) {
             Zipf z = this.zf.get(i);
             z.relofs = (int) bout.getFilePointer() - newoffset;
-            bout.writeInt(Swab.I(67324752));
+            bout.writeInt(Swab.I(LOCAL_FILEHEADER_SIGNATURE));
             bout.writeShort(Swab.S(10));
             bout.writeShort(0);
             bout.writeShort(0);
@@ -101,7 +105,7 @@ public class Mappak {
 
         for (int i = 0; i < numzips; ++i) {
             Zipf z = (Zipf) this.zf.get(i);
-            bout.writeInt(Swab.I(33639248));
+            bout.writeInt(Swab.I(FILEHEADER_SIGNATURE));
             bout.writeShort(Swab.S(20));
             bout.writeShort(Swab.S(10));
             bout.writeShort(0);
@@ -122,7 +126,7 @@ public class Mappak {
         }
 
         int cdend = (int) bout.getFilePointer() - newoffset;
-        bout.writeInt(Swab.I(101010256));
+        bout.writeInt(Swab.I(CENTRAL_DIRECTORY_SIGNATURE));
         bout.writeShort(0);
         bout.writeShort(0);
         bout.writeShort(Swab.S(numzips));
@@ -392,7 +396,7 @@ public class Mappak {
         for (int off = this.offset + this.length - 22; off >= 0; --off) {
             bb.seek((long) off);
             int csig = Swab.I(bb.readInt());
-            if (csig == 101010256) {
+            if (csig == CENTRAL_DIRECTORY_SIGNATURE) {
                 cdirf = true;
                 break;
             }
@@ -401,13 +405,13 @@ public class Mappak {
         if (!cdirf) {
             Cons.println("Couldn't find pak file EOCD");
         } else {
-            bb.readShort();
-            bb.readShort();
-            bb.readShort();
-            short cdes = Swab.S(bb.readShort());
-            Swab.I(bb.readInt());
-            int cdoffs = Swab.I(bb.readInt());
-            bb.readShort();
+            bb.readShort(); // numberOfThisDisk
+            bb.readShort(); // numberOfTheDiskWithStartOfCentralDirectory
+            bb.readShort(); // nCentralDirectoryEntries_ThisDisk
+            short cdes = Swab.S(bb.readShort()); // nCentralDirectoryEntries_Total
+            Swab.I(bb.readInt()); // centralDirectorySize
+            int cdoffs = Swab.I(bb.readInt()); // startOfCentralDirOffset
+            bb.readShort(); // commentLength
             Cons.println("Pak lump entries: " + cdes);
             if (cdes > 0) {
                 bb.seek((long) (this.offset + cdoffs));
@@ -418,55 +422,57 @@ public class Mappak {
                 int[] zcrc = new int[cdes];
                 String[] zffn = new String[cdes];
 
+                // Read file headers
                 for (int i = 0; i < cdes; ++i) {
                     int hsig = Swab.I(bb.readInt());
-                    if (hsig != 33639248) {
+                    if (hsig != FILEHEADER_SIGNATURE) {
                         Cons.println("ZipFH signature incorrect");
                         return;
                     }
 
-                    bb.readShort();
-                    bb.readShort();
-                    bb.readShort();
-                    bb.readShort();
-                    bb.readShort();
-                    bb.readShort();
+                    bb.readShort(); // Version made by
+                    bb.readShort(); // Version needed to extract
+                    bb.readShort(); // Bit flags
+                    bb.readShort(); // Compression method
+                    bb.readShort(); // File last modified time
+                    bb.readShort(); // File last modified date
                     zcrc[i] = Swab.I(bb.readInt());
-                    int csize = zfcs[i] = Swab.I(bb.readInt());
-                    int usize = zfus[i] = Swab.I(bb.readInt());
-                    short fnlen = Swab.S(bb.readShort());
-                    short exlen = Swab.S(bb.readShort());
-                    short fclen = Swab.S(bb.readShort());
-                    bb.readShort();
-                    bb.readShort();
-                    bb.readInt();
-                    zfro[i] = Swab.I(bb.readInt());
-                    zffn[i] = readString(bb, fnlen);
-                    readString(bb, exlen + fclen);
+                    int csize = zfcs[i] = Swab.I(bb.readInt()); // Compressed size
+                    int usize = zfus[i] = Swab.I(bb.readInt()); // Uncompressed size
+                    short fnlen = Swab.S(bb.readShort()); // File name length
+                    short exlen = Swab.S(bb.readShort()); // Extra field length
+                    short fclen = Swab.S(bb.readShort()); // File comment length
+                    bb.readShort(); // Disk number start
+                    bb.readShort(); // Internal file attributes
+                    bb.readInt(); // External file attributes
+                    zfro[i] = Swab.I(bb.readInt()); // Offset of local header
+                    zffn[i] = readString(bb, fnlen); // File name
+                    readString(bb, exlen + fclen); // Extr field & file comment
                     if (csize != usize) {
                         Cons.println("Zip file " + i + " is compressed! " + csize + "!=" + usize);
                         return;
                     }
                 }
 
+                // Read local file headers
                 for (int i = 0; i < cdes; ++i) {
                     bb.seek((long) (this.offset + zfro[i]));
                     int lsig = Swab.I(bb.readInt());
-                    if (lsig != 67324752) {
+                    if (lsig != LOCAL_FILEHEADER_SIGNATURE) {
                         Cons.println("ZipLFH signature incorrect");
                         return;
                     }
 
-                    bb.readShort();
-                    bb.readShort();
-                    bb.readShort();
-                    bb.readShort();
-                    bb.readShort();
-                    bb.readInt();
-                    bb.readInt();
-                    bb.readInt();
-                    short fnlen = Swab.S(bb.readShort());
-                    short exlen = Swab.S(bb.readShort());
+                    bb.readShort(); // Version needed to extract
+                    bb.readShort(); // Bit flags
+                    bb.readShort(); // Compression method
+                    bb.readShort(); // File last modified time
+                    bb.readShort(); // File last modified date
+                    bb.readInt(); // CRC
+                    bb.readInt(); // Compression size
+                    bb.readInt(); // Uncompressed size
+                    short fnlen = Swab.S(bb.readShort()); // File name length
+                    short exlen = Swab.S(bb.readShort()); // Extra field length
                     zfdo[i] = zfro[i] + 30 + fnlen + exlen;
                 }
 
