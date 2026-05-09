@@ -75,11 +75,7 @@ public class Zipf {
     }
 
     public void setFullPath(String path) {
-        if (path.startsWith("/")) {
-            this.fullPath = path.substring(1, path.length());
-        } else {
-            this.fullPath = path;
-        }
+        this.fullPath = path;
 
         int is = this.fullPath.lastIndexOf("/");
         if (is >= 0 && is < this.fullPath.length() - 1) {
@@ -98,7 +94,13 @@ public class Zipf {
     }
 
     public void setPath(String path) {
-        if (path.endsWith("/")) {
+        path = Util.normalizePath(path);
+
+        while (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+
+        while (path.endsWith("/")) {
             path = path.substring(0, path.length() - 1);
         }
 

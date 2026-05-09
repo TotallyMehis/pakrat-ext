@@ -88,7 +88,7 @@ final class ZipfTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "materials", "materials/" })
+    @ValueSource(strings = { "materials", "materials/", "/materials/", "\\materials\\", "////materials////" })
     void setPath(String path) throws Exception {
         File testFile = new File(MappakTest.class.getClassLoader().getResource("test.txt").toURI());
 

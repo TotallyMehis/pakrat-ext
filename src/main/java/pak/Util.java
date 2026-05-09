@@ -64,6 +64,6 @@ public abstract class Util {
     }
 
     public static String normalizePath(String path) {
-        return path.replace(File.separatorChar, '/');
+        return path.replace('\\', '/');
     }
 }
