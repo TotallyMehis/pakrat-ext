@@ -25,12 +25,15 @@ public class Mappak {
     private List<String> entkeylist;
     private List<String> entvallist;
     private final boolean auton;
+    private int centralCommentLength;
+    private String centralComment;
 
     private static final List<String> entext = List.of(".vmt", ".mdl", ".spr", ".wav", ".mp3", ".txt");
 
     private static final int CENTRAL_DIRECTORY_SIGNATURE = 101010256; // PK56
     private static final int LOCAL_FILEHEADER_SIGNATURE = 67324752; // PK34
     private static final int FILEHEADER_SIGNATURE = 33639248; // PK12
+    private static final int BSP_MAGIC_NUMBER = 1347633750; // VBSP
 
     public Mappak(boolean auton) {
         this.auton = auton;
@@ -79,7 +82,7 @@ public class Mappak {
             Zipf z = this.zf.get(i);
             z.relofs = (int) bout.getFilePointer() - newoffset;
             bout.writeInt(Swab.I(LOCAL_FILEHEADER_SIGNATURE));
-            bout.writeShort(Swab.S(10));
+            bout.writeShort(Swab.unsignedShort(10));
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeShort(0);
@@ -87,7 +90,7 @@ public class Mappak {
             bout.writeInt(Swab.I((int) z.CRC));
             bout.writeInt(Swab.I(z.size));
             bout.writeInt(Swab.I(z.size));
-            bout.writeShort(Swab.S(z.getFullPath().length()));
+            bout.writeShort(Swab.unsignedShort(z.getFullPath().length()));
             bout.writeShort(0);
             writeString(bout, z.getFullPath());
             z.datofs = (int) bout.getFilePointer() - newoffset;
@@ -106,8 +109,8 @@ public class Mappak {
         for (int i = 0; i < numzips; ++i) {
             Zipf z = (Zipf) this.zf.get(i);
             bout.writeInt(Swab.I(FILEHEADER_SIGNATURE));
-            bout.writeShort(Swab.S(20));
-            bout.writeShort(Swab.S(10));
+            bout.writeShort(Swab.unsignedShort(20));
+            bout.writeShort(Swab.unsignedShort(10));
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeShort(0);
@@ -115,7 +118,7 @@ public class Mappak {
             bout.writeInt(Swab.I((int) z.CRC));
             bout.writeInt(Swab.I(z.size));
             bout.writeInt(Swab.I(z.size));
-            bout.writeShort(Swab.S(z.getFullPath().length()));
+            bout.writeShort(Swab.unsignedShort(z.getFullPath().length()));
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeShort(0);
@@ -129,12 +132,15 @@ public class Mappak {
         bout.writeInt(Swab.I(CENTRAL_DIRECTORY_SIGNATURE));
         bout.writeShort(0);
         bout.writeShort(0);
-        bout.writeShort(Swab.S(numzips));
-        bout.writeShort(Swab.S(numzips));
+        bout.writeShort(Swab.unsignedShort(numzips));
+        bout.writeShort(Swab.unsignedShort(numzips));
         bout.writeInt(Swab.I(cdend - this.cdoffs));
         bout.writeInt(Swab.I(this.cdoffs));
-        bout.writeShort(0);
-        int newlen = (int) bout.getFilePointer() - newoffset;
+        bout.writeShort(Swab.unsignedShort(this.centralCommentLength));
+        writeString(bout, this.centralComment);
+        long actual_cdend = bout.getFilePointer();
+        alignTo2(bout);
+        int newlen = (int) actual_cdend - newoffset;
         this.lumps[LumpIndices.PAKFILE] = new Lump(newoffset, newlen, this.lumps[LumpIndices.PAKFILE].vers(),
                 this.lumps[LumpIndices.PAKFILE].fourCC());
         this.offset = this.lumps[LumpIndices.PAKFILE].ofs();
@@ -154,7 +160,7 @@ public class Mappak {
     }
 
     private void loadGameLump(RandomAccessFile raf) throws IOException {
-        raf.seek((long) this.lumps[35].ofs());
+        raf.seek((long) this.lumps[LumpIndices.GAME_LUMP].ofs());
         this.glumps = Swab.I(raf.readInt());
         this.gl = new GameLump[this.glumps];
 
@@ -337,9 +343,8 @@ public class Mappak {
         this.filelength = bb.length();
         this.ident = Swab.I(bb.readInt());
         this.version = Swab.I(bb.readInt());
-        int vbsp = 1347633750;
-        if (this.ident != vbsp) {
-            Cons.println("Not a map file: " + vbsp + " != " + this.ident);
+        if (this.ident != BSP_MAGIC_NUMBER) {
+            Cons.println("Not a map file: " + BSP_MAGIC_NUMBER + " != " + this.ident);
         } else {
             if (!this.auton) {
                 Cons.println("Ident: " + this.ident);
@@ -408,10 +413,11 @@ public class Mappak {
             bb.readShort(); // numberOfThisDisk
             bb.readShort(); // numberOfTheDiskWithStartOfCentralDirectory
             bb.readShort(); // nCentralDirectoryEntries_ThisDisk
-            short cdes = Swab.S(bb.readShort()); // nCentralDirectoryEntries_Total
-            Swab.I(bb.readInt()); // centralDirectorySize
+            int cdes = Swab.unsignedShort(bb.readUnsignedShort()); // nCentralDirectoryEntries_Total
+            bb.readInt(); // centralDirectorySize
             int cdoffs = Swab.I(bb.readInt()); // startOfCentralDirOffset
-            bb.readShort(); // commentLength
+            this.centralCommentLength = Swab.unsignedShort(bb.readUnsignedShort()); // commentLength
+            this.centralComment = readString(bb, this.centralCommentLength);
             Cons.println("Pak lump entries: " + cdes);
             if (cdes > 0) {
                 bb.seek((long) (this.offset + cdoffs));
@@ -439,9 +445,9 @@ public class Mappak {
                     zcrc[i] = Swab.I(bb.readInt());
                     int csize = zfcs[i] = Swab.I(bb.readInt()); // Compressed size
                     int usize = zfus[i] = Swab.I(bb.readInt()); // Uncompressed size
-                    short fnlen = Swab.S(bb.readShort()); // File name length
-                    short exlen = Swab.S(bb.readShort()); // Extra field length
-                    short fclen = Swab.S(bb.readShort()); // File comment length
+                    int fnlen = Swab.unsignedShort(bb.readUnsignedShort()); // File name length
+                    int exlen = Swab.unsignedShort(bb.readUnsignedShort()); // Extra field length
+                    int fclen = Swab.unsignedShort(bb.readUnsignedShort()); // File comment length
                     bb.readShort(); // Disk number start
                     bb.readShort(); // Internal file attributes
                     bb.readInt(); // External file attributes
@@ -471,8 +477,8 @@ public class Mappak {
                     bb.readInt(); // CRC
                     bb.readInt(); // Compression size
                     bb.readInt(); // Uncompressed size
-                    short fnlen = Swab.S(bb.readShort()); // File name length
-                    short exlen = Swab.S(bb.readShort()); // Extra field length
+                    int fnlen = Swab.unsignedShort(bb.readUnsignedShort()); // File name length
+                    int exlen = Swab.unsignedShort(bb.readUnsignedShort()); // Extra field length
                     zfdo[i] = zfro[i] + 30 + fnlen + exlen;
                 }
 
@@ -491,7 +497,7 @@ public class Mappak {
     }
 
     private static String readString(RandomAccessFile b, int len) throws IOException {
-        StringBuilder linebuff = new StringBuilder();
+        StringBuilder linebuff = new StringBuilder(len);
 
         for (int i = 0; i < len; ++i) {
             char c = (char) b.readUnsignedByte();
@@ -513,6 +519,15 @@ public class Mappak {
 
     private static long roundUpTo4(long value) {
         return (value + 3L) / 4L * 4L;
+    }
+
+    private static void alignTo2(RandomAccessFile fileOut) throws IOException {
+        final int ALIGNMENT = 2;
+
+        int offset = (int) (fileOut.getFilePointer() % ALIGNMENT);
+        for (int i = 0; i < offset; i++) {
+            fileOut.writeByte(0);
+        }
     }
 
     public int getOffset() {

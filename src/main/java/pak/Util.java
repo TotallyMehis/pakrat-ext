@@ -43,7 +43,6 @@ public abstract class Util {
     }
 
     public static void copyBlock(RandomAccessFile in, RandomAccessFile out, long length) throws IOException {
-        assert length >= 0;
         assert length <= Integer.MAX_VALUE;
         assert in != null;
         assert out != null;

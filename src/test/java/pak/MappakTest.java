@@ -1,17 +1,26 @@
 package pak;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 final class MappakTest {
     @Test
@@ -32,6 +41,31 @@ final class MappakTest {
         List<Zipf> pakFiles = mappak.getZf();
         assertContainsFile(pakFiles, "materials/maps/test_npcclip/cubemapdefault.vtf");
         assertContainsFile(pakFiles, "materials/maps/test_npcclip/cubemapdefault.hdr.vtf");
+    }
+
+    @CsvSource("""
+            test_npcclip.bsp
+            """)
+    @ParameterizedTest
+    void saveMapCrc(String testMap, @TempDir Path tempDir) throws Exception {
+        Mappak mappak = new Mappak(true);
+
+        File outputFile = tempDir.resolve(testMap).toFile();
+
+        try (RandomAccessFile in = openResourceFileForRead(testMap)) {
+            mappak.loadMap(in);
+
+            assertDoesNotThrow(() -> {
+                try (var out = new RandomAccessFile(outputFile, "rw")) {
+                    mappak.saveMap(in, out);
+                    mappak.savePak(in, out);
+                }
+            });
+        }
+
+        long inCrc = getFileCrc(new File(MappakTest.class.getClassLoader().getResource(testMap).toURI()));
+        long outCrc = getFileCrc(outputFile);
+        assertEquals(inCrc, outCrc);
     }
 
     private static RandomAccessFile openResourceFileForRead(String fileName) {
@@ -57,5 +91,18 @@ final class MappakTest {
     private void assertContainsFile(List<Zipf> files, String fileName) {
         assertTrue(files.stream().anyMatch(zipf -> fileName.equals(zipf.getFullPath())),
                 () -> "Did not contain file %s".formatted(fileName));
+    }
+
+    private static long getFileCrc(File file) {
+        byte[] data;
+        try {
+            data = Files.readAllBytes(file.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to calculate CRC of a file " + file.getAbsolutePath(), e);
+        }
+
+        Checksum checksum = new CRC32();
+        checksum.update(data);
+        return checksum.getValue();
     }
 }
