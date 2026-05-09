@@ -10,7 +10,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -27,20 +26,21 @@ final class MappakTest {
     void loadMap() throws Exception {
         Mappak mappak = new Mappak(true);
 
-        RandomAccessFile file = openResourceFileForRead("test_npcclip.bsp");
+        try (RandomAccessFile file = openResourceFileForRead("test_npcclip.bsp")) {
+            mappak.loadMap(file);
 
-        mappak.loadMap(file);
+            assertEquals(105679, mappak.getLength());
 
-        assertEquals(105679, mappak.getLength());
+            String[] textureNames = mappak.getTexname();
+            assertEquals(5, textureNames.length);
+            assertListEquals(List.of("DEV/DEV_MEASUREGENERIC01B", "TOOLS/TOOLSNODRAW", "TOOLS/TOOLSSKYBOX",
+                    "DEV/DEV_MEASUREWALL01A", "TOOLS/TOOLSNPCCLIP"), textureNames);
 
-        String[] textureNames = mappak.getTexname();
-        assertEquals(5, textureNames.length);
-        assertListEquals(List.of("DEV/DEV_MEASUREGENERIC01B", "TOOLS/TOOLSNODRAW", "TOOLS/TOOLSSKYBOX",
-                "DEV/DEV_MEASUREWALL01A", "TOOLS/TOOLSNPCCLIP"), textureNames);
-
-        List<Zipf> pakFiles = mappak.getZf();
-        assertContainsFile(pakFiles, "materials/maps/test_npcclip/cubemapdefault.vtf");
-        assertContainsFile(pakFiles, "materials/maps/test_npcclip/cubemapdefault.hdr.vtf");
+            List<Zipf> pakFiles = mappak.getZf();
+            assertEquals(2, pakFiles.size());
+            assertContainsFile(pakFiles, "materials/maps/test_npcclip/cubemapdefault.vtf");
+            assertContainsFile(pakFiles, "materials/maps/test_npcclip/cubemapdefault.hdr.vtf");
+        }
     }
 
     @CsvSource("""
@@ -68,12 +68,44 @@ final class MappakTest {
         assertEquals(inCrc, outCrc);
     }
 
-    private static RandomAccessFile openResourceFileForRead(String fileName) {
-        URL fileUrl = MappakTest.class.getClassLoader().getResource(fileName);
+    @Test
+    void addFile(@TempDir Path tempDir) throws Exception {
+        File outputFile = tempDir.resolve("output.bsp").toFile();
 
+        try (RandomAccessFile in = openResourceFileForRead("test_npcclip.bsp")) {
+            Mappak mappak = new Mappak(true);
+            File testFile = getResourceAsFile("test.txt");
+
+            mappak.loadMap(in);
+
+            assertEquals(2, mappak.getZf().size());
+
+            Zipf zipFile = Zipf.fromFile(testFile, false, null);
+            zipFile.setPath("maps");
+            mappak.getZf().add(zipFile);
+
+            try (var out = new RandomAccessFile(outputFile, "rw")) {
+                mappak.saveMap(in, out);
+                mappak.savePak(in, out);
+            }
+        }
+
+        try (RandomAccessFile in = new RandomAccessFile(outputFile, "r")) {
+            Mappak mappak = new Mappak(true);
+            mappak.loadMap(in);
+
+            List<Zipf> pakFiles = mappak.getZf();
+            assertEquals(3, pakFiles.size());
+            assertContainsFile(pakFiles, "materials/maps/test_npcclip/cubemapdefault.vtf");
+            assertContainsFile(pakFiles, "materials/maps/test_npcclip/cubemapdefault.hdr.vtf");
+            assertContainsFile(pakFiles, "maps/test.txt");
+        }
+    }
+
+    private static RandomAccessFile openResourceFileForRead(String fileName) {
         try {
-            return new RandomAccessFile(new File(fileUrl.toURI()), "r");
-        } catch (FileNotFoundException | URISyntaxException e) {
+            return new RandomAccessFile(getResourceAsFile(fileName), "r");
+        } catch (FileNotFoundException e) {
             throw new RuntimeException("Failed to open file for reading: " + fileName, e);
         }
     }
@@ -85,6 +117,14 @@ final class MappakTest {
             if (!expected.contains(t)) {
                 fail("Did not contain %s".formatted(t));
             }
+        }
+    }
+
+    private static File getResourceAsFile(String fileName) {
+        try {
+            return new File(MappakTest.class.getClassLoader().getResource(fileName).toURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Failed to get resource " + fileName, e);
         }
     }
 
