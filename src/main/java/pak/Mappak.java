@@ -225,7 +225,9 @@ public class Mappak {
         String tdsd = readString(raf, slen);
         int ofs = this.lumps[LumpIndices.TEXDATA_STRING_TABLE].ofs();
         int len = this.lumps[LumpIndices.TEXDATA_STRING_TABLE].len();
-        int numtdst = len / Lump.size(LumpIndices.TEXDATA_STRING_TABLE);
+        final int stringTableStructSize = LumpIndices.lumpStructSize(LumpIndices.TEXDATA_STRING_TABLE);
+        assert len % stringTableStructSize == 0;
+        int numtdst = len / stringTableStructSize;
         this.texname = new String[numtdst];
         raf.seek((long) ofs);
 
@@ -362,11 +364,16 @@ public class Mappak {
                 Lump lump = new Lump(ofs, len, vers, fourCC);
 
                 if (lump.len() > 0 && !this.auton) {
+                    int lumpStructSize = LumpIndices.lumpStructSize(i);
+                    if (lumpStructSize <= 0) {
+                        lumpStructSize = 1;
+                    }
+
                     Cons.print("Lump " + i + ": ");
                     Cons.print(lump.ofs() + ", " + lump.len() + ", " + lump.vers() + ", " + lump.fourCC());
                     Cons.println(
-                            " " + Lump.name(i) + "  " + lump.len() / Lump.size(i)
-                                    + (Lump.size(i) == 1 ? " bytes" : ""));
+                            " " + LumpIndices.lumpName(i) + "  " + lump.len() / lumpStructSize
+                                    + (lumpStructSize == 1 ? " bytes" : ""));
                 }
 
                 this.lumps[i] = lump;
