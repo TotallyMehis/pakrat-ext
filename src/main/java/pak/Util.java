@@ -19,25 +19,24 @@ public abstract class Util {
     }
 
     public static String getRelativePath(String fullPath, String rootDir) {
-        String full = fullPath;
-
-        if (rootDir != null && !"".equals(rootDir) && full.startsWith(rootDir)) {
-            int index = rootDir.length() + 1;
-            if (index < full.length()) {
-                return full.substring(index);
+        if (rootDir != null && !rootDir.isEmpty() && fullPath.startsWith(rootDir)) {
+            int offset = rootDir.endsWith("/") ? 0 : 1;
+            int index = rootDir.length() + offset;
+            if (index < fullPath.length()) {
+                return fullPath.substring(index);
             }
         }
 
         int lowestIndex = -1;
         for (String folder : List.of("/materials", "/models", "/sound", "/maps", "/scripts")) {
-            int index = full.indexOf(folder);
+            int index = fullPath.indexOf(folder);
             if (index != -1 && (lowestIndex == -1 || lowestIndex > index)) {
                 lowestIndex = index + 1;
             }
         }
 
         if (lowestIndex != -1) {
-            return full.substring(lowestIndex);
+            return fullPath.substring(lowestIndex);
         }
 
         return null;
@@ -63,5 +62,9 @@ public abstract class Util {
             bytesRead = in.read(buffer, 0, toRead);
             out.write(buffer, 0, bytesRead);
         }
+    }
+
+    public static String normalizePath(String path) {
+        return path.replace(File.separatorChar, '/');
     }
 }

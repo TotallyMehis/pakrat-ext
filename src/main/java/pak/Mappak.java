@@ -87,9 +87,9 @@ public class Mappak {
             bout.writeInt(Swab.I((int) z.CRC));
             bout.writeInt(Swab.I(z.size));
             bout.writeInt(Swab.I(z.size));
-            bout.writeShort(Swab.S(z.getFullname().length()));
+            bout.writeShort(Swab.S(z.getFullPath().length()));
             bout.writeShort(0);
-            writeString(bout, z.getFullname());
+            writeString(bout, z.getFullPath());
             z.datofs = (int) bout.getFilePointer() - newoffset;
             if (z.inpak) {
                 bin.seek((long) (this.offset + z.datofs));
@@ -115,14 +115,14 @@ public class Mappak {
             bout.writeInt(Swab.I((int) z.CRC));
             bout.writeInt(Swab.I(z.size));
             bout.writeInt(Swab.I(z.size));
-            bout.writeShort(Swab.S(z.getFullname().length()));
+            bout.writeShort(Swab.S(z.getFullPath().length()));
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeInt(0);
             bout.writeInt(Swab.I(z.relofs));
-            writeString(bout, z.getFullname());
+            writeString(bout, z.getFullPath());
         }
 
         int cdend = (int) bout.getFilePointer() - newoffset;
@@ -477,17 +477,8 @@ public class Mappak {
                 }
 
                 for (int i = 0; i < cdes; ++i) {
-                    Zipf z = new Zipf();
-                    z.size = zfcs[i];
-                    z.relofs = zfro[i];
-                    z.datofs = zfdo[i];
-                    z.CRC = (long) zcrc[i];
-                    z.setfull(zffn[i]);
-                    z.inpak = true;
-                    z.data = null;
-                    this.zf.add(z);
+                    this.zf.add(Zipf.fromPak(zffn[i], zfcs[i], zfro[i], zfdo[i], zcrc[i]));
                 }
-
             }
         }
     }

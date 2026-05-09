@@ -53,9 +53,9 @@ public class ZipDirModel extends AbstractTableModel {
             case 0:
                 return this.getzipfile(row).inpak;
             case 1:
-                return this.getzipfile(row).getFilename();
+                return this.getzipfile(row).getFileName();
             case 2:
-                return this.getzipfile(row).getPathname();
+                return this.getzipfile(row).getPath();
             case 3:
                 return this.getzipfile(row).size;
             case 4:
@@ -69,10 +69,10 @@ public class ZipDirModel extends AbstractTableModel {
     public void setValueAt(Object value, int row, int col) {
         switch (col) {
             case 1:
-                this.getzipfile(row).setfile((String) value);
+                this.getzipfile(row).setFileName((String) value);
                 break;
             case 2:
-                this.getzipfile(row).setpath((String) value);
+                this.getzipfile(row).setPath((String) value);
         }
 
         this.fireTableDataChanged();
@@ -111,7 +111,7 @@ public class ZipDirModel extends AbstractTableModel {
 
     public Zipf getbyname(String fname) {
         for (int i = 0; i < this.getRowCount(); ++i) {
-            if (fname.equalsIgnoreCase(this.getzipfile(i).getFullname())) {
+            if (fname.equalsIgnoreCase(this.getzipfile(i).getFullPath())) {
                 return this.getzipfile(i);
             }
         }
@@ -121,7 +121,7 @@ public class ZipDirModel extends AbstractTableModel {
 
     public Zipf getbyfilename(String fname) {
         for (int i = 0; i < this.getRowCount(); ++i) {
-            if (fname.equalsIgnoreCase(this.getzipfile(i).getFilename())) {
+            if (fname.equalsIgnoreCase(this.getzipfile(i).getFileName())) {
                 return this.getzipfile(i);
             }
         }
@@ -138,10 +138,10 @@ public class ZipDirModel extends AbstractTableModel {
 
         for (Zipf z : this.zfl) {
             DefaultMutableTreeNode znode = new DefaultMutableTreeNode(z);
-            if (z.getPathname().equals("")) {
+            if (z.getPath().equals("")) {
                 root.add(znode);
             } else {
-                String[] dirs = z.getPathname().split("/");
+                String[] dirs = z.getPath().split("/");
                 DefaultMutableTreeNode top = root;
 
                 for (String s : dirs) {

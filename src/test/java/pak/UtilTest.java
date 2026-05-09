@@ -46,6 +46,20 @@ final class UtilTest {
     }
 
     @CsvSource("""
+            /path/to,/path/to/materials/example.vmt,materials/example.vmt
+            /path/to,/path/to/asdf/example.vmt,asdf/example.vmt
+            /path/to/,/path/to/asdf/example.vmt,asdf/example.vmt
+            /path/to,/path/to/,
+            /path/to/,/path/to/,
+            /path/to,/path/to,
+            /path/to/,/path/to,
+            """)
+    @ParameterizedTest
+    void getRelativePathRoot(String rootDir, String fullPath, String expected) {
+        assertEquals(expected, Util.getRelativePath(fullPath, rootDir));
+    }
+
+    @CsvSource("""
             200,199
             2000,2000
             4096,4096

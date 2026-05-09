@@ -55,7 +55,7 @@ final class MappakTest {
     }
 
     private void assertContainsFile(List<Zipf> files, String fileName) {
-        assertTrue(files.stream().anyMatch(zipf -> fileName.equals(zipf.getFullname())),
+        assertTrue(files.stream().anyMatch(zipf -> fileName.equals(zipf.getFullPath())),
                 () -> "Did not contain file %s".formatted(fileName));
     }
 }

@@ -468,7 +468,7 @@ public class Scan {
                 String cubemappath = "materials/maps/" + mapname.substring(0, mapname.lastIndexOf(".bsp"));
 
                 for (int i = 0; i < pakfiles; ++i) {
-                    refd[i] = this.tmod.getzipfile(i).getPathname().startsWith(cubemappath);
+                    refd[i] = this.tmod.getzipfile(i).getPath().startsWith(cubemappath);
                 }
 
                 for (int i = 0; i < this.files.size(); ++i) {

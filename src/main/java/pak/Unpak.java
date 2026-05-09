@@ -422,9 +422,9 @@ public class Unpak {
                     if (rows.length != 0) {
                         if (rows.length == 1) {
                             Zipf z = Unpak.this.zmodel.getzipfile(rows[0]);
-                            File sfile = new File(z.getFullname());
+                            File sfile = new File(z.getFullPath());
                             JFileChooser schooser = new JFileChooser(Pakpref.adddir);
-                            schooser.setDialogTitle("Save selected file - " + z.getFullname());
+                            schooser.setDialogTitle("Save selected file - " + z.getFullPath());
                             schooser.setSelectedFile(sfile);
                             int result = schooser.showSaveDialog(Unpak.this.frame);
                             if (result == 1) {
@@ -446,7 +446,7 @@ public class Unpak {
 
                             for (int r = 0; r < rows.length; ++r) {
                                 Zipf z = Unpak.this.zmodel.getzipfile(rows[r]);
-                                File sfile = new File(path, z.getFilename());
+                                File sfile = new File(path, z.getFileName());
                                 if (!Unpak.this.savePakFile(z, sfile, true)) {
                                     break;
                                 }
@@ -489,8 +489,8 @@ public class Unpak {
                     int[] rows = Unpak.this.getSelection();
                     if (rows.length != 0) {
                         Zipf z = Unpak.this.zmodel.getzipfile(rows[0]);
-                        JTextField filetext = new JTextField(z.getFilename());
-                        JTextField pathtext = new JTextField(z.getPathname());
+                        JTextField filetext = new JTextField(z.getFileName());
+                        JTextField pathtext = new JTextField(z.getPath());
                         Container cbox = Box.createHorizontalBox();
                         cbox.add(new JLabel("Size: " + z.size + "  CRC32: " + Integer.toHexString((int) z.CRC)));
                         Container fbox = Box.createHorizontalBox();
@@ -500,10 +500,10 @@ public class Unpak {
                         pbox.add(new JLabel("Path : "));
                         pbox.add(pathtext);
                         int result = JOptionPane.showOptionDialog(Unpak.this.frame,
-                                new Object[] { z.getFullname(), cbox, fbox, pbox }, "Edit file parameters", 2, -1,
+                                new Object[] { z.getFullPath(), cbox, fbox, pbox }, "Edit file parameters", 2, -1,
                                 (Icon) null, (Object[]) null, (Object) null);
                         if (result != 2) {
-                            z.setfull(pathtext.getText() + "/" + filetext.getText());
+                            z.setFullPath(pathtext.getText() + "/" + filetext.getText());
                             Unpak.this.tmodel.fireTableDataChanged();
                             Unpak.this.dirty = true;
                             if (Unpak.this.treeview) {
@@ -764,7 +764,7 @@ public class Unpak {
                 if (match == null) {
                     Cons.println("Can't find file " + pakfile + " in Pak.");
                 } else {
-                    File mfile = new File(match.getFilename());
+                    File mfile = new File(match.getFileName());
                     this.savePakFile(match, mfile, false);
                     this.raf.close();
                     long duration = System.currentTimeMillis() - starttime;
@@ -873,19 +873,19 @@ public class Unpak {
                 } else {
                     String tfilename = tfile[i].getName();
                     if (tfile[i].exists() && tfile[i].canRead()) {
-                        Zipf z = new Zipf();
-                        z.setcfull(tfile[i].getAbsolutePath());
+                        String fullPath = Util.normalizePath(tfile[i].getAbsolutePath());
+                        String relativePath = Util.getRelativePath(fullPath, base);
+                        boolean fixupPath = false;
                         if (Pakpref.fixup != 0) {
-                            String relfull = z.getrelfull(base);
-                            if (relfull != null) {
+                            if (relativePath != null) {
                                 if (Pakpref.fixup == 1 && !all) {
                                     int result = JOptionPane.showOptionDialog(this.frame,
-                                            z.getFullname() + "\nFix-up path to: \"" + relfull + "\" ?",
+                                            fullPath + "\nFix-up path to: \"" + relativePath + "\" ?",
                                             "Add file " + (i + 1) + " of " + tfile.length, 0, 3, (Icon) null,
                                             new String[] { "Yes", "Yes to All", "No", "Skip", "Cancel" },
                                             (Object) null);
                                     if (result == 0 || result == 1) {
-                                        z.setfull(relfull);
+                                        fixupPath = true;
                                     }
 
                                     if (result == 1) {
@@ -900,24 +900,13 @@ public class Unpak {
                                         return -1;
                                     }
                                 } else {
-                                    z.setfull(relfull);
+                                    fixupPath = true;
                                 }
                             }
                         }
 
                         Cons.println("Reading " + tfilename);
-                        z.size = (int) tfile[i].length();
-                        z.datofs = z.relofs = 0;
-                        z.inpak = false;
-                        z.data = new byte[z.size];
-                        FileInputStream fis = new FileInputStream(tfile[i]);
-                        fis.read(z.data, 0, z.size);
-                        fis.close();
-                        CRC32 crc = new CRC32();
-                        crc.update(z.data);
-                        z.CRC = crc.getValue();
-
-                        this.zmodel.addfile(z);
+                        this.zmodel.addfile(Zipf.fromFile(tfile[i], fixupPath, base));
                         if (!this.auton) {
                             this.table.scrollRectToVisible(
                                     this.table.getCellRect(this.tmodel.getRowCount() - 1, 0, true));
@@ -945,7 +934,7 @@ public class Unpak {
         List<Zipf> fileList = this.m.getZf();
         for (int i = 0; i < fileList.size(); ++i) {
             Zipf z = fileList.get(i);
-            if (z.getFilename().toLowerCase().endsWith(".nav")) {
+            if (z.getFileName().toLowerCase().endsWith(".nav")) {
                 try {
                     this.raf.seek((long) (this.m.getOffset() + z.datofs));
                     byte[] buffer = new byte[z.size];
@@ -954,7 +943,7 @@ public class Unpak {
                     zb.order(ByteOrder.LITTLE_ENDIAN);
                     long magic = (long) zb.getInt() & -1L;
                     if (magic != -17958194L) {
-                        Cons.println("Nav file " + z.getFullname() + " is invalid.");
+                        Cons.println("Nav file " + z.getFullPath() + " is invalid.");
                     } else {
                         zb.getInt();
                         long nlen = (long) zb.getInt() & -1L;
@@ -963,7 +952,7 @@ public class Unpak {
                             if (!this.auton) {
                                 int result = JOptionPane
                                         .showConfirmDialog(
-                                                this.frame, "Nav file \"" + z.getFullname()
+                                                this.frame, "Nav file \"" + z.getFullPath()
                                                         + "\" version does not match this bsp file.\n"
                                                         + "Do you want to update it?",
                                                 "Check NAV file", 0);
@@ -972,7 +961,7 @@ public class Unpak {
                                 }
                             }
 
-                            Cons.print("Updating " + z.getFullname() + "...");
+                            Cons.print("Updating " + z.getFullPath() + "...");
                             zb.position(8);
                             zb.putInt((int) blen);
                             CRC32 crc = new CRC32();
@@ -986,7 +975,7 @@ public class Unpak {
 
                             for (int j = 0; j < i; ++j) {
                                 Zipf zj = fileList.get(j);
-                                cdpos += (long) (46 + zj.getFullname().length());
+                                cdpos += (long) (46 + zj.getFullPath().length());
                             }
 
                             cdpos += 16L;
@@ -994,7 +983,7 @@ public class Unpak {
                             this.raf.writeInt(Swab.I((int) z.CRC));
                             Cons.println("Done");
                         } else {
-                            Cons.println("Nav file " + z.getFullname() + " matches BSP.");
+                            Cons.println("Nav file " + z.getFullPath() + " matches BSP.");
                         }
                     }
                 } catch (IOException ex) {
@@ -1060,7 +1049,7 @@ public class Unpak {
             Zipf z = this.zmodel.getzipfile(rows[i]);
             if (!all) {
                 int result = JOptionPane.showOptionDialog(this.frame,
-                        "Remove file " + z.getFilename() + " from the pak?",
+                        "Remove file " + z.getFileName() + " from the pak?",
                         "Delete file " + (rows.length - i) + " of " + rows.length, 1, 3, (Icon) null, options,
                         options[0]);
                 if (result == 2) {
@@ -1241,24 +1230,24 @@ public class Unpak {
             switch (z.getType()) {
                 case FileType.OTHER:
                 case FileType.SOUND:
-                    this.hexList(readString(zb, z.size), z.getFullname());
+                    this.hexList(readString(zb, z.size), z.getFullPath());
                     break;
                 case FileType.MATERIAL:
                 case FileType.TEXT:
                     String text = readString(zb, z.size);
-                    this.TextBox("Pakrat - " + z.getFullname(), text);
+                    this.TextBox("Pakrat - " + z.getFullPath(), text);
                     break;
                 case FileType.TEXTURE:
-                    this.vtfInfo(zb, z.getFullname(), z.size);
+                    this.vtfInfo(zb, z.getFullPath(), z.size);
                     break;
                 case FileType.MODEL:
-                    this.mdlInfo(zb, z.getFullname(), z.size);
+                    this.mdlInfo(zb, z.getFullPath(), z.size);
                     break;
                 case FileType.MODEL_DAT:
-                    if (z.getFullname().toLowerCase().endsWith(".phy")) {
-                        this.phyInfo(zb, z.getFullname(), z.size);
+                    if (z.getFullPath().toLowerCase().endsWith(".phy")) {
+                        this.phyInfo(zb, z.getFullPath(), z.size);
                     } else {
-                        this.hexList(readString(zb, z.size), z.getFullname());
+                        this.hexList(readString(zb, z.size), z.getFullPath());
                     }
             }
         } catch (Exception ex) {
