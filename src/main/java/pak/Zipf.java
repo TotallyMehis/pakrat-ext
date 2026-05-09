@@ -98,6 +98,10 @@ public class Zipf {
     }
 
     public void setPath(String path) {
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+
         this.setFullPath(path + "/" + this.fileName);
     }
 

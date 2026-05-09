@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 final class ZipfTest {
     @Test
@@ -84,5 +85,18 @@ final class ZipfTest {
         assertEquals("subfolder", zipFile.getPath());
         assertEquals("test.txt", zipFile.getFileName());
         assertEquals(FileType.TEXT, zipFile.getType());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "materials", "materials/" })
+    void setPath(String path) throws Exception {
+        File testFile = new File(MappakTest.class.getClassLoader().getResource("test.txt").toURI());
+
+        Zipf zipFile = Zipf.fromFile(testFile, false, null);
+        zipFile.setPath(path);
+
+        assertEquals("materials/test.txt", zipFile.getFullPath());
+        assertEquals("materials", zipFile.getPath());
+        assertEquals("test.txt", zipFile.getFileName());
     }
 }
