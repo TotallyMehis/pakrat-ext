@@ -20,6 +20,7 @@ jobs:
         with:
           java-version: '25'
           distribution: 'temurin'
+          cache: 'maven'
 
       - name: Build image
         run: mvn verify -Pruntime-image --batch-mode -Druntime-image.classifier=linux -Dchangelist=-${GITHUB_SHA::7}
@@ -52,6 +53,7 @@ jobs:
         with:
           java-version: '25'
           distribution: 'temurin'
+          cache: 'maven'
 
       - name: Build image
         run: mvn verify -Pruntime-image --batch-mode "-Druntime-image.classifier=windows" -Dchangelist="-$($env:GITHUB_SHA.Substring(0,7))"
