@@ -73,7 +73,7 @@ public class Scan {
             this.stable = null;
             this.smodel = null;
             this.basedir = gamedir;
-            this.doautoscan(parent);
+            this.doAutoscan(parent);
         } else {
             this.sframe = new JFrame("Pakrat - Scan Files - " + fname);
             this.sframe.setLocationRelativeTo(parent);
@@ -82,7 +82,7 @@ public class Scan {
             this.stable = new JTable(this.smodel);
             Container topbox = Box.createHorizontalBox();
             topbox.add(new JLabel("Gamedir: "));
-            final JComboBox<String> filebox = new JComboBox<>(this.getbasedirs(gamedir));
+            final JComboBox<String> filebox = new JComboBox<>(this.getBaseDirs(gamedir));
             Font ffont = filebox.getFont();
             filebox.setFont(new Font(ffont.getName(), 0, ffont.getSize() - 1));
             filebox.setToolTipText("Base game directory to scan");
@@ -140,12 +140,12 @@ public class Scan {
             this.sframe.setVisible(true);
             scanb.addActionListener(_ -> {
                 Scan.this.basedir = (String) filebox.getSelectedItem();
-                Scan.this.addbasedir(Scan.this.basedir);
+                Scan.this.addBaseDir(Scan.this.basedir);
                 Scan.this.sframe.setCursor(Cursor.getPredefinedCursor(3));
                 SwingWorker worker = new SwingWorker() {
                     @Override
                     public Object construct() {
-                        Scan.this.doscan();
+                        Scan.this.doScan();
                         return null;
                     }
 
@@ -161,7 +161,7 @@ public class Scan {
                 worker.start();
             });
             addsel.addActionListener(_ -> {
-                Scan.this.addselected();
+                Scan.this.addSelected();
                 scanb.doClick();
             });
             selall.addActionListener(_ -> {
@@ -175,7 +175,7 @@ public class Scan {
                 Scan.this.close();
             });
             check.addActionListener(_ -> {
-                Scan.this.docheck(Scan.this.smodel.getfile(Scan.this.stable.getSelectedRow()));
+                Scan.this.printFileReferences(Scan.this.smodel.getfile(Scan.this.stable.getSelectedRow()));
             });
             ListSelectionModel tabsel = this.stable.getSelectionModel();
             tabsel.addListSelectionListener(lse -> {
@@ -197,9 +197,9 @@ public class Scan {
         }
     }
 
-    private void docheck(Scanfile s) {
+    private void printFileReferences(Scanfile s) {
         StringBuilder t = new StringBuilder("File: " + s.fullname + "\n");
-        t.append("Type: " + ScanModel.tstr[s.type] + "\n");
+        t.append("Type: " + s.type.getPrettyName() + "\n");
         t.append("Diskname: " + s.diskname + "\n");
         t.append("Location: ");
         if (s.inpak) {
@@ -217,7 +217,7 @@ public class Scan {
         }
 
         t.append("\n");
-        this.checkparent(s, t);
+        printFile(s, t);
         JTextArea textarea = new JTextArea(t.toString());
         textarea.setEditable(false);
         JFrame tframe = new JFrame("Pakrat - Check File Reference - " + s.listname);
@@ -228,29 +228,30 @@ public class Scan {
         tframe.setVisible(true);
     }
 
-    private void checkparent(Scanfile s, StringBuilder t) {
-        if (s != null) {
-            if (s.parent != null) {
-                t.append("\nReferenced from:\n");
-                if (s.parent == Scanfile.ENTITY) {
-                    t.append("    Entity list - " + s.referent + "\n");
-                } else if (s.parent == Scanfile.STATIC) {
-                    t.append("    Prop_static list\n");
-                } else if (s.parent == Scanfile.DETAIL) {
-                    t.append("    Prop_detail list\n");
-                } else if (s.parent == Scanfile.TEXTURE) {
-                    t.append("    Map material list\n");
-                } else if (s.parent == Scanfile.OTHER) {
-                    t.append("    Extra file list\n");
-                } else {
-                    t.append("    File: " + s.parent.fullname + " - keyword \"" + s.referent + "\"\n");
-                    this.checkparent(s.parent, t);
-                }
-            }
+    private static void printFile(Scanfile s, StringBuilder t) {
+        if (s == null || s.parent == null) {
+            return;
         }
+
+        t.append("\nReferenced from:\n");
+        if (s.parent == Scanfile.ENTITY) {
+            t.append("    Entity list - " + s.referent + "\n");
+        } else if (s.parent == Scanfile.STATIC) {
+            t.append("    Prop_static list\n");
+        } else if (s.parent == Scanfile.DETAIL) {
+            t.append("    Prop_detail list\n");
+        } else if (s.parent == Scanfile.TEXTURE) {
+            t.append("    Map material list\n");
+        } else if (s.parent == Scanfile.OTHER) {
+            t.append("    Extra file list\n");
+        } else {
+            t.append("    File: " + s.parent.fullname + " - keyword \"" + s.referent + "\"\n");
+            printFile(s.parent, t);
+        }
+
     }
 
-    private String[] getbasedirs(String gamedir) {
+    private String[] getBaseDirs(String gamedir) {
         this.dirset.clear();
 
         for (int i = 0; i < 6; ++i) {
@@ -268,13 +269,13 @@ public class Scan {
             this.dirset.add(mapbase);
         }
 
-        this.compactbasedirs();
+        this.compactBaseDirs();
         return (String[]) this.dirset.toArray(new String[0]);
     }
 
-    private void addbasedir(String dir) {
+    private void addBaseDir(String dir) {
         this.dirset.add(0, dir);
-        this.compactbasedirs();
+        this.compactBaseDirs();
         String[] dirs = (String[]) this.dirset.toArray(new String[0]);
 
         for (int i = 0; i < dirs.length && i != 6; ++i) {
@@ -283,7 +284,7 @@ public class Scan {
 
     }
 
-    private void compactbasedirs() {
+    private void compactBaseDirs() {
         boolean[] marked = new boolean[this.dirset.size()];
         String[] dirs = (String[]) this.dirset.toArray(new String[0]);
 
@@ -307,7 +308,7 @@ public class Scan {
 
     }
 
-    private void addselected() {
+    private void addSelected() {
         File[] filearray = new File[this.smodel.numselected()];
         int j = 0;
 
@@ -331,7 +332,7 @@ public class Scan {
 
     }
 
-    private void doautoscan(final Component parent) {
+    private void doAutoscan(final Component parent) {
         if (this.basedir.equals("")) {
             String mapbase = this.pakrat.getInfile().getPath().replace(File.separatorChar, '/');
             int im = mapbase.toLowerCase().lastIndexOf("maps/");
@@ -342,21 +343,21 @@ public class Scan {
         }
 
         if (this.auton) {
-            this.doscan();
-            if (this.autoaddfiles((Component) null) == 0) {
+            this.doScan();
+            if (this.autoAddFiles((Component) null) == 0) {
                 this.nofiles = true;
             }
         } else {
             parent.setCursor(Cursor.getPredefinedCursor(3));
             SwingWorker worker = new SwingWorker() {
                 public Object construct() {
-                    Scan.this.doscan();
+                    Scan.this.doScan();
                     return null;
                 }
 
                 public void finished() {
                     parent.setCursor(Cursor.getDefaultCursor());
-                    Scan.this.autoaddfiles(parent);
+                    Scan.this.autoAddFiles(parent);
                 }
             };
             worker.start();
@@ -364,7 +365,7 @@ public class Scan {
 
     }
 
-    private int autoaddfiles(Component parent) {
+    private int autoAddFiles(Component parent) {
         Iterator<Scanfile> fit = this.files.iterator();
 
         while (fit.hasNext()) {
@@ -418,7 +419,7 @@ public class Scan {
         }
     }
 
-    private void doscan() {
+    private void doScan() {
         this.files.clear();
 
         try {
@@ -428,40 +429,40 @@ public class Scan {
             }
 
             Cons.print("Scanning textures...");
-            this.scantextures();
+            this.scanTextures();
             if (!this.auton) {
                 this.prog.setString("Prop_statics...");
                 this.prog.setValue(0);
             }
 
             Cons.print("prop_statics...");
-            this.scanstatics();
+            this.scanStatics();
             if (!this.auton) {
                 this.prog.setString("Prop_details...");
                 this.prog.setValue(0);
             }
 
             Cons.print("prop_details...");
-            this.scandetails();
+            this.scanDetails();
             if (!this.auton) {
                 this.prog.setString("Loading entities...");
                 this.prog.setValue(0);
             }
 
             Cons.print("entities...");
-            this.scanentities();
+            this.scanEntities();
             if (!this.auton) {
                 this.prog.setString("Extra files...");
                 this.prog.setValue(0);
             }
 
             Cons.print("extras...");
-            this.scanextras();
+            this.scanExtras();
             if (!this.auton) {
                 this.prog.end();
             }
 
-            Cons.println(this.compactlist() + " duplicates removed");
+            Cons.println(this.compactList() + " duplicates removed");
             if (!this.auton) {
                 int pakfiles = this.tmod.getRowCount();
                 boolean[] refd = new boolean[pakfiles];
@@ -516,7 +517,7 @@ public class Scan {
         this.sframe = null;
     }
 
-    private void scanextras() throws IOException {
+    private void scanExtras() throws IOException {
         if (!this.auton) {
             this.prog.setMaximum(7);
         }
@@ -525,7 +526,7 @@ public class Scan {
         mapname = mapname.substring(0, mapname.lastIndexOf(".bsp"));
         if (!this.auton) {
             if (Pakpref.navfile) {
-                Scanfile sfile = new Scanfile("maps/" + mapname + ".nav", this.tmod, this.basedir, (byte) 9,
+                Scanfile sfile = new Scanfile("maps/" + mapname + ".nav", this.tmod, this.basedir, ScanfileType.NAV,
                         Scanfile.OTHER,
                         "");
                 this.prog.setValue(1);
@@ -533,7 +534,8 @@ public class Scan {
             }
 
             if (Pakpref.ainfile) {
-                Scanfile sfile = new Scanfile("maps/graphs/" + mapname + ".ain", this.tmod, this.basedir, (byte) 10,
+                Scanfile sfile = new Scanfile("maps/graphs/" + mapname + ".ain", this.tmod, this.basedir,
+                        ScanfileType.AIN,
                         Scanfile.OTHER, "");
                 this.prog.setValue(2);
                 this.files.add(sfile);
@@ -541,7 +543,7 @@ public class Scan {
 
             if (Pakpref.soundcache) {
                 Scanfile sfile = new Scanfile("maps/soundcache/" + mapname + ".cache", this.tmod, this.basedir,
-                        (byte) 12,
+                        ScanfileType.CACHE,
                         Scanfile.OTHER, "");
                 this.prog.setValue(3);
                 this.files.add(sfile);
@@ -549,7 +551,7 @@ public class Scan {
         }
 
         if (Pakpref.description) {
-            Scanfile sfile = new Scanfile("maps/" + mapname + ".txt", this.tmod, this.basedir, (byte) 11,
+            Scanfile sfile = new Scanfile("maps/" + mapname + ".txt", this.tmod, this.basedir, ScanfileType.TXT,
                     Scanfile.OTHER,
                     "");
             if (!this.auton) {
@@ -560,25 +562,27 @@ public class Scan {
         }
 
         if (Pakpref.overview) {
-            Scanfile sfile = new Scanfile("resource/overviews/" + mapname + ".txt", this.tmod, this.basedir, (byte) 11,
+            Scanfile sfile = new Scanfile("resource/overviews/" + mapname + ".txt", this.tmod, this.basedir,
+                    ScanfileType.TXT,
                     Scanfile.OTHER, "");
             if (!this.auton) {
                 this.prog.setValue(5);
             }
 
             this.files.add(sfile);
-            this.files.addAll(this.checksubfile(sfile));
+            this.files.addAll(this.checkSubfile(sfile));
         }
 
         if (Pakpref.soundscape) {
-            Scanfile sfile = new Scanfile("scripts/soundscapes_" + mapname + ".txt", this.tmod, this.basedir, (byte) 11,
+            Scanfile sfile = new Scanfile("scripts/soundscapes_" + mapname + ".txt", this.tmod, this.basedir,
+                    ScanfileType.TXT,
                     Scanfile.OTHER, "");
             if (!this.auton) {
                 this.prog.setValue(6);
             }
 
             this.files.add(sfile);
-            this.files.addAll(this.checksubfile(sfile));
+            this.files.addAll(this.checkSubfile(sfile));
         }
 
         if (!this.auton) {
@@ -587,7 +591,7 @@ public class Scan {
 
     }
 
-    private void scanentities() throws IOException {
+    private void scanEntities() throws IOException {
         this.m.loadEntities(this.raf, this.prog);
         if (!this.auton) {
             this.prog.setString("Entities...");
@@ -608,14 +612,15 @@ public class Scan {
 
             String name = entValueList.get(i);
             String ref = entKeyList.get(i);
-            Scanfile sfile = new Scanfile(name, this.tmod, this.basedir, Scanfile.gettype(name), Scanfile.ENTITY, ref);
+            Scanfile sfile = new Scanfile(name, this.tmod, this.basedir, ScanfileType.getTypeFromFilename(name),
+                    Scanfile.ENTITY, ref);
             this.files.add(sfile);
-            this.files.addAll(this.checksubfile(sfile));
+            this.files.addAll(this.checkSubfile(sfile));
         }
 
     }
 
-    private void scanstatics() throws IOException {
+    private void scanStatics() throws IOException {
         List<String> staticNames = this.m.getStaticname();
         if (!this.auton) {
             this.prog.setMaximum(staticNames.size());
@@ -626,14 +631,15 @@ public class Scan {
                 this.prog.setValue(i);
             }
 
-            Scanfile sfile = new Scanfile(staticNames.get(i), this.tmod, this.basedir, (byte) 3, Scanfile.STATIC, "");
+            Scanfile sfile = new Scanfile(staticNames.get(i), this.tmod, this.basedir, ScanfileType.MDL,
+                    Scanfile.STATIC, "");
             this.files.add(sfile);
-            this.files.addAll(this.checksubfile(sfile));
+            this.files.addAll(this.checkSubfile(sfile));
         }
 
     }
 
-    private void scandetails() throws IOException {
+    private void scanDetails() throws IOException {
         List<String> detailNames = this.m.getDetailname();
         if (!this.auton) {
             this.prog.setMaximum(detailNames.size());
@@ -644,14 +650,15 @@ public class Scan {
                 this.prog.setValue(i);
             }
 
-            Scanfile sfile = new Scanfile(detailNames.get(i), this.tmod, this.basedir, (byte) 3, Scanfile.DETAIL, "");
+            Scanfile sfile = new Scanfile(detailNames.get(i), this.tmod, this.basedir, ScanfileType.MDL,
+                    Scanfile.DETAIL, "");
             this.files.add(sfile);
-            this.files.addAll(this.checksubfile(sfile));
+            this.files.addAll(this.checkSubfile(sfile));
         }
 
     }
 
-    private void scantextures() throws IOException {
+    private void scanTextures() throws IOException {
         List<String> textures = this.m.getTexname();
         if (!this.auton) {
             this.prog.setMaximum(textures.size());
@@ -662,51 +669,47 @@ public class Scan {
                 this.prog.setValue(i);
             }
 
-            Scanfile sfile = new Scanfile(textures.get(i), this.tmod, this.basedir, (byte) 1, Scanfile.TEXTURE, "");
+            Scanfile sfile = new Scanfile(textures.get(i), this.tmod, this.basedir, ScanfileType.VMT, Scanfile.TEXTURE,
+                    "");
             this.files.add(sfile);
-            this.files.addAll(this.checksubfile(sfile));
+            this.files.addAll(this.checkSubfile(sfile));
         }
 
     }
 
-    private ArrayList<Scanfile> checksubfile(Scanfile sf) throws IOException {
+    private ArrayList<Scanfile> checkSubfile(Scanfile sf) throws IOException {
         ArrayList<Scanfile> subfiles = new ArrayList<>();
         if (sf.inlist || sf.ondisk) {
             switch (sf.type) {
-                case 1:
-                    subfiles = this.getreffromvmt(sf);
-                case 2:
-                case 4:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                case 10:
-                default:
-                    break;
-                case 3:
-                    subfiles = this.getreffrommdl(sf);
-                    break;
-                case 5:
-                    subfiles = this.getreffromphy(sf);
-                    break;
-                case 11:
+                case VMT -> {
+                    subfiles = this.getRefFromVmt(sf);
+                }
+                case MDL -> {
+                    subfiles = this.getRefFromMdl(sf);
+                }
+                case PHY -> {
+                    subfiles = this.getRefFromPhy(sf);
+                }
+                case TXT -> {
                     if (sf.fullname.startsWith("resource/overviews/")
                             || sf.fullname.startsWith("scripts/soundscapes_")) {
-                        subfiles = this.getreffromtxt(sf);
+                        subfiles = this.getRefFromTxt(sf);
                     }
+                }
+                case NUL, VTF, VTX, VVD, WAV, MP3, NAV, AIN, CACHE -> {
+                }
             }
         }
 
         return subfiles;
     }
 
-    private ArrayList<Scanfile> getreffromphy(Scanfile s) throws IOException {
+    private ArrayList<Scanfile> getRefFromPhy(Scanfile s) throws IOException {
         ArrayList<Scanfile> sublist = new ArrayList<>();
         if (!s.inlist && !s.ondisk) {
             return sublist;
         } else {
-            ByteBuffer buff = this.getfilebuffer(s);
+            ByteBuffer buff = this.getFileBuffer(s);
             if (buff == null) {
                 return sublist;
             } else {
@@ -718,11 +721,12 @@ public class Scan {
                     return sublist;
                 } else {
                     for (int j = 0; j < phy.gibmodel.size(); ++j) {
-                        Scanfile sfile = new Scanfile((String) phy.gibmodel.get(j), this.tmod, this.basedir, (byte) 3,
+                        Scanfile sfile = new Scanfile((String) phy.gibmodel.get(j), this.tmod, this.basedir,
+                                ScanfileType.MDL,
                                 s,
                                 "gib model");
                         sublist.add(sfile);
-                        sublist.addAll(this.checksubfile(sfile));
+                        sublist.addAll(this.checkSubfile(sfile));
                     }
 
                     return sublist;
@@ -731,21 +735,22 @@ public class Scan {
         }
     }
 
-    private ArrayList<Scanfile> getreffrommdl(Scanfile s) throws IOException {
+    private ArrayList<Scanfile> getRefFromMdl(Scanfile s) throws IOException {
         ArrayList<Scanfile> sublist = new ArrayList<>();
         String basename = s.name;
 
         for (int i = 0; i < mdlext.length; ++i) {
             String name = basename + mdlext[i];
-            Scanfile sfile = new Scanfile(name, this.tmod, this.basedir, Scanfile.gettype(name), s, "datafile");
+            Scanfile sfile = new Scanfile(name, this.tmod, this.basedir, ScanfileType.getTypeFromFilename(name), s,
+                    "datafile");
             sublist.add(sfile);
-            sublist.addAll(this.checksubfile(sfile));
+            sublist.addAll(this.checkSubfile(sfile));
         }
 
         if (!s.inlist && !s.ondisk) {
             return sublist;
         } else {
-            ByteBuffer buff = this.getfilebuffer(s);
+            ByteBuffer buff = this.getFileBuffer(s);
             if (buff == null) {
                 return sublist;
             } else {
@@ -759,17 +764,19 @@ public class Scan {
                     ArrayList<String> texturelist = model.gettexturelist();
 
                     for (int j = 0; j < texturelist.size(); ++j) {
-                        Scanfile sfile = new Scanfile((String) texturelist.get(j), this.tmod, this.basedir, (byte) 1, s,
+                        Scanfile sfile = new Scanfile((String) texturelist.get(j), this.tmod, this.basedir,
+                                ScanfileType.VMT, s,
                                 "texture");
                         sublist.add(sfile);
-                        sublist.addAll(this.checksubfile(sfile));
+                        sublist.addAll(this.checkSubfile(sfile));
                     }
 
                     for (int j = 0; j < model.numincmodels; ++j) {
-                        Scanfile sfile = new Scanfile(model.incmodelfile[j], this.tmod, this.basedir, (byte) 3, s,
+                        Scanfile sfile = new Scanfile(model.incmodelfile[j], this.tmod, this.basedir, ScanfileType.MDL,
+                                s,
                                 "include model");
                         sublist.add(sfile);
-                        sublist.addAll(this.checksubfile(sfile));
+                        sublist.addAll(this.checkSubfile(sfile));
                     }
 
                     return sublist;
@@ -778,12 +785,12 @@ public class Scan {
         }
     }
 
-    private ArrayList<Scanfile> getreffromtxt(Scanfile s) throws IOException {
+    private ArrayList<Scanfile> getRefFromTxt(Scanfile s) throws IOException {
         ArrayList<Scanfile> sublist = new ArrayList<>();
         if (!s.inlist && !s.ondisk) {
             return sublist;
         } else {
-            ByteBuffer buff = this.getfilebuffer(s);
+            ByteBuffer buff = this.getFileBuffer(s);
             if (buff == null) {
                 return sublist;
             } else {
@@ -798,16 +805,17 @@ public class Scan {
                         String[] token = tokenize(line);
                         if (token.length == 2) {
                             if (token[0].equalsIgnoreCase("material")) {
-                                Scanfile ssfile = new Scanfile(token[1], this.tmod, this.basedir, (byte) 1, s,
+                                Scanfile ssfile = new Scanfile(token[1], this.tmod, this.basedir, ScanfileType.VMT, s,
                                         "material");
                                 sublist.add(ssfile);
-                                ArrayList<Scanfile> subsublist = this.getreffromvmt(ssfile);
+                                ArrayList<Scanfile> subsublist = this.getRefFromVmt(ssfile);
 
                                 for (int j = 0; j < subsublist.size(); ++j) {
                                     sublist.add(subsublist.get(j));
                                 }
                             } else if (token[0].equalsIgnoreCase("wave")) {
-                                Scanfile ssfile = new Scanfile(token[1], this.tmod, this.basedir, (byte) 7, s, "wave");
+                                Scanfile ssfile = new Scanfile(token[1], this.tmod, this.basedir, ScanfileType.WAV, s,
+                                        "wave");
                                 sublist.add(ssfile);
                             }
                         }
@@ -819,12 +827,12 @@ public class Scan {
         }
     }
 
-    private ArrayList<Scanfile> getreffromvmt(Scanfile s) throws IOException {
+    private ArrayList<Scanfile> getRefFromVmt(Scanfile s) throws IOException {
         ArrayList<Scanfile> sublist = new ArrayList<>();
         if (!s.inlist && !s.ondisk) {
             return sublist;
         } else {
-            ByteBuffer buff = this.getfilebuffer(s);
+            ByteBuffer buff = this.getFileBuffer(s);
             if (buff == null) {
                 return sublist;
             } else {
@@ -840,10 +848,11 @@ public class Scan {
                         if (token.length == 2 && !token[1].startsWith("_")) {
                             for (int i = 0; i < matmatref.length; ++i) {
                                 if (token[0].equalsIgnoreCase(matmatref[i])) {
-                                    Scanfile ssfile = new Scanfile(token[1], this.tmod, this.basedir, (byte) 1, s,
+                                    Scanfile ssfile = new Scanfile(token[1], this.tmod, this.basedir, ScanfileType.VMT,
+                                            s,
                                             token[0]);
                                     sublist.add(ssfile);
-                                    ArrayList<Scanfile> subsublist = this.getreffromvmt(ssfile);
+                                    ArrayList<Scanfile> subsublist = this.getRefFromVmt(ssfile);
 
                                     for (int j = 0; j < subsublist.size(); ++j) {
                                         sublist.add(subsublist.get(j));
@@ -855,13 +864,15 @@ public class Scan {
                                 if (token[0].equalsIgnoreCase(mattexref[i])) {
                                     if (mattexref[i].equals("$envmap")) {
                                         if (!token[1].equalsIgnoreCase("env_cubemap")) {
-                                            Scanfile vfile = new Scanfile(token[1], this.tmod, this.basedir, (byte) 2,
+                                            Scanfile vfile = new Scanfile(token[1], this.tmod, this.basedir,
+                                                    ScanfileType.VTF,
                                                     s,
                                                     token[0]);
                                             sublist.add(vfile);
                                         }
                                     } else {
-                                        Scanfile vfile = new Scanfile(token[1], this.tmod, this.basedir, (byte) 2, s,
+                                        Scanfile vfile = new Scanfile(token[1], this.tmod, this.basedir,
+                                                ScanfileType.VTF, s,
                                                 token[0]);
                                         sublist.add(vfile);
                                     }
@@ -892,7 +903,7 @@ public class Scan {
         return tok.length < 2 ? in : tok[1];
     }
 
-    private int compactlist() {
+    private int compactList() {
         for (int i = 0; i < this.files.size(); ++i) {
             Scanfile ifile = (Scanfile) this.files.get(i);
             if (!ifile.mark) {
@@ -935,7 +946,7 @@ public class Scan {
         }
     }
 
-    private ByteBuffer getfilebuffer(Scanfile s) throws IOException {
+    private ByteBuffer getFileBuffer(Scanfile s) throws IOException {
         ByteBuffer buff;
         long bufflen;
         if (s.inlist) {

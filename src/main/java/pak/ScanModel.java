@@ -5,12 +5,11 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 public class ScanModel extends AbstractTableModel {
-    List<Scanfile> fl;
-    static String[] tstr = new String[] { "Unknown", "Material", "Texture", "Model", "Model", "Model", "Model", "Sound",
-            "Sound", "Navigation", "AI Node", "Text", "Soundcache" };
+    private List<Scanfile> fl;
+
     static String[] header = new String[] { "Filename", "Path", "Type", "Location", "Add" };
-    static Object[] cols;
-    static String[] locstr;
+    static Object[] cols = new Object[] { "", "", "", "", Boolean.TRUE };
+    static String[] locstr = new String[] { "Not found", "In Pak", "In List", "On Disk" };
 
     public ScanModel(List<Scanfile> filelist) {
         this.fl = filelist;
@@ -45,7 +44,7 @@ public class ScanModel extends AbstractTableModel {
             case 1:
                 return this.getfile(row).pathname;
             case 2:
-                return tstr[this.getfile(row).type];
+                return this.getfile(row).type.getPrettyName();
             case 3:
                 return this.getloc(row);
             case 4:
@@ -134,10 +133,5 @@ public class ScanModel extends AbstractTableModel {
 
     public void update() {
         this.fireTableDataChanged();
-    }
-
-    static {
-        cols = new Object[] { "", "", "", "", Boolean.TRUE };
-        locstr = new String[] { "Not found", "In Pak", "In List", "On Disk" };
     }
 }
