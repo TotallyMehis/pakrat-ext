@@ -17,7 +17,7 @@ public class ZipDirModel extends AbstractTableModel {
     List<Zipf> zfl;
     public Unpak pakrat;
     static String[] header = new String[] { "In", "Filename", "Path", "Size", "Type" };
-    static Object[] cols;
+    static Object[] cols = new Object[] { Boolean.TRUE, "", "", "", "" };
 
     public ZipDirModel(List<Zipf> zipfilelist, Unpak rat) {
         this.zfl = zipfilelist;
@@ -238,9 +238,5 @@ public class ZipDirModel extends AbstractTableModel {
             this.printTree((DefaultMutableTreeNode) e.nextElement());
         }
 
-    }
-
-    static {
-        cols = new Object[] { Boolean.TRUE, "", "", "", "" };
     }
 }
