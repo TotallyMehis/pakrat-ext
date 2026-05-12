@@ -4,42 +4,45 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class Vtf {
-    static final int IF_RGBA8888 = 0;
-    static final int IF_ABGR8888 = 1;
-    static final int IF_RGB888 = 2;
-    static final int IF_BGR888 = 3;
-    static final int IF_RGB565 = 4;
-    static final int IF_I8 = 5;
-    static final int IF_IA88 = 6;
-    static final int IF_P8 = 7;
-    static final int IF_A8 = 8;
-    static final int IF_RGB888_BS = 9;
-    static final int IF_BGR888_BS = 10;
-    static final int IF_ARGB8888 = 11;
-    static final int IF_BGRA8888 = 12;
-    static final int IF_DXT1 = 13;
-    static final int IF_DXT3 = 14;
-    static final int IF_DXT5 = 15;
-    static final int IF_BGRX8888 = 16;
-    static final int IF_BGR565 = 17;
-    static final int IF_BGRX5551 = 18;
-    static final int IF_BGRA4444 = 19;
-    static final int IF_DXT1_1BA = 20;
-    static final int IF_BGRA5551 = 21;
-    static final int IF_UV88 = 22;
-    static final int IF_UVWQ8888 = 23;
-    static final int IF_RGBA16161616F = 24;
-    static final int IF_RGBA16161616 = 25;
-    static final String[] imgfmt = new String[] { "RBGA8888", "ABGR8888", "RGB888", "BGR888", "RGB565", "I8", "IA88",
+    private static final int IF_RGBA8888 = 0;
+    // private static final int IF_ABGR8888 = 1;
+    private static final int IF_RGB888 = 2;
+    private static final int IF_BGR888 = 3;
+    private static final int IF_RGB565 = 4;
+    private static final int IF_I8 = 5;
+    private static final int IF_IA88 = 6;
+    // private static final int IF_P8 = 7;
+    private static final int IF_A8 = 8;
+    private static final int IF_RGB888_BS = 9;
+    private static final int IF_BGR888_BS = 10;
+    private static final int IF_ARGB8888 = 11;
+    private static final int IF_BGRA8888 = 12;
+    private static final int IF_DXT1 = 13;
+    private static final int IF_DXT3 = 14;
+    private static final int IF_DXT5 = 15;
+    private static final int IF_BGRX8888 = 16;
+    private static final int IF_BGR565 = 17;
+    private static final int IF_BGRX5551 = 18;
+    private static final int IF_BGRA4444 = 19;
+    private static final int IF_DXT1_1BA = 20;
+    private static final int IF_BGRA5551 = 21;
+    private static final int IF_UV88 = 22;
+    private static final int IF_UVWQ8888 = 23;
+    private static final int IF_RGBA16161616F = 24;
+    private static final int IF_RGBA16161616 = 25;
+    public static final String[] imgfmt = new String[] { "RBGA8888", "ABGR8888", "RGB888", "BGR888", "RGB565", "I8",
+            "IA88",
             "P8", "A8", "RGB888-BS", "BGR888-BS", "ARGB8888", " BGRA8888", "DXT1", "DXT3", "DXT5", "BGRX8888", "BGR565",
             "BGRX5551", "BGRA4444", "DXT1_1BA", "BGRA5551", "UV88", "UVWQ8888", "RGBA16161616F", "RGBA16161616" };
-    static final int[] imgfmtsize = new int[] { 4, 4, 3, 3, 2, 1, 2, 1, 1, 3, 3, 4, 4, 0, 0, 0, 4, 2, 2, 2, 0, 2, 2, 4,
+    private static final int[] imgfmtsize = new int[] { 4, 4, 3, 3, 2, 1, 2, 1, 1, 3, 3, 4, 4, 0, 0, 0, 4, 2, 2, 2, 0,
+            2, 2, 4,
             8, 8, 4 };
-    static final String[] flagstr = new String[] { "POINTSAMPLE", "TRILINEAR", "CLAMP-S", "CLAMP-T", "ANISOTROPIC",
+    private static final String[] flagstr = new String[] { "POINTSAMPLE", "TRILINEAR", "CLAMP-S", "CLAMP-T",
+            "ANISOTROPIC",
             "HINT-DXT5", "NOCOMPRESS", "NORMAL", "NOMIP", "NOLOD", "MINMIP", "PROC", "1BALPHA", "8BALPHA", "ENVMAP",
             "RENDERTARGET", "DEPTH-RT", "NODEBUGOVERRIDE", "SINGLECOPY", "1OVERMIPLEVELINALPHA", "PREMULTCOL1OML",
             "NORMALTODUDV", "ALPHATESTMIPGEN", "NODEPTHBUFF", "NICEFILTERED" };
-    static final int TF_ENVMAP = 16384;
+    private static final int TF_ENVMAP = 16384;
     int[] vers = new int[2];
     boolean isValid = false;
     int headersize;
@@ -168,12 +171,12 @@ public class Vtf {
 
     public byte[] GetRGBA(byte[] data, int mwidth, int mheight, int format) {
         int destsize = this.CalcSize(mwidth, mheight, 0);
-        if (format != 13 && format != 20) {
-            if (format == 15) {
+        if (format != IF_DXT1 && format != IF_DXT1_1BA) {
+            if (format == IF_DXT5) {
                 return this.DecompDXT5(data, mwidth, mheight);
             } else {
                 byte[] dest = new byte[destsize];
-                if (format == 2) {
+                if (format == IF_RGB888) {
                     int end = mwidth * mheight * 3;
                     int j = 0;
 
@@ -186,7 +189,7 @@ public class Vtf {
                     }
 
                     return dest;
-                } else if (format == 3) {
+                } else if (format == IF_BGR888) {
                     int end = mwidth * mheight * 3;
                     int j = 0;
 
@@ -199,8 +202,8 @@ public class Vtf {
                     }
 
                     return dest;
-                } else if (format != 0 && format != 23) {
-                    if (format == 12) {
+                } else if (format != IF_RGBA8888 && format != IF_UVWQ8888) {
+                    if (format == IF_BGRA8888) {
                         int end = mwidth * mheight * 4;
 
                         for (int i = 0; i < end; i += 4) {
@@ -211,7 +214,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 16) {
+                    } else if (format == IF_BGRX8888) {
                         int end = mwidth * mheight * 4;
 
                         for (int i = 0; i < end; i += 4) {
@@ -222,7 +225,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 11) {
+                    } else if (format == IF_ARGB8888) {
                         int end = mwidth * mheight * 4;
 
                         for (int i = 0; i < end; i += 4) {
@@ -233,7 +236,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 8) {
+                    } else if (format == IF_A8) {
                         int end = mwidth * mheight;
                         int j = 0;
 
@@ -246,7 +249,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 5) {
+                    } else if (format == IF_I8) {
                         int end = mwidth * mheight;
                         int j = 0;
 
@@ -259,7 +262,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 6) {
+                    } else if (format == IF_IA88) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -272,7 +275,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 9) {
+                    } else if (format == IF_RGB888_BS) {
                         int end = mwidth * mheight * 3;
                         int j = 0;
 
@@ -293,7 +296,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 10) {
+                    } else if (format == IF_BGR888_BS) {
                         int end = mwidth * mheight * 3;
                         int j = 0;
 
@@ -314,7 +317,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 4) {
+                    } else if (format == IF_RGB565) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -331,7 +334,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 17) {
+                    } else if (format == IF_BGR565) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -348,7 +351,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 18) {
+                    } else if (format == IF_BGRX5551) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -365,7 +368,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 21) {
+                    } else if (format == IF_BGRA5551) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -388,7 +391,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 19) {
+                    } else if (format == IF_BGRA4444) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -406,7 +409,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 22) {
+                    } else if (format == IF_UV88) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -419,7 +422,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == 25) {
+                    } else if (format == IF_RGBA16161616) {
                         int end = mwidth * mheight * 8;
                         int j = 0;
 
@@ -436,7 +439,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format != 24) {
+                    } else if (format != IF_RGBA16161616F) {
                         System.out.println("Vtf: Unsupported format " + imgfmt[format]);
                         return dest;
                     } else {
@@ -766,7 +769,7 @@ public class Vtf {
     }
 
     public boolean isEnvmap() {
-        return (this.flags & 16384) != 0;
+        return (this.flags & TF_ENVMAP) != 0;
     }
 
     public int CalcSize(int mwidth, int mheight, int mmipmaps, int mformat) {
@@ -793,8 +796,8 @@ public class Vtf {
 
     public int CalcSize(int mwidth, int mheight, int mformat) {
         switch (mformat) {
-            case 13:
-            case 20:
+            case IF_DXT1:
+            case IF_DXT1_1BA:
                 if (mwidth < 4 && mwidth > 0) {
                     mwidth = 4;
                 }
@@ -804,8 +807,8 @@ public class Vtf {
                 }
 
                 return (mwidth + 3) / 4 * ((mheight + 3) / 4) * 8;
-            case 14:
-            case 15:
+            case IF_DXT3:
+            case IF_DXT5:
                 if (mwidth < 4 && mwidth > 0) {
                     mwidth = 4;
                 }
@@ -815,10 +818,10 @@ public class Vtf {
                 }
 
                 return (mwidth + 3) / 4 * ((mheight + 3) / 4) * 16;
-            case 16:
-            case 17:
-            case 18:
-            case 19:
+            case IF_BGRX8888:
+            case IF_BGR565:
+            case IF_BGRX5551:
+            case IF_BGRA4444:
             default:
                 return mwidth * mheight * imgfmtsize[mformat];
         }
