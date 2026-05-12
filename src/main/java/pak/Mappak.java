@@ -17,9 +17,9 @@ public class Mappak {
     private long filelength;
     private int cdoffs;
     private final List<Zipf> zf = new ArrayList<>();
-    private String[] texname;
-    private String[] staticname;
-    private String[] detailname;
+    private final List<String> texname = new ArrayList<String>();
+    private final List<String> staticname = new ArrayList<String>();
+    private final List<String> detailname = new ArrayList<String>();
     private int glumps;
     private GameLump[] gl;
     private List<String> entkeylist;
@@ -34,6 +34,7 @@ public class Mappak {
     private static final int LOCAL_FILEHEADER_SIGNATURE = 67324752; // PK34
     private static final int FILEHEADER_SIGNATURE = 33639248; // PK12
     private static final int BSP_MAGIC_NUMBER = 1347633750; // VBSP
+    private static final int LZMA_MAGIC_NUMBER = 1280986433; // LZMA
 
     public Mappak(boolean auton) {
         this.auton = auton;
@@ -187,13 +188,17 @@ public class Mappak {
 
         if (spid >= 0) {
             raf.seek((long) this.gl[spid].ofs());
-            int psnames = Swab.I(raf.readInt());
-            this.staticname = new String[psnames];
 
-            for (int i = 0; i < psnames; ++i) {
-                this.staticname[i] = readNullTerminatedString(raf, 128);
+            if (isAtLzma(raf)) {
+                Cons.println("Prop statics lump is compressed, ignoring.");
+                return;
             }
 
+            int psnames = Swab.I(raf.readInt());
+
+            for (int i = 0; i < psnames; ++i) {
+                this.staticname.add(readNullTerminatedString(raf, 128));
+            }
         }
     }
 
@@ -208,13 +213,17 @@ public class Mappak {
 
         if (dpid >= 0) {
             raf.seek((long) this.gl[dpid].ofs());
-            int pdnames = Swab.I(raf.readInt());
-            this.detailname = new String[pdnames];
 
-            for (int i = 0; i < pdnames; ++i) {
-                this.detailname[i] = readNullTerminatedString(raf, 128);
+            if (isAtLzma(raf)) {
+                Cons.println("Prop details lump is compressed, ignoring.");
+                return;
             }
 
+            int pdnames = Swab.I(raf.readInt());
+
+            for (int i = 0; i < pdnames; ++i) {
+                this.detailname.add(readNullTerminatedString(raf, 128));
+            }
         }
     }
 
@@ -222,13 +231,16 @@ public class Mappak {
         int sofs = this.lumps[LumpIndices.TEXDATA_STRING_DATA].ofs();
         int slen = this.lumps[LumpIndices.TEXDATA_STRING_DATA].len();
         raf.seek((long) sofs);
+        if (isAtLzma(raf)) {
+            Cons.println("Texdata is compressed, ignoring.");
+            return;
+        }
         String tdsd = readString(raf, slen);
         int ofs = this.lumps[LumpIndices.TEXDATA_STRING_TABLE].ofs();
         int len = this.lumps[LumpIndices.TEXDATA_STRING_TABLE].len();
         final int stringTableStructSize = LumpIndices.lumpStructSize(LumpIndices.TEXDATA_STRING_TABLE);
         assert len % stringTableStructSize == 0;
         int numtdst = len / stringTableStructSize;
-        this.texname = new String[numtdst];
         raf.seek((long) ofs);
 
         for (int i = 0; i < numtdst; ++i) {
@@ -236,7 +248,7 @@ public class Mappak {
 
             for (int j = ix; j < sofs; ++j) {
                 if (tdsd.charAt(j) == 0) {
-                    this.texname[i] = tdsd.substring(ix, j);
+                    this.texname.add(tdsd.substring(ix, j));
                     break;
                 }
             }
@@ -537,6 +549,20 @@ public class Mappak {
         }
     }
 
+    private static boolean isAtLzma(RandomAccessFile file) throws IOException {
+        long previousPointer = file.getFilePointer();
+        try {
+            int magicNumber = file.readInt();
+            if (magicNumber == LZMA_MAGIC_NUMBER) {
+                return true;
+            }
+        } finally {
+            file.seek(previousPointer);
+        }
+
+        return false;
+    }
+
     public int getOffset() {
         return this.offset;
     }
@@ -549,15 +575,15 @@ public class Mappak {
         return this.cdoffs;
     }
 
-    public String[] getTexname() {
+    public List<String> getTexname() {
         return this.texname;
     }
 
-    public String[] getStaticname() {
+    public List<String> getStaticname() {
         return this.staticname;
     }
 
-    public String[] getDetailname() {
+    public List<String> getDetailname() {
         return this.detailname;
     }
 

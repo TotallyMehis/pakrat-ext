@@ -1,21 +1,22 @@
 package pak;
 
-import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.table.AbstractTableModel;
 
 public class ScanModel extends AbstractTableModel {
-    ArrayList<Scanfile> fl;
+    List<Scanfile> fl;
     static String[] tstr = new String[] { "Unknown", "Material", "Texture", "Model", "Model", "Model", "Model", "Sound",
             "Sound", "Navigation", "AI Node", "Text", "Soundcache" };
     static String[] header = new String[] { "Filename", "Path", "Type", "Location", "Add" };
     static Object[] cols;
     static String[] locstr;
 
-    public ScanModel(ArrayList<Scanfile> filelist) {
+    public ScanModel(List<Scanfile> filelist) {
         this.fl = filelist;
     }
 
-    public void setfilelist(ArrayList<Scanfile> filelist) {
+    public void setfilelist(List<Scanfile> filelist) {
         this.fl = filelist;
         this.update();
     }

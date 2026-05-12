@@ -20,10 +20,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 final class MappakTest {
+    @ParameterizedTest
+    @ValueSource(strings = { "test_npcclip.bsp" })
+    void loadMap(String mapName) throws Exception {
+        Mappak mappak = new Mappak(true);
+
+        try (RandomAccessFile file = openResourceFileForRead(mapName)) {
+            assertDoesNotThrow(() -> mappak.loadMap(file));
+        }
+    }
+
     @Test
-    void loadMap() throws Exception {
+    void loadMapInfo() throws Exception {
         Mappak mappak = new Mappak(true);
 
         try (RandomAccessFile file = openResourceFileForRead("test_npcclip.bsp")) {
@@ -31,8 +42,8 @@ final class MappakTest {
 
             assertEquals(105679, mappak.getLength());
 
-            String[] textureNames = mappak.getTexname();
-            assertEquals(5, textureNames.length);
+            List<String> textureNames = mappak.getTexname();
+            assertEquals(5, textureNames.size());
             assertListEquals(List.of("DEV/DEV_MEASUREGENERIC01B", "TOOLS/TOOLSNODRAW", "TOOLS/TOOLSSKYBOX",
                     "DEV/DEV_MEASUREWALL01A", "TOOLS/TOOLSNPCCLIP"), textureNames);
 
@@ -50,7 +61,7 @@ final class MappakTest {
     void saveMapCrc(String testMap, @TempDir Path tempDir) throws Exception {
         Mappak mappak = new Mappak(true);
 
-        File outputFile = tempDir.resolve(testMap).toFile();
+        File outputFile = tempDir.resolve(new File(testMap).getName()).toFile();
 
         try (RandomAccessFile in = openResourceFileForRead(testMap)) {
             mappak.loadMap(in);
@@ -110,8 +121,8 @@ final class MappakTest {
         }
     }
 
-    private <T> void assertListEquals(List<T> expected, T[] actual) {
-        assertTrue(expected.size() == actual.length);
+    private <T> void assertListEquals(List<T> expected, List<T> actual) {
+        assertTrue(expected.size() == actual.size());
 
         for (T t : actual) {
             if (!expected.contains(t)) {

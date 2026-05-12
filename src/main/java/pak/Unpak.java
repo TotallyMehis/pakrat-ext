@@ -1,7 +1,6 @@
 package pak;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -9,7 +8,6 @@ import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -95,8 +93,8 @@ public class Unpak {
                 this.zmodel = new ZipDirModel(this.m.getZf(), this);
                 this.zmodel.setfileparams(this.raf, this.m.getOffset());
                 Cons.println("Scanning for referenced files...");
-                this.scan = new Scan(this, (Component) null, this.m, this.zmodel, filename, this.gamedir, true);
-                if (this.scan.nofiles) {
+                this.scan = new Scan(this, null, this.m, this.zmodel, filename, this.gamedir, true);
+                if (this.scan.isNofiles()) {
                     long duration = System.currentTimeMillis() - starttime;
                     Cons.println("**** Pakrat autoscan complete in "
                             + (new DecimalFormat("0.#")).format((double) ((float) duration / 1000.0F)) + " seconds");
