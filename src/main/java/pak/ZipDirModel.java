@@ -12,16 +12,14 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 public class ZipDirModel extends AbstractTableModel {
-    RandomAccessFile braf;
-    int offset;
-    List<Zipf> zfl;
-    public Unpak pakrat;
-    static String[] header = new String[] { "In", "Filename", "Path", "Size", "Type" };
-    static Object[] cols = new Object[] { Boolean.TRUE, "", "", "", "" };
+    private RandomAccessFile braf;
+    private int offset;
+    private List<Zipf> zfl;
+    public static final String[] header = new String[] { "In", "Filename", "Path", "Size", "Type" };
+    private static final Object[] cols = new Object[] { Boolean.TRUE, "", "", "", "" };
 
     public ZipDirModel(List<Zipf> zipfilelist, Unpak rat) {
         this.zfl = zipfilelist;
-        this.pakrat = rat;
     }
 
     public void setziplist(List<Zipf> zipfilelist) {
@@ -51,13 +49,13 @@ public class ZipDirModel extends AbstractTableModel {
     public Object getValueAt(int row, int col) {
         switch (col) {
             case 0:
-                return this.getzipfile(row).inpak;
+                return this.getzipfile(row).isInPak();
             case 1:
                 return this.getzipfile(row).getFileName();
             case 2:
                 return this.getzipfile(row).getPath();
             case 3:
-                return this.getzipfile(row).size;
+                return this.getzipfile(row).getSize();
             case 4:
                 return this.getzipfile(row).getType().getName();
             default:

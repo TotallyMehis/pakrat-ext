@@ -6,23 +6,23 @@ import java.io.IOException;
 import java.util.zip.CRC32;
 
 public class Zipf {
-    int size;
+    private final int size;
     int relofs;
     int datofs;
     private String fullPath;
     private String fileName;
     private String path;
     private FileType type;
-    boolean inpak;
+    private boolean inpak;
     byte[] data;
     long CRC;
 
-    private Zipf() {
+    private Zipf(int size) {
+        this.size = size;
     }
 
     public static Zipf fromPak(String filePath, int size, int relativeOffset, int datOffset, long crc) {
-        Zipf z = new Zipf();
-        z.size = size;
+        Zipf z = new Zipf(size);
         z.relofs = relativeOffset;
         z.datofs = datOffset;
         z.CRC = crc;
@@ -37,8 +37,7 @@ public class Zipf {
         assert file.isFile();
         assert file.canRead();
 
-        Zipf z = new Zipf();
-        z.size = (int) file.length();
+        Zipf z = new Zipf((int) file.length());
         z.datofs = z.relofs = 0;
         z.inpak = false;
         z.data = new byte[z.size];
@@ -121,5 +120,20 @@ public class Zipf {
 
     public String getFileName() {
         return this.fileName;
+    }
+
+    public boolean isInPak() {
+        return this.inpak;
+    }
+
+    public int getSize() {
+        return this.size;
+    }
+
+    public void moveToPak() {
+        assert !this.inpak;
+
+        this.inpak = true;
+        this.data = null;
     }
 }

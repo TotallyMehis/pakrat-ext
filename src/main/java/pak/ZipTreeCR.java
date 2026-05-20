@@ -34,7 +34,7 @@ class ZipTreeCR extends DefaultTreeCellRenderer {
 
     protected boolean inPak(Object value) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-        return this.isFile(node) ? ((Zipf) node.getUserObject()).inpak : false;
+        return this.isFile(node) ? ((Zipf) node.getUserObject()).isInPak() : false;
     }
 
     protected String getText(Object value) {

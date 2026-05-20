@@ -59,7 +59,7 @@ public class Scanfile {
         this.zip = tm.getbyname(this.fullname);
         if (this.zip != null) {
             this.inlist = true;
-            if (this.zip.inpak) {
+            if (this.zip.isInPak()) {
                 this.inpak = true;
             }
         }

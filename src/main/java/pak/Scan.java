@@ -953,14 +953,14 @@ public class Scan {
             int off = this.tmod.getoffset();
             if (s.inpak) {
                 this.raf.seek((long) (off + s.zip.datofs));
-                byte[] buffer = new byte[s.zip.size];
+                byte[] buffer = new byte[s.zip.getSize()];
                 this.raf.read(buffer);
                 buff = ByteBuffer.wrap(buffer);
             } else {
                 buff = ByteBuffer.wrap(s.zip.data);
             }
 
-            bufflen = (long) s.zip.size;
+            bufflen = (long) s.zip.getSize();
         } else {
             File diskfile = new File(s.diskname);
             if (!diskfile.exists() || !diskfile.canRead()) {

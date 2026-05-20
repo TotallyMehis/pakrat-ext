@@ -490,7 +490,7 @@ public class Unpak {
                         JTextField filetext = new JTextField(z.getFileName());
                         JTextField pathtext = new JTextField(z.getPath());
                         Container cbox = Box.createHorizontalBox();
-                        cbox.add(new JLabel("Size: " + z.size + "  CRC32: " + Integer.toHexString((int) z.CRC)));
+                        cbox.add(new JLabel("Size: " + z.getSize() + "  CRC32: " + Integer.toHexString((int) z.CRC)));
                         Container fbox = Box.createHorizontalBox();
                         fbox.add(new JLabel("Filename : "));
                         fbox.add(filetext);
@@ -935,7 +935,7 @@ public class Unpak {
             if (z.getFileName().toLowerCase().endsWith(".nav")) {
                 try {
                     this.raf.seek((long) (this.m.getOffset() + z.datofs));
-                    byte[] buffer = new byte[z.size];
+                    byte[] buffer = new byte[z.getSize()];
                     this.raf.read(buffer);
                     ByteBuffer zb = ByteBuffer.wrap(buffer);
                     zb.order(ByteOrder.LITTLE_ENDIAN);
@@ -1085,9 +1085,9 @@ public class Unpak {
 
         try {
             ByteBuffer zb;
-            if (z.inpak) {
+            if (z.isInPak()) {
                 this.raf.seek((long) (off + z.datofs));
-                byte[] buffer = new byte[z.size];
+                byte[] buffer = new byte[z.getSize()];
                 this.raf.read(buffer);
                 zb = ByteBuffer.wrap(buffer);
             } else {
@@ -1120,7 +1120,7 @@ public class Unpak {
             Cons.print("Writing " + sfilename + " ...");
             FileOutputStream fos = new FileOutputStream(sfile);
 
-            for (int i = 0; i < z.size; ++i) {
+            for (int i = 0; i < z.getSize(); ++i) {
                 fos.write(zb.get());
             }
 
@@ -1215,9 +1215,9 @@ public class Unpak {
     private void viewFile(Zipf z) {
         try {
             ByteBuffer zb;
-            if (z.inpak) {
+            if (z.isInPak()) {
                 this.raf.seek((long) (this.m.getOffset() + z.datofs));
-                byte[] buffer = new byte[z.size];
+                byte[] buffer = new byte[z.getSize()];
                 this.raf.read(buffer);
                 zb = ByteBuffer.wrap(buffer);
             } else {
@@ -1228,24 +1228,24 @@ public class Unpak {
             switch (z.getType()) {
                 case FileType.OTHER:
                 case FileType.SOUND:
-                    this.hexList(readString(zb, z.size), z.getFullPath());
+                    this.hexList(readString(zb, z.getSize()), z.getFullPath());
                     break;
                 case FileType.MATERIAL:
                 case FileType.TEXT:
-                    String text = readString(zb, z.size);
+                    String text = readString(zb, z.getSize());
                     this.TextBox("Pakrat - " + z.getFullPath(), text);
                     break;
                 case FileType.TEXTURE:
-                    this.vtfInfo(zb, z.getFullPath(), z.size);
+                    this.vtfInfo(zb, z.getFullPath(), z.getSize());
                     break;
                 case FileType.MODEL:
-                    this.mdlInfo(zb, z.getFullPath(), z.size);
+                    this.mdlInfo(zb, z.getFullPath(), z.getSize());
                     break;
                 case FileType.MODEL_DAT:
                     if (z.getFullPath().toLowerCase().endsWith(".phy")) {
-                        this.phyInfo(zb, z.getFullPath(), z.size);
+                        this.phyInfo(zb, z.getFullPath(), z.getSize());
                     } else {
-                        this.hexList(readString(zb, z.size), z.getFullPath());
+                        this.hexList(readString(zb, z.getSize()), z.getFullPath());
                     }
             }
         } catch (Exception ex) {

@@ -19,9 +19,9 @@ final class ZipfTest {
     void fromPak() throws Exception {
         Zipf zipFile = Zipf.fromPak("materials/subfolder/test.vmt", 100, 101, 102, 0x100);
 
-        assertEquals(true, zipFile.inpak);
+        assertEquals(true, zipFile.isInPak());
         assertEquals(null, zipFile.data);
-        assertEquals(100, zipFile.size);
+        assertEquals(100, zipFile.getSize());
         assertEquals(101, zipFile.relofs);
         assertEquals(102, zipFile.datofs);
         assertEquals("materials/subfolder/test.vmt", zipFile.getFullPath());
@@ -36,7 +36,7 @@ final class ZipfTest {
         File file = new File(MappakTest.class.getClassLoader().getResource("test_npcclip.bsp").toURI());
         Zipf zipFile = Zipf.fromFile(file, false, null);
 
-        assertFalse(zipFile.inpak);
+        assertFalse(zipFile.isInPak());
         assertNotNull(zipFile.data);
         assertEquals(131604, zipFile.data.length);
         assertEquals(535977290, zipFile.CRC);
@@ -60,7 +60,7 @@ final class ZipfTest {
 
         Zipf zipFile = Zipf.fromFile(filePath.toFile(), true, null);
 
-        assertFalse(zipFile.inpak);
+        assertFalse(zipFile.isInPak());
         assertNotNull(zipFile.data);
         assertEquals("%s/subfolder/test.txt".formatted(fixupFolder), zipFile.getFullPath());
         assertEquals("%s/subfolder".formatted(fixupFolder), zipFile.getPath());
@@ -79,7 +79,7 @@ final class ZipfTest {
 
         Zipf zipFile = Zipf.fromFile(filePath.toFile(), true, Util.normalizePath(rootDir.getAbsolutePath()));
 
-        assertFalse(zipFile.inpak);
+        assertFalse(zipFile.isInPak());
         assertNotNull(zipFile.data);
         assertEquals("subfolder/test.txt", zipFile.getFullPath());
         assertEquals("subfolder", zipFile.getPath());

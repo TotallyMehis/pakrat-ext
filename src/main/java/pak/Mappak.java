@@ -89,19 +89,18 @@ public class Mappak {
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeInt(Swab.I((int) z.CRC));
-            bout.writeInt(Swab.I(z.size));
-            bout.writeInt(Swab.I(z.size));
+            bout.writeInt(Swab.I(z.getSize()));
+            bout.writeInt(Swab.I(z.getSize()));
             bout.writeShort(Swab.unsignedShort(z.getFullPath().length()));
             bout.writeShort(0);
             writeString(bout, z.getFullPath());
             z.datofs = (int) bout.getFilePointer() - newoffset;
-            if (z.inpak) {
+            if (z.isInPak()) {
                 bin.seek((long) (this.offset + z.datofs));
-                Util.copyBlock(bin, bout, (long) z.size);
+                Util.copyBlock(bin, bout, (long) z.getSize());
             } else {
                 bout.write(z.data);
-                z.data = null;
-                z.inpak = true;
+                z.moveToPak();
             }
         }
 
@@ -117,8 +116,8 @@ public class Mappak {
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeInt(Swab.I((int) z.CRC));
-            bout.writeInt(Swab.I(z.size));
-            bout.writeInt(Swab.I(z.size));
+            bout.writeInt(Swab.I(z.getSize()));
+            bout.writeInt(Swab.I(z.getSize()));
             bout.writeShort(Swab.unsignedShort(z.getFullPath().length()));
             bout.writeShort(0);
             bout.writeShort(0);
