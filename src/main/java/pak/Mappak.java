@@ -79,8 +79,7 @@ public class Mappak {
         int numzips = this.zf.size();
         int newoffset = (int) bout.getFilePointer();
 
-        for (int i = 0; i < numzips; ++i) {
-            Zipf z = this.zf.get(i);
+        for (Zipf z : this.zf) {
             z.setRelativeOffset((int) bout.getFilePointer() - newoffset);
             bout.writeInt(Swab.I(LOCAL_FILEHEADER_SIGNATURE));
             bout.writeShort(Swab.unsignedShort(10));
@@ -106,8 +105,7 @@ public class Mappak {
 
         this.cdoffs = (int) bout.getFilePointer() - newoffset;
 
-        for (int i = 0; i < numzips; ++i) {
-            Zipf z = (Zipf) this.zf.get(i);
+        for (Zipf z : this.zf) {
             bout.writeInt(Swab.I(FILEHEADER_SIGNATURE));
             bout.writeShort(Swab.unsignedShort(20));
             bout.writeShort(Swab.unsignedShort(10));
@@ -414,96 +412,102 @@ public class Mappak {
     }
 
     private void loadPak(RandomAccessFile bb) throws IOException {
-        boolean cdirf = false;
+        boolean foundCentralDirectory = false;
 
         for (int off = this.offset + this.length - 22; off >= 0; --off) {
             bb.seek((long) off);
             int csig = Swab.I(bb.readInt());
             if (csig == CENTRAL_DIRECTORY_SIGNATURE) {
-                cdirf = true;
+                foundCentralDirectory = true;
                 break;
             }
         }
 
-        if (!cdirf) {
+        if (!foundCentralDirectory) {
             Cons.println("Couldn't find pak file EOCD");
-        } else {
-            bb.readShort(); // numberOfThisDisk
-            bb.readShort(); // numberOfTheDiskWithStartOfCentralDirectory
-            bb.readShort(); // nCentralDirectoryEntries_ThisDisk
-            int cdes = Swab.unsignedShort(bb.readUnsignedShort()); // nCentralDirectoryEntries_Total
-            bb.readInt(); // centralDirectorySize
-            int cdoffs = Swab.I(bb.readInt()); // startOfCentralDirOffset
-            this.centralCommentLength = Swab.unsignedShort(bb.readUnsignedShort()); // commentLength
-            this.centralComment = readString(bb, this.centralCommentLength);
-            Cons.println("Pak lump entries: " + cdes);
-            if (cdes > 0) {
-                bb.seek((long) (this.offset + cdoffs));
-                int[] zfcs = new int[cdes];
-                int[] zfus = new int[cdes];
-                int[] zfro = new int[cdes];
-                int[] zfdo = new int[cdes];
-                int[] zcrc = new int[cdes];
-                String[] zffn = new String[cdes];
+            return;
+        }
 
-                // Read file headers
-                for (int i = 0; i < cdes; ++i) {
-                    int hsig = Swab.I(bb.readInt());
-                    if (hsig != FILEHEADER_SIGNATURE) {
-                        Cons.println("ZipFH signature incorrect");
-                        return;
-                    }
+        bb.readShort(); // numberOfThisDisk
+        bb.readShort(); // numberOfTheDiskWithStartOfCentralDirectory
+        bb.readShort(); // nCentralDirectoryEntries_ThisDisk
+        int entries = Swab.unsignedShort(bb.readUnsignedShort()); // nCentralDirectoryEntries_Total
+        bb.readInt(); // centralDirectorySize
+        int centralDirOffset = Swab.I(bb.readInt()); // startOfCentralDirOffset
+        this.centralCommentLength = Swab.unsignedShort(bb.readUnsignedShort()); // commentLength
+        this.centralComment = readString(bb, this.centralCommentLength);
+        Cons.println("Pak lump entries: " + entries);
+        if (entries <= 0) {
+            return;
+        }
 
-                    bb.readShort(); // Version made by
-                    bb.readShort(); // Version needed to extract
-                    bb.readShort(); // Bit flags
-                    bb.readShort(); // Compression method
-                    bb.readShort(); // File last modified time
-                    bb.readShort(); // File last modified date
-                    zcrc[i] = Swab.I(bb.readInt());
-                    int csize = zfcs[i] = Swab.I(bb.readInt()); // Compressed size
-                    int usize = zfus[i] = Swab.I(bb.readInt()); // Uncompressed size
-                    int fnlen = Swab.unsignedShort(bb.readUnsignedShort()); // File name length
-                    int exlen = Swab.unsignedShort(bb.readUnsignedShort()); // Extra field length
-                    int fclen = Swab.unsignedShort(bb.readUnsignedShort()); // File comment length
-                    bb.readShort(); // Disk number start
-                    bb.readShort(); // Internal file attributes
-                    bb.readInt(); // External file attributes
-                    zfro[i] = Swab.I(bb.readInt()); // Offset of local header
-                    zffn[i] = readString(bb, fnlen); // File name
-                    readString(bb, exlen + fclen); // Extr field & file comment
-                    if (csize != usize) {
-                        Cons.println("Zip file " + i + " is compressed! " + csize + "!=" + usize);
-                        return;
-                    }
-                }
+        bb.seek((long) (this.offset + centralDirOffset));
+        int[] compressedSizes = new int[entries];
+        int[] uncompressedSizes = new int[entries];
+        int[] relativeOffsets = new int[entries];
+        int[] dataOffsets = new int[entries];
+        int[] cRCs = new int[entries];
+        String[] fileNames = new String[entries];
 
-                // Read local file headers
-                for (int i = 0; i < cdes; ++i) {
-                    bb.seek((long) (this.offset + zfro[i]));
-                    int lsig = Swab.I(bb.readInt());
-                    if (lsig != LOCAL_FILEHEADER_SIGNATURE) {
-                        Cons.println("ZipLFH signature incorrect");
-                        return;
-                    }
-
-                    bb.readShort(); // Version needed to extract
-                    bb.readShort(); // Bit flags
-                    bb.readShort(); // Compression method
-                    bb.readShort(); // File last modified time
-                    bb.readShort(); // File last modified date
-                    bb.readInt(); // CRC
-                    bb.readInt(); // Compression size
-                    bb.readInt(); // Uncompressed size
-                    int fnlen = Swab.unsignedShort(bb.readUnsignedShort()); // File name length
-                    int exlen = Swab.unsignedShort(bb.readUnsignedShort()); // Extra field length
-                    zfdo[i] = zfro[i] + 30 + fnlen + exlen;
-                }
-
-                for (int i = 0; i < cdes; ++i) {
-                    this.zf.add(Zipf.fromPak(zffn[i], zfcs[i], zfro[i], zfdo[i], zcrc[i]));
-                }
+        // Read file headers
+        for (int i = 0; i < entries; ++i) {
+            int hsig = Swab.I(bb.readInt());
+            if (hsig != FILEHEADER_SIGNATURE) {
+                Cons.println("ZipFH signature incorrect");
+                return;
             }
+
+            bb.readShort(); // Version made by
+            bb.readShort(); // Version needed to extract
+            bb.readShort(); // Bit flags
+            bb.readShort(); // Compression method
+            bb.readShort(); // File last modified time
+            bb.readShort(); // File last modified date
+            cRCs[i] = Swab.I(bb.readInt());
+            int compressedSize = compressedSizes[i] = Swab.I(bb.readInt()); // Compressed size
+            int uncompressedSize = uncompressedSizes[i] = Swab.I(bb.readInt()); // Uncompressed size
+            int fileNameLength = Swab.unsignedShort(bb.readUnsignedShort()); // File name length
+            int extraFieldLength = Swab.unsignedShort(bb.readUnsignedShort()); // Extra field length
+            int fileCommentLength = Swab.unsignedShort(bb.readUnsignedShort()); // File comment length
+            bb.readShort(); // Disk number start
+            bb.readShort(); // Internal file attributes
+            bb.readInt(); // External file attributes
+            relativeOffsets[i] = Swab.I(bb.readInt()); // Offset of local header
+            fileNames[i] = readString(bb, fileNameLength); // File name
+            readString(bb, extraFieldLength + fileCommentLength); // Extr field & file comment
+            if (compressedSize != uncompressedSize) {
+                Cons.println("Zip file " + i + " is compressed! " + compressedSize + "!=" + uncompressedSize);
+                return;
+            }
+        }
+
+        final int STATIC_LOCAL_HEADER_SIZE = 30; // Still need to add the strings
+
+        // Read local file headers
+        for (int i = 0; i < entries; ++i) {
+            bb.seek((long) (this.offset + relativeOffsets[i]));
+            int lsig = Swab.I(bb.readInt());
+            if (lsig != LOCAL_FILEHEADER_SIGNATURE) {
+                Cons.println("ZipLFH signature incorrect");
+                return;
+            }
+
+            bb.readShort(); // Version needed to extract
+            bb.readShort(); // Bit flags
+            bb.readShort(); // Compression method
+            bb.readShort(); // File last modified time
+            bb.readShort(); // File last modified date
+            bb.readInt(); // CRC
+            bb.readInt(); // Compression size
+            bb.readInt(); // Uncompressed size
+            int fileNameLength = Swab.unsignedShort(bb.readUnsignedShort()); // File name length
+            int extraFieldLength = Swab.unsignedShort(bb.readUnsignedShort()); // Extra field length
+            dataOffsets[i] = relativeOffsets[i] + STATIC_LOCAL_HEADER_SIZE + fileNameLength + extraFieldLength;
+        }
+
+        for (int i = 0; i < entries; ++i) {
+            this.zf.add(Zipf.fromPak(fileNames[i], compressedSizes[i], relativeOffsets[i], dataOffsets[i],
+                    cRCs[i]));
         }
     }
 
