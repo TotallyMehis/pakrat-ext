@@ -952,12 +952,12 @@ public class Scan {
         if (s.inlist) {
             int off = this.tmod.getoffset();
             if (s.inpak) {
-                this.raf.seek((long) (off + s.zip.datofs));
+                this.raf.seek((long) (off + s.zip.getDataOffset()));
                 byte[] buffer = new byte[s.zip.getSize()];
                 this.raf.read(buffer);
                 buff = ByteBuffer.wrap(buffer);
             } else {
-                buff = ByteBuffer.wrap(s.zip.data);
+                buff = ByteBuffer.wrap(s.zip.getData());
             }
 
             bufflen = (long) s.zip.getSize();

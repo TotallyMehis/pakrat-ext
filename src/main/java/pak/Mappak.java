@@ -81,26 +81,26 @@ public class Mappak {
 
         for (int i = 0; i < numzips; ++i) {
             Zipf z = this.zf.get(i);
-            z.relofs = (int) bout.getFilePointer() - newoffset;
+            z.setRelativeOffset((int) bout.getFilePointer() - newoffset);
             bout.writeInt(Swab.I(LOCAL_FILEHEADER_SIGNATURE));
             bout.writeShort(Swab.unsignedShort(10));
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeShort(0);
-            bout.writeInt(Swab.I((int) z.CRC));
+            bout.writeInt(Swab.I((int) z.getCRC()));
             bout.writeInt(Swab.I(z.getSize()));
             bout.writeInt(Swab.I(z.getSize()));
             bout.writeShort(Swab.unsignedShort(z.getFullPath().length()));
             bout.writeShort(0);
             writeString(bout, z.getFullPath());
-            z.datofs = (int) bout.getFilePointer() - newoffset;
+            int oldDataOffset = z.getDataOffset();
+            z.setDataOffset((int) bout.getFilePointer() - newoffset);
             if (z.isInPak()) {
-                bin.seek((long) (this.offset + z.datofs));
-                Util.copyBlock(bin, bout, (long) z.getSize());
+                bin.seek((long) (this.offset + oldDataOffset));
+                Util.copyBlock(bin, bout, z.getSize());
             } else {
-                bout.write(z.data);
-                z.moveToPak();
+                z.moveToPak(bout);
             }
         }
 
@@ -115,7 +115,7 @@ public class Mappak {
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeShort(0);
-            bout.writeInt(Swab.I((int) z.CRC));
+            bout.writeInt(Swab.I((int) z.getCRC()));
             bout.writeInt(Swab.I(z.getSize()));
             bout.writeInt(Swab.I(z.getSize()));
             bout.writeShort(Swab.unsignedShort(z.getFullPath().length()));
@@ -124,7 +124,7 @@ public class Mappak {
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeInt(0);
-            bout.writeInt(Swab.I(z.relofs));
+            bout.writeInt(Swab.I(z.getRelativeOffset()));
             writeString(bout, z.getFullPath());
         }
 

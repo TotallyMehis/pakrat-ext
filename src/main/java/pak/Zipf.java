@@ -3,28 +3,29 @@ package pak;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.zip.CRC32;
 
 public class Zipf {
     private final int size;
-    int relofs;
-    int datofs;
+    private int localHeaderOffset;
+    private int dataOffset;
     private String fullPath;
     private String fileName;
     private String path;
     private FileType type;
     private boolean inpak;
-    byte[] data;
-    long CRC;
+    private byte[] data;
+    private long CRC;
 
     private Zipf(int size) {
         this.size = size;
     }
 
-    public static Zipf fromPak(String filePath, int size, int relativeOffset, int datOffset, long crc) {
+    public static Zipf fromPak(String filePath, int size, int localHeaderOffset, int dataOffset, long crc) {
         Zipf z = new Zipf(size);
-        z.relofs = relativeOffset;
-        z.datofs = datOffset;
+        z.localHeaderOffset = localHeaderOffset;
+        z.dataOffset = dataOffset;
         z.CRC = crc;
         z.setFullPath(filePath);
         z.inpak = true;
@@ -38,7 +39,7 @@ public class Zipf {
         assert file.canRead();
 
         Zipf z = new Zipf((int) file.length());
-        z.datofs = z.relofs = 0;
+        z.dataOffset = z.localHeaderOffset = 0;
         z.inpak = false;
         z.data = new byte[z.size];
         FileInputStream fis = new FileInputStream(file);
@@ -130,9 +131,38 @@ public class Zipf {
         return this.size;
     }
 
-    public void moveToPak() {
+    public byte[] getData() {
+        return this.data;
+    }
+
+    public int getRelativeOffset() {
+        return this.localHeaderOffset;
+    }
+
+    public void setRelativeOffset(int relofs) {
+        this.localHeaderOffset = relofs;
+    }
+
+    public int getDataOffset() {
+        return this.dataOffset;
+    }
+
+    public void setDataOffset(int datofs) {
+        this.dataOffset = datofs;
+    }
+
+    public long getCRC() {
+        return this.CRC;
+    }
+
+    public void setCRC(long crc) {
+        this.CRC = crc;
+    }
+
+    public void moveToPak(RandomAccessFile out) throws IOException {
         assert !this.inpak;
 
+        out.write(this.data);
         this.inpak = true;
         this.data = null;
     }

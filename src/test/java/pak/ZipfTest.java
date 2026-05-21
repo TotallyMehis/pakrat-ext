@@ -20,15 +20,15 @@ final class ZipfTest {
         Zipf zipFile = Zipf.fromPak("materials/subfolder/test.vmt", 100, 101, 102, 0x100);
 
         assertEquals(true, zipFile.isInPak());
-        assertEquals(null, zipFile.data);
+        assertEquals(null, zipFile.getData());
         assertEquals(100, zipFile.getSize());
-        assertEquals(101, zipFile.relofs);
-        assertEquals(102, zipFile.datofs);
+        assertEquals(101, zipFile.getRelativeOffset());
+        assertEquals(102, zipFile.getDataOffset());
         assertEquals("materials/subfolder/test.vmt", zipFile.getFullPath());
         assertEquals("materials/subfolder", zipFile.getPath());
         assertEquals("test.vmt", zipFile.getFileName());
         assertEquals(FileType.MATERIAL, zipFile.getType());
-        assertEquals(0x100, zipFile.CRC);
+        assertEquals(0x100, zipFile.getCRC());
     }
 
     @Test
@@ -37,9 +37,9 @@ final class ZipfTest {
         Zipf zipFile = Zipf.fromFile(file, false, null);
 
         assertFalse(zipFile.isInPak());
-        assertNotNull(zipFile.data);
-        assertEquals(131604, zipFile.data.length);
-        assertEquals(535977290, zipFile.CRC);
+        assertNotNull(zipFile.getData());
+        assertEquals(131604, zipFile.getData().length);
+        assertEquals(535977290, zipFile.getCRC());
         assertEquals("test_npcclip.bsp", zipFile.getFileName());
         assertEquals(FileType.OTHER, zipFile.getType());
     }
@@ -61,7 +61,7 @@ final class ZipfTest {
         Zipf zipFile = Zipf.fromFile(filePath.toFile(), true, null);
 
         assertFalse(zipFile.isInPak());
-        assertNotNull(zipFile.data);
+        assertNotNull(zipFile.getData());
         assertEquals("%s/subfolder/test.txt".formatted(fixupFolder), zipFile.getFullPath());
         assertEquals("%s/subfolder".formatted(fixupFolder), zipFile.getPath());
         assertEquals("test.txt", zipFile.getFileName());
@@ -80,7 +80,7 @@ final class ZipfTest {
         Zipf zipFile = Zipf.fromFile(filePath.toFile(), true, Util.normalizePath(rootDir.getAbsolutePath()));
 
         assertFalse(zipFile.isInPak());
-        assertNotNull(zipFile.data);
+        assertNotNull(zipFile.getData());
         assertEquals("subfolder/test.txt", zipFile.getFullPath());
         assertEquals("subfolder", zipFile.getPath());
         assertEquals("test.txt", zipFile.getFileName());

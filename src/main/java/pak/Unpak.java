@@ -490,7 +490,8 @@ public class Unpak {
                         JTextField filetext = new JTextField(z.getFileName());
                         JTextField pathtext = new JTextField(z.getPath());
                         Container cbox = Box.createHorizontalBox();
-                        cbox.add(new JLabel("Size: " + z.getSize() + "  CRC32: " + Integer.toHexString((int) z.CRC)));
+                        cbox.add(new JLabel(
+                                "Size: " + z.getSize() + "  CRC32: " + Integer.toHexString((int) z.getCRC())));
                         Container fbox = Box.createHorizontalBox();
                         fbox.add(new JLabel("Filename : "));
                         fbox.add(filetext);
@@ -934,7 +935,7 @@ public class Unpak {
             Zipf z = fileList.get(i);
             if (z.getFileName().toLowerCase().endsWith(".nav")) {
                 try {
-                    this.raf.seek((long) (this.m.getOffset() + z.datofs));
+                    this.raf.seek((long) (this.m.getOffset() + z.getDataOffset()));
                     byte[] buffer = new byte[z.getSize()];
                     this.raf.read(buffer);
                     ByteBuffer zb = ByteBuffer.wrap(buffer);
@@ -964,11 +965,11 @@ public class Unpak {
                             zb.putInt((int) blen);
                             CRC32 crc = new CRC32();
                             crc.update(buffer);
-                            z.CRC = crc.getValue();
-                            this.raf.seek((long) (this.m.getOffset() + z.datofs + 8));
+                            z.setCRC(crc.getValue());
+                            this.raf.seek((long) (this.m.getOffset() + z.getDataOffset() + 8));
                             this.raf.writeInt(Swab.I((int) blen));
-                            this.raf.seek((long) (this.m.getOffset() + z.relofs + 14));
-                            this.raf.writeInt(Swab.I((int) z.CRC));
+                            this.raf.seek((long) (this.m.getOffset() + z.getRelativeOffset() + 14));
+                            this.raf.writeInt(Swab.I((int) z.getCRC()));
                             long cdpos = (long) (this.m.getOffset() + this.m.getCdoffs());
 
                             for (int j = 0; j < i; ++j) {
@@ -978,7 +979,7 @@ public class Unpak {
 
                             cdpos += 16L;
                             this.raf.seek(cdpos);
-                            this.raf.writeInt(Swab.I((int) z.CRC));
+                            this.raf.writeInt(Swab.I((int) z.getCRC()));
                             Cons.println("Done");
                         } else {
                             Cons.println("Nav file " + z.getFullPath() + " matches BSP.");
@@ -1086,12 +1087,12 @@ public class Unpak {
         try {
             ByteBuffer zb;
             if (z.isInPak()) {
-                this.raf.seek((long) (off + z.datofs));
+                this.raf.seek((long) (off + z.getDataOffset()));
                 byte[] buffer = new byte[z.getSize()];
                 this.raf.read(buffer);
                 zb = ByteBuffer.wrap(buffer);
             } else {
-                zb = ByteBuffer.wrap(z.data);
+                zb = ByteBuffer.wrap(z.getData());
             }
 
             zb.order(ByteOrder.LITTLE_ENDIAN);
@@ -1216,12 +1217,12 @@ public class Unpak {
         try {
             ByteBuffer zb;
             if (z.isInPak()) {
-                this.raf.seek((long) (this.m.getOffset() + z.datofs));
+                this.raf.seek((long) (this.m.getOffset() + z.getDataOffset()));
                 byte[] buffer = new byte[z.getSize()];
                 this.raf.read(buffer);
                 zb = ByteBuffer.wrap(buffer);
             } else {
-                zb = ByteBuffer.wrap(z.data);
+                zb = ByteBuffer.wrap(z.getData());
             }
 
             zb.order(ByteOrder.LITTLE_ENDIAN);
