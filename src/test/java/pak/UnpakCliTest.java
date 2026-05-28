@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
@@ -11,11 +12,10 @@ import org.junit.jupiter.api.io.TempDir;
 
 final class UnpakCliTest {
     @Test
-    void savePakFileToDisk(@TempDir Path tempDir) throws Exception {
+    void savePakFileToDisk(@TempDir Path tempDir) {
         File outputFile = tempDir.resolve("output.vtf").toFile();
 
-        String filePath = new File(UnpakCliTest.class.getClassLoader().getResource("test_npcclip.bsp").toURI())
-                .getAbsolutePath();
+        String filePath = getBspFile().getAbsolutePath();
 
         assertEquals(false, outputFile.exists());
 
@@ -26,19 +26,17 @@ final class UnpakCliTest {
     }
 
     @Test
-    void printPakFiles() throws Exception {
-        String filePath = new File(UnpakCliTest.class.getClassLoader().getResource("test_npcclip.bsp").toURI())
-                .getAbsolutePath();
+    void printPakFiles() {
+        String filePath = getBspFile().getAbsolutePath();
 
         assertDoesNotThrow(() -> UnpakCli.printPakFiles(filePath));
     }
 
     @Test
-    void dumpPak(@TempDir Path tempDir) throws Exception {
+    void dumpPak(@TempDir Path tempDir) {
         File outputFile = tempDir.resolve("output.zip").toFile();
 
-        String filePath = new File(UnpakCliTest.class.getClassLoader().getResource("test_npcclip.bsp").toURI())
-                .getAbsolutePath();
+        String filePath = getBspFile().getAbsolutePath();
 
         assertEquals(false, outputFile.exists());
 
@@ -46,5 +44,13 @@ final class UnpakCliTest {
 
         assertEquals(true, outputFile.exists());
         assertEquals(3068538124L, MappakTest.getFileCrc(outputFile));
+    }
+
+    private static File getBspFile() {
+        try {
+            return new File(UnpakCliTest.class.getClassLoader().getResource("test_npcclip.bsp").toURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Failed to get URI of resource.", e);
+        }
     }
 }
