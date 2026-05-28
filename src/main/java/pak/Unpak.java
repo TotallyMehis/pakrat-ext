@@ -776,41 +776,6 @@ public class Unpak {
         }
     }
 
-    private void printList(String filename) throws Exception {
-        this.auton = true;
-        Cons.open(false);
-        Cons.println(
-                "Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
-        Cons.println("Listing pak files from " + filename);
-
-        try {
-            if (!filename.endsWith(".bsp")) {
-                filename = filename + ".bsp";
-            }
-
-            this.infile = new File(filename);
-            if (this.infile.exists() && this.infile.canRead()) {
-                Pakpref.mapdir = this.infile.getPath();
-                this.raf = new RandomAccessFile(this.infile, "r");
-                this.m = new Mappak(true);
-                this.m.loadMap(this.raf);
-                this.zmodel = new ZipDirModel(this.m.getZf());
-                this.zmodel.setfileparams(this.raf, this.m.getOffset());
-
-                for (int i = 0; i < this.zmodel.getRowCount(); ++i) {
-                    Zipf z = this.zmodel.getzipfile(i);
-                    Cons.println(z.getFullDetails());
-                }
-
-                this.raf.close();
-            } else {
-                Cons.println("Can't open " + filename);
-            }
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
     public int addFileToPak(File[] tfile, String base, boolean yta) throws IOException {
         boolean all = yta;
 
@@ -1470,7 +1435,7 @@ public class Unpak {
 
             if (args[0].equalsIgnoreCase("-list")) {
                 fn = args[1];
-                inst.printList(fn);
+                UnpakCli.printPakFiles(fn);
                 return;
             }
 

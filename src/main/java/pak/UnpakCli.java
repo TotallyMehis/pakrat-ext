@@ -53,4 +53,32 @@ public abstract class UnpakCli {
 
         return null;
     }
+
+    public static void printPakFiles(String filename) throws Exception {
+        Cons.open(false);
+        Cons.println(
+                "Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
+        Cons.println("Listing pak files from " + filename);
+
+        if (!filename.endsWith(".bsp")) {
+            filename = filename + ".bsp";
+        }
+
+        var infile = new File(filename);
+        if (!infile.exists() || !infile.canRead()) {
+            Cons.println("Can't open " + filename);
+            return;
+        }
+
+        try (var raf = new RandomAccessFile(infile, "r")) {
+            var m = new Mappak(true);
+            m.loadMap(raf);
+
+            for (Zipf zipFile : m.getZf()) {
+                Cons.println(zipFile.getFullDetails());
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
 }
