@@ -16,30 +16,30 @@ class ZipTreeCR extends DefaultTreeCellRenderer {
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf,
             int row, boolean hasFocus) {
         Component cell = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-        if (this.isFile(value) && !this.inPak(value) && !sel) {
+        if (isFile(value) && !inPak(value) && !sel) {
             cell.setForeground(Color.blue);
         }
 
-        if (this.isFile(value)) {
-            ((JLabel) cell).setText(this.getText(value));
+        if (isFile(value)) {
+            ((JLabel) cell).setText(getText(value));
         }
 
         return cell;
     }
 
-    protected boolean isFile(Object value) {
+    private static boolean isFile(Object value) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
         return node.getUserObject().getClass() == Zipf.class;
     }
 
-    protected boolean inPak(Object value) {
+    private static boolean inPak(Object value) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-        return this.isFile(node) ? ((Zipf) node.getUserObject()).isInPak() : false;
+        return isFile(node) ? ((Zipf) node.getUserObject()).isInPak() : false;
     }
 
-    protected String getText(Object value) {
+    private static String getText(Object value) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-        if (this.isFile(node)) {
+        if (isFile(node)) {
             Zipf z = (Zipf) node.getUserObject();
             return z.getDetails();
         } else {
