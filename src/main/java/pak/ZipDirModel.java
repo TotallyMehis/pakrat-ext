@@ -3,6 +3,7 @@ package pak;
 import java.io.RandomAccessFile;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 
 import javax.swing.JTable;
 import javax.swing.JTree;
@@ -14,25 +15,21 @@ import javax.swing.tree.TreePath;
 public class ZipDirModel extends AbstractTableModel {
     private RandomAccessFile braf;
     private int offset;
-    private List<Zipf> zfl;
+    private final List<Zipf> zfl;
     public static final String[] header = new String[] { "In", "Filename", "Path", "Size", "Type" };
     private static final Object[] cols = new Object[] { Boolean.TRUE, "", "", "", "" };
 
-    public ZipDirModel(List<Zipf> zipfilelist, Unpak rat) {
-        this.zfl = zipfilelist;
-    }
-
-    public void setziplist(List<Zipf> zipfilelist) {
-        this.zfl = zipfilelist;
+    public ZipDirModel(List<Zipf> zipfilelist) {
+        this.zfl = Objects.requireNonNull(zipfilelist);
     }
 
     public Zipf getzipfile(int row) {
-        return this.zfl != null ? (Zipf) this.zfl.get(row) : null;
+        return this.zfl.get(row);
     }
 
     @Override
     public int getRowCount() {
-        return this.zfl != null ? this.zfl.size() : 0;
+        return this.zfl.size();
     }
 
     @Override
@@ -159,7 +156,7 @@ public class ZipDirModel extends AbstractTableModel {
         return root;
     }
 
-    public DefaultMutableTreeNode findMatchingChildNode(DefaultMutableTreeNode top, String s) {
+    private DefaultMutableTreeNode findMatchingChildNode(DefaultMutableTreeNode top, String s) {
         Enumeration<TreeNode> children = top.children();
 
         while (children.hasMoreElements()) {
@@ -222,19 +219,5 @@ public class ZipDirModel extends AbstractTableModel {
             }
 
         }
-    }
-
-    public void printTree(DefaultMutableTreeNode root) {
-        for (int i = 0; i < root.getLevel(); ++i) {
-            System.out.print(">");
-        }
-
-        System.out.println(root);
-        Enumeration<TreeNode> e = root.children();
-
-        while (e.hasMoreElements()) {
-            this.printTree((DefaultMutableTreeNode) e.nextElement());
-        }
-
     }
 }

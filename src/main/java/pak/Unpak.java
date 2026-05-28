@@ -87,7 +87,7 @@ public class Unpak {
                 this.raf = new RandomAccessFile(this.infile, "r");
                 this.m = new Mappak(true);
                 this.m.loadMap(this.raf);
-                this.zmodel = new ZipDirModel(this.m.getZf(), this);
+                this.zmodel = new ZipDirModel(this.m.getZf());
                 this.zmodel.setfileparams(this.raf, this.m.getOffset());
                 Cons.println("Scanning for referenced files...");
                 this.scan = new Scan(this, null, this.m, this.zmodel, filename, this.gamedir, true);
@@ -224,7 +224,7 @@ public class Unpak {
                 menubar.add(viewmenu);
                 menubar.add(helpmenu);
                 this.frame.setJMenuBar(menubar);
-                this.zmodel = new ZipDirModel(this.m.getZf(), this);
+                this.zmodel = new ZipDirModel(this.m.getZf());
                 this.zmodel.setfileparams(this.raf, this.m.getOffset());
                 this.tmodel = new TableSorter(this.zmodel);
                 this.table = new JTable(this.tmodel);
@@ -539,7 +539,7 @@ public class Unpak {
                         Unpak.this.m.loadMap(Unpak.this.raf);
                         Unpak.this.frame.setCursor(Cursor.getDefaultCursor());
                         Unpak.this.frame.setTitle("Pakrat - " + filename_);
-                        Unpak.this.zmodel = new ZipDirModel(Unpak.this.m.getZf(), Unpak.this);
+                        Unpak.this.zmodel = new ZipDirModel(Unpak.this.m.getZf());
                         Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.getOffset());
                         Unpak.this.tmodel = new TableSorter(Unpak.this.zmodel);
                         Unpak.this.table.setModel(Unpak.this.tmodel);
@@ -754,7 +754,7 @@ public class Unpak {
                 this.raf = new RandomAccessFile(this.infile, "r");
                 this.m = new Mappak(true);
                 this.m.loadMap(this.raf);
-                this.zmodel = new ZipDirModel(this.m.getZf(), this);
+                this.zmodel = new ZipDirModel(this.m.getZf());
                 this.zmodel.setfileparams(this.raf, this.m.getOffset());
                 Zipf match = this.zmodel.getbyfilename(pakfile);
                 if (match == null) {
@@ -835,7 +835,7 @@ public class Unpak {
                 this.raf = new RandomAccessFile(this.infile, "r");
                 this.m = new Mappak(true);
                 this.m.loadMap(this.raf);
-                this.zmodel = new ZipDirModel(this.m.getZf(), this);
+                this.zmodel = new ZipDirModel(this.m.getZf());
                 this.zmodel.setfileparams(this.raf, this.m.getOffset());
 
                 for (int i = 0; i < this.zmodel.getRowCount(); ++i) {
