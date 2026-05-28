@@ -15,7 +15,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.DecimalFormat;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.zip.CRC32;
 import javax.swing.BorderFactory;
@@ -734,48 +733,6 @@ public class Unpak {
         }
     }
 
-    private void dump(String filename) throws Exception {
-        this.auton = true;
-        Cons.open(false);
-        long starttime = System.currentTimeMillis();
-        Cons.println(
-                "**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)"
-                        .formatted(Version.getFullVersion()));
-        Cons.println("Dumping pak lump from " + filename);
-
-        try {
-            if (!filename.endsWith(".bsp")) {
-                filename = filename + ".bsp";
-            }
-
-            this.infile = new File(filename);
-            if (this.infile.exists() && this.infile.canRead()) {
-                Cons.println("Reading " + filename);
-                Pakpref.mapdir = this.infile.getPath();
-                this.raf = new RandomAccessFile(this.infile, "r");
-                this.m = new Mappak(true);
-                this.m.loadMap(this.raf);
-                String zipname = filename + ".zip";
-                File outfile = new File(zipname);
-                Cons.print("Writing " + zipname + "...");
-                RandomAccessFile zraf = new RandomAccessFile(outfile, "rw");
-                zraf.setLength(0L);
-                this.raf.seek((long) this.m.getOffset());
-                Util.copyBlock(this.raf, zraf, (long) this.m.getLength());
-                zraf.close();
-                Cons.println("done");
-                this.raf.close();
-                long duration = System.currentTimeMillis() - starttime;
-                Cons.println("**** Pakrat file dump complete in "
-                        + (new DecimalFormat("0.#")).format((double) ((float) duration / 1000.0F)) + " seconds");
-            } else {
-                Cons.println("Can't open " + filename);
-            }
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
     public int addFileToPak(File[] tfile, String base, boolean yta) throws IOException {
         boolean all = yta;
 
@@ -1441,7 +1398,8 @@ public class Unpak {
 
             if (args[0].equalsIgnoreCase("-dump")) {
                 fn = args[1];
-                inst.dump(fn);
+                String outputFileName = fn + ".zip";
+                UnpakCli.dumpPak(fn, outputFileName);
                 return;
             }
 

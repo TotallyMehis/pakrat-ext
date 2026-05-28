@@ -32,4 +32,19 @@ final class UnpakCliTest {
 
         assertDoesNotThrow(() -> UnpakCli.printPakFiles(filePath));
     }
+
+    @Test
+    void dumpPak(@TempDir Path tempDir) throws Exception {
+        File outputFile = tempDir.resolve("output.zip").toFile();
+
+        String filePath = new File(UnpakCliTest.class.getClassLoader().getResource("test_npcclip.bsp").toURI())
+                .getAbsolutePath();
+
+        assertEquals(false, outputFile.exists());
+
+        UnpakCli.dumpPak(filePath, outputFile.getAbsolutePath());
+
+        assertEquals(true, outputFile.exists());
+        assertEquals(3068538124L, MappakTest.getFileCrc(outputFile));
+    }
 }

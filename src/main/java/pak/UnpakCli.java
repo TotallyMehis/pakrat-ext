@@ -81,4 +81,42 @@ public abstract class UnpakCli {
             System.out.println(e);
         }
     }
+
+    public static void dumpPak(String bspFilePath, String outputFile) throws Exception {
+        Cons.open(false);
+        long starttime = System.currentTimeMillis();
+        Cons.println(
+                "**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)"
+                        .formatted(Version.getFullVersion()));
+        Cons.println("Dumping pak lump from " + bspFilePath);
+
+        if (!bspFilePath.endsWith(".bsp")) {
+            bspFilePath = bspFilePath + ".bsp";
+        }
+
+        var infile = new File(bspFilePath);
+        if (!infile.exists() || !infile.canRead()) {
+            Cons.println("Can't open " + bspFilePath);
+            return;
+        }
+
+        Cons.println("Reading " + bspFilePath);
+        Pakpref.mapdir = infile.getPath();
+        File outfile = new File(outputFile);
+        try (var raf = new RandomAccessFile(infile, "r"); var zraf = new RandomAccessFile(outfile, "rw")) {
+            var m = new Mappak(true);
+            m.loadMap(raf);
+            Cons.print("Writing " + outputFile + "...");
+            zraf.setLength(0L);
+            raf.seek(m.getOffset());
+            Util.copyBlock(raf, zraf, m.getLength());
+            zraf.close();
+            Cons.println("done");
+            long duration = System.currentTimeMillis() - starttime;
+            Cons.println("**** Pakrat file dump complete in "
+                    + (new DecimalFormat("0.#")).format((double) ((float) duration / 1000.0F)) + " seconds");
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
 }
