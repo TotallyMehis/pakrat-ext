@@ -144,7 +144,7 @@ final class MappakTest {
                 () -> "Did not contain file %s".formatted(fileName));
     }
 
-    private static long getFileCrc(File file) {
+    public static long getFileCrc(File file) {
         byte[] data;
         try {
             data = Files.readAllBytes(file.toPath());

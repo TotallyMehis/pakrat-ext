@@ -114,16 +114,6 @@ public class ZipDirModel extends AbstractTableModel {
         return null;
     }
 
-    public Zipf getbyfilename(String fname) {
-        for (int i = 0; i < this.getRowCount(); ++i) {
-            if (fname.equalsIgnoreCase(this.getzipfile(i).getFileName())) {
-                return this.getzipfile(i);
-            }
-        }
-
-        return null;
-    }
-
     public int getrow(Zipf f) {
         return this.zfl.indexOf(f);
     }

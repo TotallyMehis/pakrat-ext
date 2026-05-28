@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.zip.CRC32;
 import javax.swing.BorderFactory;
@@ -733,48 +734,6 @@ public class Unpak {
         }
     }
 
-    private void save(String filename, String pakfile) throws Exception {
-        this.auton = true;
-        Cons.open(false);
-        long starttime = System.currentTimeMillis();
-        Cons.println(
-                "**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)"
-                        .formatted(Version.getFullVersion()));
-        Cons.println("Saving " + pakfile + " from " + filename);
-
-        try {
-            if (!filename.endsWith(".bsp")) {
-                filename = filename + ".bsp";
-            }
-
-            this.infile = new File(filename);
-            if (this.infile.exists() && this.infile.canRead()) {
-                Cons.println("Reading " + filename);
-                Pakpref.mapdir = this.infile.getPath();
-                this.raf = new RandomAccessFile(this.infile, "r");
-                this.m = new Mappak(true);
-                this.m.loadMap(this.raf);
-                this.zmodel = new ZipDirModel(this.m.getZf());
-                this.zmodel.setfileparams(this.raf, this.m.getOffset());
-                Zipf match = this.zmodel.getbyfilename(pakfile);
-                if (match == null) {
-                    Cons.println("Can't find file " + pakfile + " in Pak.");
-                } else {
-                    File mfile = new File(match.getFileName());
-                    this.savePakFile(match, mfile, false);
-                    this.raf.close();
-                    long duration = System.currentTimeMillis() - starttime;
-                    Cons.println("**** Pakrat file save complete in "
-                            + (new DecimalFormat("0.#")).format((double) ((float) duration / 1000.0F)) + " seconds");
-                }
-            } else {
-                Cons.println("Can't open " + filename);
-            }
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
     private void dump(String filename) throws Exception {
         this.auton = true;
         Cons.open(false);
@@ -1079,14 +1038,20 @@ public class Unpak {
     }
 
     private boolean savePakFile(Zipf z, File sfile, boolean multi) {
-        int off = this.zmodel.getoffset();
+        return savePakFile(this.m, this.raf, this.frame, this.auton, z, sfile, multi);
+    }
+
+    public static boolean savePakFile(Mappak mapPak, RandomAccessFile raf, JFrame frame, boolean auton, Zipf z,
+            File sfile,
+            boolean multi) {
+        int off = mapPak.getOffset();
 
         try {
             ByteBuffer zb;
             if (z.isInPak()) {
-                this.raf.seek((long) (off + z.getDataOffset()));
+                raf.seek((long) (off + z.getDataOffset()));
                 byte[] buffer = new byte[z.getSize()];
-                this.raf.read(buffer);
+                raf.read(buffer);
                 zb = ByteBuffer.wrap(buffer);
             } else {
                 zb = ByteBuffer.wrap(z.getData());
@@ -1095,7 +1060,7 @@ public class Unpak {
             zb.order(ByteOrder.LITTLE_ENDIAN);
             String sfilename = sfile.getName();
             if (sfile.exists()) {
-                if (this.auton) {
+                if (auton) {
                     Cons.println("File exists, overwriting...");
                 } else {
                     int options = 0;
@@ -1103,7 +1068,7 @@ public class Unpak {
                         options = 1;
                     }
 
-                    int result = JOptionPane.showConfirmDialog(this.frame, "File \"" + sfile + "\" exists, overwrite?",
+                    int result = JOptionPane.showConfirmDialog(frame, "File \"" + sfile + "\" exists, overwrite?",
                             "Save selected file" + (multi ? "s" : ""), options);
                     if (result == 1) {
                         return true;
@@ -1498,8 +1463,8 @@ public class Unpak {
         } else {
             if (args[0].equalsIgnoreCase("-save")) {
                 fn = args[1];
-                String bn = args[2];
-                inst.save(fn, bn);
+                String pakFile = args[2];
+                UnpakCli.savePakFileToDisk(fn, pakFile, new File(pakFile).getName());
                 return;
             }
 
