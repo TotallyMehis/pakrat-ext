@@ -63,9 +63,6 @@ public class Unpak {
     private boolean dirty = false;
     private boolean auton = false;
 
-    public Unpak() {
-    }
-
     private void exec(String basename, String filename) throws Exception {
         this.auton = true;
         Cons.open(false);

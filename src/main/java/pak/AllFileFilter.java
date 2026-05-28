@@ -9,9 +9,6 @@ class AllFileFilter extends FileFilter {
     private static final Set<String> extensions = Set.of("vmt", "vtf", "wav", "mp3", "txt", "mdl", "vtx", "ani", "phy",
             "vvd", "ain", "nav");
 
-    AllFileFilter() {
-    }
-
     @Override
     public boolean accept(File f) {
         if (f != null) {

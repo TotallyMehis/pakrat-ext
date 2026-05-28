@@ -9,9 +9,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 class ZipTreeCR extends DefaultTreeCellRenderer {
-    ZipTreeCR() {
-    }
-
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf,
             int row, boolean hasFocus) {

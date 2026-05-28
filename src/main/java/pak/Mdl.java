@@ -21,9 +21,6 @@ public class Mdl {
     int incmodelindex;
     String[] incmodelfile;
 
-    public Mdl() {
-    }
-
     public void read(ByteBuffer b) throws IOException {
         this.isValid = false;
         int start = b.position();

@@ -66,9 +66,6 @@ public class Vtf {
     double gamma = (double) 1.0F;
     double bright = (double) 1.0F;
 
-    public Vtf() {
-    }
-
     public void read(ByteBuffer b, long size) throws IOException {
         this.isValid = false;
         char[] type = new char[4];

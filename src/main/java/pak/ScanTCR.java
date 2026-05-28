@@ -9,9 +9,6 @@ class ScanTCR extends DefaultTableCellRenderer {
     static final Color Color_lightred = new Color(255, 196, 196);
     static final Color Color_lightgreen = new Color(196, 255, 196);
 
-    ScanTCR() {
-    }
-
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
             int row, int col) {

@@ -13,9 +13,6 @@ public class Phymdl {
     String physblock;
     ArrayList<String> gibmodel;
 
-    public Phymdl() {
-    }
-
     public void read(ByteBuffer b) throws IOException {
         this.isValid = false;
         this.version = b.getInt();

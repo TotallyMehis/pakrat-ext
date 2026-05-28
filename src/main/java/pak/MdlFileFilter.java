@@ -8,9 +8,6 @@ import javax.swing.filechooser.FileFilter;
 class MdlFileFilter extends FileFilter {
     private static final Set<String> extensions = Set.of("mdl", "vtx", "ani", "phy", "vvd");
 
-    MdlFileFilter() {
-    }
-
     @Override
     public boolean accept(File f) {
         if (f != null) {

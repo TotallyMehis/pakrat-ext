@@ -4,9 +4,6 @@ import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
 class PakFileFilter extends FileFilter {
-    PakFileFilter() {
-    }
-
     @Override
     public boolean accept(File f) {
         if (f != null) {

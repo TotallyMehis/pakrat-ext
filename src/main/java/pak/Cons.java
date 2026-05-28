@@ -10,9 +10,6 @@ public class Cons {
     private static JTextArea text;
     private static boolean window;
 
-    public Cons() {
-    }
-
     static void open(boolean iswindowed) {
         window = iswindowed;
         if (window) {

@@ -15,9 +15,6 @@ public class Pakpref {
     static boolean overview;
     static boolean soundscape;
 
-    public Pakpref() {
-    }
-
     public static void getInit() {
         String currentdir = System.getProperty("user.dir");
         prefs = Preferences.userRoot().node("Pakrat");
