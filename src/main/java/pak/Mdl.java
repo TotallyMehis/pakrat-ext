@@ -3,79 +3,92 @@ package pak;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Mdl {
-    boolean isValid = false;
-    int id;
-    int version;
-    int checksum;
-    String name;
-    int length;
-    int numtextures;
-    int textureindex;
-    int numtexpaths;
-    int texpathindex;
-    String[] textures;
-    String[] texpaths;
-    int numincmodels;
-    int incmodelindex;
-    String[] incmodelfile;
+    private final boolean valid;
+    private final int id;
+    private final int version;
+    private final int checksum;
+    private final String name;
+    private final int length;
+    private final String[] textures;
+    private final String[] texpaths;
+    private final String[] incmodels;
 
-    public void read(ByteBuffer b) throws IOException {
-        this.isValid = false;
-        int start = b.position();
-        this.id = b.getInt();
-        this.version = b.getInt();
-        if (this.id == 1414743113 && this.version == 44) {
-            this.checksum = b.getInt();
-            this.name = this.readstr(b);
-            b.position(start + 76);
-            this.length = b.getInt();
-            b.position(start + 204);
-            this.numtextures = b.getInt();
-            this.textureindex = b.getInt();
-            this.numtexpaths = b.getInt();
-            this.texpathindex = b.getInt();
-            this.texpaths = new String[this.numtexpaths];
-            this.textures = new String[this.numtextures];
-            b.position(start + 336);
-            this.numincmodels = b.getInt();
-            this.incmodelindex = b.getInt();
-            this.incmodelfile = new String[this.numincmodels];
+    public static final int MDL_ID = 1414743113; // IDST
+    public static final int MDL_VERSION = 44;
 
-            for (int i = 0; i < this.numtexpaths; ++i) {
-                b.position(start + this.texpathindex + i * 4);
-                int pindex = b.getInt();
-                b.position(start + pindex);
-                this.texpaths[i] = this.readstr(b);
-            }
-
-            for (int i = 0; i < this.numtextures; ++i) {
-                b.position(start + this.textureindex + 64 * i);
-                int tindex = b.getInt();
-                b.position(start + this.textureindex + 64 * i + tindex);
-                this.textures[i] = this.readstr(b);
-            }
-
-            for (int i = 0; i < this.numincmodels; ++i) {
-                b.position(start + this.incmodelindex + 8 * i + 4);
-                int imfindex = b.getInt();
-                b.position(start + this.incmodelindex + 8 * i + imfindex);
-                this.incmodelfile[i] = this.readstr(b);
-            }
-
-            this.isValid = true;
-        }
+    private Mdl(boolean valid, int id, int version, int checksum, String[] incmodels, int length, String name,
+            String[] texpaths,
+            String[] textures) {
+        this.valid = valid;
+        this.id = id;
+        this.version = version;
+        this.checksum = checksum;
+        this.name = name;
+        this.length = length;
+        this.textures = textures;
+        this.texpaths = texpaths;
+        this.incmodels = incmodels;
     }
 
-    public ArrayList<String> gettexturelist() {
+    public static Mdl read(ByteBuffer b) throws IOException {
+        int start = b.position();
+        int id = b.getInt();
+        int version = b.getInt();
+        if (id != MDL_ID || version != MDL_VERSION) {
+            return new Mdl(false, id, version, 0, new String[0], id, "", new String[0], new String[0]);
+        }
+
+        int checksum = b.getInt();
+        String name = readstr(b);
+        b.position(start + 76);
+        int length = b.getInt();
+        b.position(start + 204);
+        int numtextures = b.getInt();
+        int textureindex = b.getInt();
+        int numtexpaths = b.getInt();
+        int texpathindex = b.getInt();
+        String[] texpaths = new String[numtexpaths];
+        String[] textures = new String[numtextures];
+        b.position(start + 336);
+        int numincmodels = b.getInt();
+        int incmodelindex = b.getInt();
+        String[] incmodels = new String[numincmodels];
+
+        for (int i = 0; i < numtexpaths; ++i) {
+            b.position(start + texpathindex + i * 4);
+            int pindex = b.getInt();
+            b.position(start + pindex);
+            texpaths[i] = readstr(b);
+        }
+
+        for (int i = 0; i < numtextures; ++i) {
+            b.position(start + textureindex + 64 * i);
+            int tindex = b.getInt();
+            b.position(start + textureindex + 64 * i + tindex);
+            textures[i] = readstr(b);
+        }
+
+        for (int i = 0; i < numincmodels; ++i) {
+            b.position(start + incmodelindex + 8 * i + 4);
+            int imfindex = b.getInt();
+            b.position(start + incmodelindex + 8 * i + imfindex);
+            incmodels[i] = readstr(b);
+        }
+
+        return new Mdl(true, id, version, checksum, incmodels, length, name, texpaths, textures);
+    }
+
+    public List<String> getTextureList() {
         ArrayList<String> texlist = new ArrayList<>();
-        if (!this.isValid) {
+        if (!this.valid) {
             return texlist;
         } else {
-            for (int i = 0; i < this.numtexpaths; ++i) {
-                for (int j = 0; j < this.numtextures; ++j) {
-                    String tex = this.texpaths[i] + this.textures[j];
+            for (String texpath : this.texpaths) {
+                for (String texture : this.textures) {
+                    String tex = texpath + texture;
                     texlist.add(tex);
                 }
             }
@@ -84,7 +97,7 @@ public class Mdl {
         }
     }
 
-    public String readstr(ByteBuffer b) {
+    private static String readstr(ByteBuffer b) {
         StringBuilder linebuff = new StringBuilder();
 
         while (true) {
@@ -99,6 +112,42 @@ public class Mdl {
 
     @Override
     public String toString() {
-        return !this.isValid ? null : this.name + " " + Integer.toHexString(this.checksum);
+        return !this.valid ? null : this.name + " " + Integer.toHexString(this.checksum);
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public int getChecksum() {
+        return checksum;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public String[] getTextures() {
+        return textures;
+    }
+
+    public String[] getTexturePaths() {
+        return texpaths;
+    }
+
+    public String[] getIncmodels() {
+        return incmodels;
     }
 }

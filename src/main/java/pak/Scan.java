@@ -755,13 +755,12 @@ public class Scan {
                 return sublist;
             } else {
                 buff.order(ByteOrder.LITTLE_ENDIAN);
-                Mdl model = new Mdl();
-                model.read(buff);
-                if (!model.isValid) {
+                Mdl model = Mdl.read(buff);
+                if (!model.isValid()) {
                     Cons.println("Failed to read model");
                     return sublist;
                 } else {
-                    ArrayList<String> texturelist = model.gettexturelist();
+                    List<String> texturelist = model.getTextureList();
 
                     for (int j = 0; j < texturelist.size(); ++j) {
                         Scanfile sfile = new Scanfile((String) texturelist.get(j), this.tmod, this.basedir,
@@ -771,8 +770,9 @@ public class Scan {
                         sublist.addAll(this.checkSubfile(sfile));
                     }
 
-                    for (int j = 0; j < model.numincmodels; ++j) {
-                        Scanfile sfile = new Scanfile(model.incmodelfile[j], this.tmod, this.basedir, ScanfileType.MDL,
+                    for (String incmodel : model.getIncmodels()) {
+                        Scanfile sfile = new Scanfile(incmodel, this.tmod, this.basedir,
+                                ScanfileType.MDL,
                                 s,
                                 "include model");
                         sublist.add(sfile);

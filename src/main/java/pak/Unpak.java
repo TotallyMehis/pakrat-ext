@@ -1248,43 +1248,45 @@ public class Unpak {
 
     private void mdlInfo(ByteBuffer b, String filename, int size) {
         StringBuilder t = new StringBuilder();
-        Mdl model = new Mdl();
+        Mdl model;
 
         try {
-            model.read(b);
+            model = Mdl.read(b);
         } catch (IOException ex) {
             Cons.println(ex);
             t.append(ex.toString());
+            return;
         }
 
-        if (!model.isValid) {
-            t.append("Invalid MDL file : ID=" + Integer.toHexString(model.id) + " version=" + model.version + "\n");
+        if (!model.isValid()) {
+            t.append("Invalid MDL file : ID=" + Integer.toHexString(model.getId()) + " version=" + model.getVersion()
+                    + "\n");
         } else {
-            t.append("Model file version " + model.version + "  length " + model.length + " bytes\n");
-            t.append("Internal name: " + model.name + "\n");
-            t.append("Checksum : " + Integer.toHexString(model.checksum) + "\n");
-            t.append(model.numtexpaths + " texture path(s)\n");
+            t.append("Model file version " + model.getVersion() + "  length " + model.getLength() + " bytes\n");
+            t.append("Internal name: " + model.getName() + "\n");
+            t.append("Checksum : " + Integer.toHexString(model.getChecksum()) + "\n");
+            t.append(model.getTexturePaths().length + " texture path(s)\n");
 
-            for (int i = 0; i < model.numtexpaths; ++i) {
-                t.append("    [materials/]" + model.texpaths[i] + "\n");
+            for (String texturePath : model.getTexturePaths()) {
+                t.append("    [materials/]" + texturePath + "\n");
             }
 
-            t.append(model.numtextures + " texture(s)\n");
+            t.append(model.getTextures().length + " texture(s)\n");
 
-            for (int i = 0; i < model.numtextures; ++i) {
-                t.append("    " + model.textures[i]);
-                if (this.isInPak("materials/" + model.texpaths[0] + model.textures[i] + ".vmt")) {
+            for (String texture : model.getTextures()) {
+                t.append("    " + texture);
+                if (this.isInPak("materials/" + model.getTexturePaths()[0] + texture + ".vmt")) {
                     t.append(" - in pak\n");
                 } else {
                     t.append(" - not in pak\n");
                 }
             }
 
-            t.append(model.numincmodels + " include model(s)\n");
+            t.append(model.getIncmodels().length + " include model(s)\n");
 
-            for (int i = 0; i < model.numincmodels; ++i) {
-                t.append("    " + model.incmodelfile[i]);
-                if (this.isInPak(model.incmodelfile[i])) {
+            for (String incmodel : model.getIncmodels()) {
+                t.append("    " + incmodel);
+                if (this.isInPak(incmodel)) {
                     t.append(" - in pak\n");
                 } else {
                     t.append(" - not in pak\n");
