@@ -23,6 +23,7 @@
         <runtime-image.classifier>runtime-image</runtime-image.classifier>
         <spotless.version>3.4.0</spotless.version>
         <error-prone.version>2.50.0</error-prone.version>
+        <eclipse-jdt.version>4.39</eclipse-jdt.version>
     </properties>
 
     <dependencies>
@@ -84,7 +85,7 @@
                 <configuration>
                     <java>
                         <eclipse>
-                            <version>4.39</version>
+                            <version>${eclipse-format.version}</version>
                             <file>${project.basedir}/eclipse-formatter.xml</file>
                         </eclipse>
                     </java>
