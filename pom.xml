@@ -13,15 +13,15 @@
         <revision>0.96a</revision>
         <changelist></changelist>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>3.5.5</maven-failsafe-plugin.version>
+        <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.5.6</maven-failsafe-plugin.version>
         <maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
         <maven-jlink-plugin.version>3.3.0</maven-jlink-plugin.version>
-        <junit-jupiter.version>6.0.3</junit-jupiter.version>
+        <junit-jupiter.version>6.1.0</junit-jupiter.version>
         <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <runtime-image.classifier>runtime-image</runtime-image.classifier>
-        <spotless.version>3.4.0</spotless.version>
+        <spotless.version>3.7.0</spotless.version>
         <error-prone.version>2.50.0</error-prone.version>
         <eclipse-jdt.version>4.39</eclipse-jdt.version>
     </properties>
