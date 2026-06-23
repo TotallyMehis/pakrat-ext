@@ -1,5 +1,7 @@
 package pak;
 
+import static java.util.Locale.ROOT;
+
 public enum ScanfileType {
 
     NUL(""), VMT(".vmt"), VTF(".vtf"), MDL(".mdl"), VTX(".vtx"), PHY(".phy"), VVD(".vvd"), WAV(".wav"), MP3(
@@ -16,7 +18,7 @@ public enum ScanfileType {
     }
 
     public static ScanfileType getTypeFromFilename(String name) {
-        name = name.toLowerCase();
+        name = name.toLowerCase(ROOT);
 
         for (ScanfileType scanfileType : values()) {
             if (scanfileType == NUL) {

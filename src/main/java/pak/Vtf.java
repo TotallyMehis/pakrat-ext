@@ -254,7 +254,7 @@ public class Vtf {
                         int j = 0;
 
                         for (int i = 0; i < end; i += 3) {
-                            if (data[i] == 0 && data[i + 1] == 0 && data[i + 2] == 255) {
+                            if (data[i] == 0 && data[i + 1] == 0 && data[i + 2] == -1 /* 255 */) {
                                 dest[j] = 0;
                                 dest[j + 1] = 0;
                                 dest[j + 2] = 0;
@@ -275,7 +275,7 @@ public class Vtf {
                         int j = 0;
 
                         for (int i = 0; i < end; i += 3) {
-                            if (data[i] == 255 && data[i + 1] == 0 && data[i + 2] == 0) {
+                            if (data[i] == -1 /* 255 */ && data[i + 1] == 0 && data[i + 2] == 0) {
                                 dest[j] = 0;
                                 dest[j + 1] = 0;
                                 dest[j + 2] = 0;
@@ -768,7 +768,7 @@ public class Vtf {
     }
 
     private static int calcSize(int width, int height, VtfImageFormat format) {
-        switch (format) {
+        return switch (format) {
             case DXT1, DXT1_ONEBITALPHA -> {
                 if (width < 4 && width > 0) {
                     width = 4;
@@ -778,7 +778,7 @@ public class Vtf {
                     height = 4;
                 }
 
-                return (width + 3) / 4 * ((height + 3) / 4) * 8;
+                yield (width + 3) / 4 * ((height + 3) / 4) * 8;
             }
             case DXT3, DXT5 -> {
                 if (width < 4 && width > 0) {
@@ -789,12 +789,10 @@ public class Vtf {
                     height = 4;
                 }
 
-                return (width + 3) / 4 * ((height + 3) / 4) * 16;
+                yield (width + 3) / 4 * ((height + 3) / 4) * 16;
             }
-            default -> {
-                return width * height * format.getPixelSizeInBytes();
-            }
-        }
+            default -> width * height * format.getPixelSizeInBytes();
+        };
     }
 
     public int[] getVersion() {

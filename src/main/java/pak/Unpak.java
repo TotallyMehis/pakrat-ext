@@ -1,5 +1,7 @@
 package pak;
 
+import static java.util.Locale.ROOT;
+
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -94,7 +96,7 @@ public class Unpak {
                 if (this.scan.isNofiles()) {
                     long duration = System.currentTimeMillis() - starttime;
                     Cons.println("**** Pakrat autoscan complete in "
-                            + (new DecimalFormat("0.#")).format((double) ((float) duration / 1000.0F)) + " seconds");
+                            + new DecimalFormat("0.#").format((double) ((float) duration / 1000.0F)) + " seconds");
                 } else {
                     File sfile = new File(this.infile.getAbsolutePath());
                     long ilength = this.infile.length();
@@ -131,7 +133,7 @@ public class Unpak {
                         this.raf.close();
                         long duration = System.currentTimeMillis() - starttime;
                         Cons.println("**** Pakrat autoscan complete in "
-                                + (new DecimalFormat("0.#")).format((double) ((float) duration / 1000.0F))
+                                + new DecimalFormat("0.#").format((double) ((float) duration / 1000.0F))
                                 + " seconds");
                     }
                 }
@@ -234,7 +236,7 @@ public class Unpak {
                 this.table.getColumn("Size").setWidth(50);
                 this.table.getColumn("Type").setMaxWidth(50);
                 this.table.getColumn("In").setMaxWidth(20);
-                this.table.getColumn(ZipDirModel.header[1]).setCellRenderer(new ZipTableCR());
+                this.table.getColumn("Filename").setCellRenderer(new ZipTableCR());
                 this.table.setSelectionMode(2);
                 TransferHandler fileth = new FileTransferHandler(files -> {
                     try {
@@ -488,7 +490,7 @@ public class Unpak {
                         JTextField pathtext = new JTextField(z.getPath());
                         Container cbox = Box.createHorizontalBox();
                         cbox.add(new JLabel(
-                                "Size: " + z.getSize() + "  CRC32: " + Integer.toHexString((int) z.getCRC())));
+                                "Size: " + z.getSize() + "  CRC32: " + Integer.toHexString((int) z.getCrc())));
                         Container fbox = Box.createHorizontalBox();
                         fbox.add(new JLabel("Filename : "));
                         fbox.add(filetext);
@@ -548,7 +550,7 @@ public class Unpak {
                         Unpak.this.table.getColumn("Size").setMaxWidth(50);
                         Unpak.this.table.getColumn("Type").setMaxWidth(50);
                         Unpak.this.table.getColumn("In").setMaxWidth(20);
-                        Unpak.this.table.getColumn(ZipDirModel.header[1]).setCellRenderer(new ZipTableCR());
+                        Unpak.this.table.getColumn("Filename").setCellRenderer(new ZipTableCR());
                         Unpak.this.dirty = false;
                         if (Unpak.this.treeview) {
                             Unpak.this.updateTree();
@@ -811,7 +813,7 @@ public class Unpak {
         List<Zipf> fileList = this.m.getZf();
         for (int i = 0; i < fileList.size(); ++i) {
             Zipf z = fileList.get(i);
-            if (z.getFileName().toLowerCase().endsWith(".nav")) {
+            if (z.getFileName().toLowerCase(ROOT).endsWith(".nav")) {
                 try {
                     this.raf.seek((long) (this.m.getOffset() + z.getDataOffset()));
                     byte[] buffer = new byte[z.getSize()];
@@ -843,11 +845,11 @@ public class Unpak {
                             zb.putInt((int) blen);
                             CRC32 crc = new CRC32();
                             crc.update(buffer);
-                            z.setCRC(crc.getValue());
+                            z.setCrc(crc.getValue());
                             this.raf.seek((long) (this.m.getOffset() + z.getDataOffset() + 8));
                             this.raf.writeInt(Swab.I((int) blen));
                             this.raf.seek((long) (this.m.getOffset() + z.getRelativeOffset() + 14));
-                            this.raf.writeInt(Swab.I((int) z.getCRC()));
+                            this.raf.writeInt(Swab.I((int) z.getCrc()));
                             long cdpos = (long) (this.m.getOffset() + this.m.getCdoffs());
 
                             for (int j = 0; j < i; ++j) {
@@ -857,7 +859,7 @@ public class Unpak {
 
                             cdpos += 16L;
                             this.raf.seek(cdpos);
-                            this.raf.writeInt(Swab.I((int) z.getCRC()));
+                            this.raf.writeInt(Swab.I((int) z.getCrc()));
                             Cons.println("Done");
                         } else {
                             Cons.println("Nav file " + z.getFullPath() + " matches BSP.");
@@ -1111,27 +1113,26 @@ public class Unpak {
 
             zb.order(ByteOrder.LITTLE_ENDIAN);
             switch (z.getType()) {
-                case FileType.OTHER:
-                case FileType.SOUND:
+                case FileType.OTHER, FileType.SOUND -> {
                     this.hexList(readString(zb, z.getSize()), z.getFullPath());
-                    break;
-                case FileType.MATERIAL:
-                case FileType.TEXT:
+                }
+                case FileType.MATERIAL, FileType.TEXT -> {
                     String text = readString(zb, z.getSize());
                     this.TextBox("Pakrat - " + z.getFullPath(), text);
-                    break;
-                case FileType.TEXTURE:
+                }
+                case FileType.TEXTURE -> {
                     this.vtfInfo(zb, z.getFullPath(), z.getSize());
-                    break;
-                case FileType.MODEL:
-                    this.mdlInfo(zb, z.getFullPath(), z.getSize());
-                    break;
-                case FileType.MODEL_DAT:
-                    if (z.getFullPath().toLowerCase().endsWith(".phy")) {
-                        this.phyInfo(zb, z.getFullPath(), z.getSize());
+                }
+                case FileType.MODEL -> {
+                    this.mdlInfo(zb, z.getFullPath());
+                }
+                case FileType.MODEL_DAT -> {
+                    if (z.getFullPath().toLowerCase(ROOT).endsWith(".phy")) {
+                        this.phyInfo(zb, z.getFullPath());
                     } else {
                         this.hexList(readString(zb, z.getSize()), z.getFullPath());
                     }
+                }
             }
         } catch (Exception ex) {
             System.out.println(ex);
@@ -1199,7 +1200,7 @@ public class Unpak {
         vframe.setVisible(true);
     }
 
-    private void phyInfo(ByteBuffer b, String filename, int size) {
+    private void phyInfo(ByteBuffer b, String filename) {
         StringBuilder t = new StringBuilder();
         Phymdl phy = new Phymdl();
 
@@ -1240,7 +1241,7 @@ public class Unpak {
         this.TextBox("Pakrat - " + filename, t.toString());
     }
 
-    private void mdlInfo(ByteBuffer b, String filename, int size) {
+    private void mdlInfo(ByteBuffer b, String filename) {
         StringBuilder t = new StringBuilder();
         Mdl model;
 

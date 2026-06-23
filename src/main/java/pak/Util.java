@@ -1,5 +1,7 @@
 package pak;
 
+import static java.util.Locale.ROOT;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -11,7 +13,7 @@ public abstract class Util {
             String filename = f.getName();
             int i = filename.lastIndexOf('.');
             if (i > 0 && i < filename.length() - 1) {
-                return filename.substring(i + 1).toLowerCase();
+                return filename.substring(i + 1).toLowerCase(ROOT);
             }
         }
 

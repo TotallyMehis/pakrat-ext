@@ -1,5 +1,7 @@
 package pak;
 
+import static java.util.Locale.ROOT;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -263,7 +265,7 @@ public class Scan {
 
         this.dirset.add(gamedir);
         String mapbase = this.pakrat.getInfile().getPath().replace(File.separatorChar, '/');
-        int im = mapbase.toLowerCase().lastIndexOf("maps/");
+        int im = mapbase.toLowerCase(ROOT).lastIndexOf("maps/");
         if (im > 0) {
             mapbase = mapbase.substring(0, im - 1);
             this.dirset.add(mapbase);
@@ -335,7 +337,7 @@ public class Scan {
     private void doAutoscan(final Component parent) {
         if (this.basedir.equals("")) {
             String mapbase = this.pakrat.getInfile().getPath().replace(File.separatorChar, '/');
-            int im = mapbase.toLowerCase().lastIndexOf("maps/");
+            int im = mapbase.toLowerCase(ROOT).lastIndexOf("maps/");
             if (im > 0) {
                 mapbase = mapbase.substring(0, im - 1);
                 this.basedir = mapbase;
@@ -350,11 +352,13 @@ public class Scan {
         } else {
             parent.setCursor(Cursor.getPredefinedCursor(3));
             SwingWorker worker = new SwingWorker() {
+                @Override
                 public Object construct() {
                     Scan.this.doScan();
                     return null;
                 }
 
+                @Override
                 public void finished() {
                     parent.setCursor(Cursor.getDefaultCursor());
                     Scan.this.autoAddFiles(parent);
@@ -466,7 +470,7 @@ public class Scan {
             if (!this.auton) {
                 int pakfiles = this.tmod.getRowCount();
                 boolean[] refd = new boolean[pakfiles];
-                String mapname = this.pakrat.getInfile().getName().toLowerCase();
+                String mapname = this.pakrat.getInfile().getName().toLowerCase(ROOT);
                 String cubemappath = "materials/maps/" + mapname.substring(0, mapname.lastIndexOf(".bsp"));
 
                 for (int i = 0; i < pakfiles; ++i) {
@@ -522,7 +526,7 @@ public class Scan {
             this.prog.setMaximum(7);
         }
 
-        String mapname = this.pakrat.getInfile().getName().toLowerCase();
+        String mapname = this.pakrat.getInfile().getName().toLowerCase(ROOT);
         mapname = mapname.substring(0, mapname.lastIndexOf(".bsp"));
         if (!this.auton) {
             if (Pakpref.navfile) {
@@ -677,8 +681,8 @@ public class Scan {
 
     }
 
-    private ArrayList<Scanfile> checkSubfile(Scanfile sf) throws IOException {
-        ArrayList<Scanfile> subfiles = new ArrayList<>();
+    private List<Scanfile> checkSubfile(Scanfile sf) throws IOException {
+        List<Scanfile> subfiles = new ArrayList<>();
         if (sf.inlist || sf.ondisk) {
             switch (sf.type) {
                 case VMT -> {
@@ -704,7 +708,7 @@ public class Scan {
         return subfiles;
     }
 
-    private ArrayList<Scanfile> getRefFromPhy(Scanfile s) throws IOException {
+    private List<Scanfile> getRefFromPhy(Scanfile s) throws IOException {
         ArrayList<Scanfile> sublist = new ArrayList<>();
         if (!s.inlist && !s.ondisk) {
             return sublist;
@@ -735,7 +739,7 @@ public class Scan {
         }
     }
 
-    private ArrayList<Scanfile> getRefFromMdl(Scanfile s) throws IOException {
+    private List<Scanfile> getRefFromMdl(Scanfile s) throws IOException {
         ArrayList<Scanfile> sublist = new ArrayList<>();
         String basename = s.name;
 
@@ -785,7 +789,7 @@ public class Scan {
         }
     }
 
-    private ArrayList<Scanfile> getRefFromTxt(Scanfile s) throws IOException {
+    private List<Scanfile> getRefFromTxt(Scanfile s) throws IOException {
         ArrayList<Scanfile> sublist = new ArrayList<>();
         if (!s.inlist && !s.ondisk) {
             return sublist;
@@ -808,7 +812,7 @@ public class Scan {
                                 Scanfile ssfile = new Scanfile(token[1], this.tmod, this.basedir, ScanfileType.VMT, s,
                                         "material");
                                 sublist.add(ssfile);
-                                ArrayList<Scanfile> subsublist = this.getRefFromVmt(ssfile);
+                                List<Scanfile> subsublist = this.getRefFromVmt(ssfile);
 
                                 for (int j = 0; j < subsublist.size(); ++j) {
                                     sublist.add(subsublist.get(j));
@@ -827,7 +831,7 @@ public class Scan {
         }
     }
 
-    private ArrayList<Scanfile> getRefFromVmt(Scanfile s) throws IOException {
+    private List<Scanfile> getRefFromVmt(Scanfile s) throws IOException {
         ArrayList<Scanfile> sublist = new ArrayList<>();
         if (!s.inlist && !s.ondisk) {
             return sublist;
@@ -852,7 +856,7 @@ public class Scan {
                                             s,
                                             token[0]);
                                     sublist.add(ssfile);
-                                    ArrayList<Scanfile> subsublist = this.getRefFromVmt(ssfile);
+                                    List<Scanfile> subsublist = this.getRefFromVmt(ssfile);
 
                                     for (int j = 0; j < subsublist.size(); ++j) {
                                         sublist.add(subsublist.get(j));

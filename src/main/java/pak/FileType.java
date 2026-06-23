@@ -1,5 +1,7 @@
 package pak;
 
+import static java.util.Locale.ROOT;
+
 import java.util.List;
 
 public enum FileType {
@@ -23,7 +25,7 @@ public enum FileType {
     }
 
     public static FileType from(String fileName) {
-        String fname = fileName.toLowerCase();
+        String fname = fileName.toLowerCase(ROOT);
 
         if (fname.endsWith(".vmt")) {
             return FileType.MATERIAL;

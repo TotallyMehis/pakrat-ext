@@ -28,7 +28,7 @@ final class ZipfTest {
         assertEquals("materials/subfolder", zipFile.getPath());
         assertEquals("test.vmt", zipFile.getFileName());
         assertEquals(FileType.MATERIAL, zipFile.getType());
-        assertEquals(0x100, zipFile.getCRC());
+        assertEquals(0x100, zipFile.getCrc());
     }
 
     @Test
@@ -39,7 +39,7 @@ final class ZipfTest {
         assertFalse(zipFile.isInPak());
         assertNotNull(zipFile.getData());
         assertEquals(131604, zipFile.getData().length);
-        assertEquals(535977290, zipFile.getCRC());
+        assertEquals(535977290, zipFile.getCrc());
         assertEquals("test_npcclip.bsp", zipFile.getFileName());
         assertEquals(FileType.OTHER, zipFile.getType());
     }

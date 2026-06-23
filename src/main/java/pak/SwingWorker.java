@@ -45,21 +45,16 @@ public abstract class SwingWorker {
     }
 
     public SwingWorker() {
-        final Runnable doFinished = new Runnable() {
-            public void run() {
-                SwingWorker.this.finished();
-            }
-        };
-        Runnable doConstruct = new Runnable() {
-            public void run() {
-                try {
-                    SwingWorker.this.setValue(SwingWorker.this.construct());
-                } finally {
-                    SwingWorker.this.threadVar.clear();
-                }
+        final Runnable doFinished = () -> SwingWorker.this.finished();
 
-                SwingUtilities.invokeLater(doFinished);
+        Runnable doConstruct = () -> {
+            try {
+                SwingWorker.this.setValue(SwingWorker.this.construct());
+            } finally {
+                SwingWorker.this.threadVar.clear();
             }
+
+            SwingUtilities.invokeLater(doFinished);
         };
         Thread t = new Thread(doConstruct);
         this.threadVar = new ThreadVar(t);

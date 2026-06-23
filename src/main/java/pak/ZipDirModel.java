@@ -16,8 +16,8 @@ public class ZipDirModel extends AbstractTableModel {
     private RandomAccessFile braf;
     private int offset;
     private final List<Zipf> zfl;
-    public static final String[] header = new String[] { "In", "Filename", "Path", "Size", "Type" };
-    private static final Object[] cols = new Object[] { Boolean.TRUE, "", "", "", "" };
+    private static final String[] header = new String[] { "In", "Filename", "Path", "Size", "Type" };
+    private static final Object[] cols = new Object[] { true, "", "", "", "" };
 
     public ZipDirModel(List<Zipf> zipfilelist) {
         this.zfl = Objects.requireNonNull(zipfilelist);
@@ -44,30 +44,25 @@ public class ZipDirModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int row, int col) {
-        switch (col) {
-            case 0:
-                return this.getzipfile(row).isInPak();
-            case 1:
-                return this.getzipfile(row).getFileName();
-            case 2:
-                return this.getzipfile(row).getPath();
-            case 3:
-                return this.getzipfile(row).getSize();
-            case 4:
-                return this.getzipfile(row).getType().getName();
-            default:
-                return null;
-        }
+        return switch (col) {
+            case 0 -> this.getzipfile(row).isInPak();
+            case 1 -> this.getzipfile(row).getFileName();
+            case 2 -> this.getzipfile(row).getPath();
+            case 3 -> this.getzipfile(row).getSize();
+            case 4 -> this.getzipfile(row).getType().getName();
+            default -> null;
+        };
     }
 
     @Override
     public void setValueAt(Object value, int row, int col) {
         switch (col) {
-            case 1:
+            case 1 -> {
                 this.getzipfile(row).setFileName((String) value);
-                break;
-            case 2:
+            }
+            case 2 -> {
                 this.getzipfile(row).setPath((String) value);
+            }
         }
 
         this.fireTableDataChanged();

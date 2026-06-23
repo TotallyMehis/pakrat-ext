@@ -13,9 +13,7 @@ class ScanTCR extends DefaultTableCellRenderer {
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
             int row, int col) {
         Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-        if (value instanceof String && col == 3 && !isSelected) {
-            String vstr = (String) value;
-
+        if (value instanceof String vstr && col == 3 && !isSelected) {
             int i;
             for (i = 0; i < 4 && !vstr.equals(ScanModel.locstr[i]); ++i) {
             }
@@ -23,21 +21,22 @@ class ScanTCR extends DefaultTableCellRenderer {
             Color bcolor = cell.getBackground();
             Color fcolor = cell.getForeground();
             switch (i) {
-                case 0:
+                case 0 -> {
                     fcolor = Color.gray;
                     bcolor = Color.white;
-                    break;
-                case 1:
+                }
+                case 1 -> {
                     fcolor = Color.black;
                     bcolor = Color_lightgreen;
-                    break;
-                case 2:
+                }
+                case 2 -> {
                     fcolor = Color.blue;
                     bcolor = Color.white;
-                    break;
-                case 3:
+                }
+                case 3 -> {
                     bcolor = Color_lightred;
                     fcolor = Color.black;
+                }
             }
 
             cell.setBackground(bcolor);

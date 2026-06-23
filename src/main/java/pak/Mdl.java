@@ -112,7 +112,7 @@ public class Mdl {
 
     @Override
     public String toString() {
-        return !this.valid ? null : this.name + " " + Integer.toHexString(this.checksum);
+        return !this.valid ? "Invalid mdl" : this.name + " " + Integer.toHexString(this.checksum);
     }
 
     public boolean isValid() {

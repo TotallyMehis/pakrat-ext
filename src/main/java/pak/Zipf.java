@@ -16,7 +16,7 @@ public class Zipf {
     private FileType type;
     private boolean inpak;
     private byte[] data;
-    private long CRC;
+    private long crc;
 
     private Zipf(int size) {
         this.size = size;
@@ -26,7 +26,7 @@ public class Zipf {
         Zipf z = new Zipf(size);
         z.localHeaderOffset = localHeaderOffset;
         z.dataOffset = dataOffset;
-        z.CRC = crc;
+        z.crc = crc;
         z.setFullPath(filePath);
         z.inpak = true;
         z.data = null;
@@ -47,7 +47,7 @@ public class Zipf {
         fis.close();
         CRC32 crc = new CRC32();
         crc.update(z.data);
-        z.CRC = crc.getValue();
+        z.crc = crc.getValue();
 
         String normalizedPath = Util.normalizePath(file.getAbsolutePath());
 
@@ -151,12 +151,12 @@ public class Zipf {
         this.dataOffset = datofs;
     }
 
-    public long getCRC() {
-        return this.CRC;
+    public long getCrc() {
+        return this.crc;
     }
 
-    public void setCRC(long crc) {
-        this.CRC = crc;
+    public void setCrc(long crc) {
+        this.crc = crc;
     }
 
     public void moveToPak(RandomAccessFile out) throws IOException {

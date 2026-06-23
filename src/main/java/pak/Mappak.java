@@ -1,5 +1,7 @@
 package pak;
 
+import static java.util.Locale.ROOT;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -87,7 +89,7 @@ public class Mappak {
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeShort(0);
-            bout.writeInt(Swab.I((int) z.getCRC()));
+            bout.writeInt(Swab.I((int) z.getCrc()));
             bout.writeInt(Swab.I(z.getSize()));
             bout.writeInt(Swab.I(z.getSize()));
             bout.writeShort(Swab.unsignedShort(z.getFullPath().length()));
@@ -113,7 +115,7 @@ public class Mappak {
             bout.writeShort(0);
             bout.writeShort(0);
             bout.writeShort(0);
-            bout.writeInt(Swab.I((int) z.getCRC()));
+            bout.writeInt(Swab.I((int) z.getCrc()));
             bout.writeInt(Swab.I(z.getSize()));
             bout.writeInt(Swab.I(z.getSize()));
             bout.writeShort(Swab.unsignedShort(z.getFullPath().length()));
@@ -289,8 +291,8 @@ public class Mappak {
             } else {
                 String[] token = line.split("\"");
                 if (token.length > 3) {
-                    String key = token[1].toLowerCase();
-                    String val = token[3].toLowerCase();
+                    String key = token[1].toLowerCase(ROOT);
+                    String val = token[3].toLowerCase(ROOT);
                     boolean done = false;
                     if (key.equals("classname")) {
                         classname = val;
@@ -464,8 +466,10 @@ public class Mappak {
             bb.readShort(); // File last modified time
             bb.readShort(); // File last modified date
             cRCs[i] = Swab.I(bb.readInt());
-            int compressedSize = compressedSizes[i] = Swab.I(bb.readInt()); // Compressed size
-            int uncompressedSize = uncompressedSizes[i] = Swab.I(bb.readInt()); // Uncompressed size
+            int compressedSize = Swab.I(bb.readInt()); // Compressed size
+            compressedSizes[i] = compressedSize;
+            int uncompressedSize = Swab.I(bb.readInt()); // Uncompressed size
+            uncompressedSizes[i] = uncompressedSize;
             int fileNameLength = Swab.unsignedShort(bb.readUnsignedShort()); // File name length
             int extraFieldLength = Swab.unsignedShort(bb.readUnsignedShort()); // Extra field length
             int fileCommentLength = Swab.unsignedShort(bb.readUnsignedShort()); // File comment length

@@ -1,5 +1,7 @@
 package pak;
 
+import static java.util.Locale.ROOT;
+
 import java.io.File;
 import java.util.Objects;
 
@@ -64,7 +66,7 @@ public class Scanfile {
             }
         }
 
-        if ((new File(this.diskname)).exists()) {
+        if (new File(this.diskname).exists()) {
             this.ondisk = true;
         }
 
@@ -80,17 +82,17 @@ public class Scanfile {
     }
 
     public boolean onlydisk() {
-        return this.ondisk && !this.inpak & !this.inlist;
+        return this.ondisk && !this.inpak && !this.inlist;
     }
 
     private static String trimName(String name, ScanfileType t) {
         String ret = name;
-        int i = name.toLowerCase().lastIndexOf(t.getExtension());
+        int i = name.toLowerCase(ROOT).lastIndexOf(t.getExtension());
         if (i > 0) {
             ret = name.substring(0, i);
         }
 
-        if (ret.toLowerCase().startsWith(getPathPrefix(t))) {
+        if (ret.toLowerCase(ROOT).startsWith(getPathPrefix(t))) {
             ret = ret.substring(getPathPrefix(t).length());
         }
 

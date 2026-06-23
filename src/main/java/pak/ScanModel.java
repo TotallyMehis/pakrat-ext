@@ -8,7 +8,7 @@ public class ScanModel extends AbstractTableModel {
     private List<Scanfile> fl;
 
     static String[] header = new String[] { "Filename", "Path", "Type", "Location", "Add" };
-    static Object[] cols = new Object[] { "", "", "", "", Boolean.TRUE };
+    static Object[] cols = new Object[] { "", "", "", "", true };
     static String[] locstr = new String[] { "Not found", "In Pak", "In List", "On Disk" };
 
     public ScanModel(List<Scanfile> filelist) {
@@ -24,10 +24,12 @@ public class ScanModel extends AbstractTableModel {
         return this.fl != null ? (Scanfile) this.fl.get(row) : null;
     }
 
+    @Override
     public int getRowCount() {
         return this.fl != null ? this.fl.size() : 0;
     }
 
+    @Override
     public int getColumnCount() {
         return 5;
     }
@@ -37,23 +39,19 @@ public class ScanModel extends AbstractTableModel {
         return cols[col].getClass();
     }
 
+    @Override
     public Object getValueAt(int row, int col) {
-        switch (col) {
-            case 0:
-                return this.getfile(row).listname;
-            case 1:
-                return this.getfile(row).pathname;
-            case 2:
-                return this.getfile(row).type.getPrettyName();
-            case 3:
-                return this.getloc(row);
-            case 4:
-                return this.getfile(row).mark;
-            default:
-                return null;
-        }
+        return switch (col) {
+            case 0 -> this.getfile(row).listname;
+            case 1 -> this.getfile(row).pathname;
+            case 2 -> this.getfile(row).type.getPrettyName();
+            case 3 -> this.getloc(row);
+            case 4 -> this.getfile(row).mark;
+            default -> null;
+        };
     }
 
+    @Override
     public void setValueAt(Object value, int row, int col) {
         if (col == 4) {
             this.getfile(row).mark = (Boolean) value;
@@ -73,10 +71,12 @@ public class ScanModel extends AbstractTableModel {
         }
     }
 
+    @Override
     public String getColumnName(int col) {
         return header[col];
     }
 
+    @Override
     public boolean isCellEditable(int row, int col) {
         if (col != 4) {
             return false;

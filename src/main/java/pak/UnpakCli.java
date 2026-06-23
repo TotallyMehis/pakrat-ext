@@ -38,7 +38,7 @@ public abstract class UnpakCli {
                 raf.close();
                 long duration = System.currentTimeMillis() - starttime;
                 Cons.println("**** Pakrat file save complete in "
-                        + (new DecimalFormat("0.#")).format((double) ((float) duration / 1000.0F))
+                        + new DecimalFormat("0.#").format((double) ((float) duration / 1000.0F))
                         + " seconds");
             }
         } catch (Exception e) {
@@ -117,7 +117,7 @@ public abstract class UnpakCli {
             Cons.println("done");
             long duration = System.currentTimeMillis() - starttime;
             Cons.println("**** Pakrat file dump complete in "
-                    + (new DecimalFormat("0.#")).format((double) ((float) duration / 1000.0F)) + " seconds");
+                    + new DecimalFormat("0.#").format((double) ((float) duration / 1000.0F)) + " seconds");
         } catch (Exception e) {
             System.out.println(e);
         }
