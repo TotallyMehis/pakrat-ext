@@ -31,10 +31,9 @@ class VImage extends JPanel {
 
     public VImage(Vtf vtf) {
         this.vtf = vtf;
-        this.vtf.setHDR(this.gamma, this.brightness);
-        int[] data = this.vtf.GetIntARGB(0, 0, 0);
-        int vwidth = this.vtf.GetWidth(0);
-        int vheight = this.vtf.GetHeight(0);
+        int[] data = this.vtf.getIntARGB(0, 0, 0, this.gamma, this.brightness);
+        int vwidth = this.vtf.getWidth(0);
+        int vheight = this.vtf.getHeight(0);
         BufferedImage image = new BufferedImage(vwidth, vheight, 1);
         image.setRGB(0, 0, vwidth, vheight, data, 0, vwidth);
         this.jImage = new JImage(image, vwidth, vheight);
@@ -48,9 +47,9 @@ class VImage extends JPanel {
         JPanel cpanel = new JPanel();
         cp.add(cpanel);
         this.add(cp, "West");
-        final SpinnerNumberModel facemod = new SpinnerNumberModel(0, 0, this.vtf.GetFaceCount() - 1, 1);
-        final SpinnerNumberModel framemod = new SpinnerNumberModel(0, 0, this.vtf.numframes - 1, 1);
-        final SpinnerNumberModel mipmod = new SpinnerNumberModel(0, 0, this.vtf.nummips - 1, 1);
+        final SpinnerNumberModel facemod = new SpinnerNumberModel(0, 0, this.vtf.getFaceCount() - 1, 1);
+        final SpinnerNumberModel framemod = new SpinnerNumberModel(0, 0, this.vtf.getNumberOfFrames() - 1, 1);
+        final SpinnerNumberModel mipmod = new SpinnerNumberModel(0, 0, this.vtf.getNumberOfMipMaps() - 1, 1);
         final SpinnerNumberModel gammod = new SpinnerNumberModel(this.gamma, 0.1, (double) 3.0F, 0.1);
         final SpinnerNumberModel brimod = new SpinnerNumberModel(this.brightness, 0.1, (double) 40.0F, 0.1);
         JSpinner facespin = new JSpinner(facemod);
@@ -58,19 +57,19 @@ class VImage extends JPanel {
         JSpinner mipspin = new JSpinner(mipmod);
         JSpinner gamspin = new JSpinner(gammod);
         JSpinner brispin = new JSpinner(brimod);
-        if (this.vtf.GetFaceCount() == 1) {
+        if (this.vtf.getFaceCount() == 1) {
             facespin.setEnabled(false);
         }
 
-        if (this.vtf.numframes == 1) {
+        if (this.vtf.getNumberOfFrames() == 1) {
             framespin.setEnabled(false);
         }
 
-        if (this.vtf.nummips == 1) {
+        if (this.vtf.getNumberOfMipMaps() == 1) {
             mipspin.setEnabled(false);
         }
 
-        if (this.vtf.imageformat != 24) {
+        if (this.vtf.getImageFormat() != VtfImageFormat.RGBA16161616F) {
             gamspin.setEnabled(false);
             brispin.setEnabled(false);
         }
@@ -143,23 +142,23 @@ class VImage extends JPanel {
     }
 
     private void setImage() {
-        this.vtf.setHDR(this.gamma, this.brightness);
         int[] data;
         switch (this.chan) {
             case 0:
             case 1:
             default:
-                data = this.vtf.GetIntARGB(this.frame, this.face, this.mip);
+                data = this.vtf.getIntARGB(this.frame, this.face, this.mip, this.gamma, this.brightness);
                 break;
             case 2:
             case 3:
             case 4:
             case 5:
-                data = this.vtf.GetIntCompRGBA(this.frame, this.face, this.mip, this.chan - 2);
+                data = this.vtf.getIntCompRGBA(this.frame, this.face, this.mip, this.chan - 2, this.gamma,
+                        this.brightness);
         }
 
-        int vwidth = this.vtf.GetWidth(this.mip);
-        int vheight = this.vtf.GetHeight(this.mip);
+        int vwidth = this.vtf.getWidth(this.mip);
+        int vheight = this.vtf.getHeight(this.mip);
         BufferedImage image = new BufferedImage(vwidth, vheight, this.chan == 1 ? 2 : 1);
         image.setRGB(0, 0, vwidth, vheight, data, 0, vwidth);
         this.jImage.update(image, vwidth, vheight);

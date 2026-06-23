@@ -4,137 +4,118 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class Vtf {
-    private static final int IF_RGBA8888 = 0;
-    // private static final int IF_ABGR8888 = 1;
-    private static final int IF_RGB888 = 2;
-    private static final int IF_BGR888 = 3;
-    private static final int IF_RGB565 = 4;
-    private static final int IF_I8 = 5;
-    private static final int IF_IA88 = 6;
-    // private static final int IF_P8 = 7;
-    private static final int IF_A8 = 8;
-    private static final int IF_RGB888_BS = 9;
-    private static final int IF_BGR888_BS = 10;
-    private static final int IF_ARGB8888 = 11;
-    private static final int IF_BGRA8888 = 12;
-    private static final int IF_DXT1 = 13;
-    private static final int IF_DXT3 = 14;
-    private static final int IF_DXT5 = 15;
-    private static final int IF_BGRX8888 = 16;
-    private static final int IF_BGR565 = 17;
-    private static final int IF_BGRX5551 = 18;
-    private static final int IF_BGRA4444 = 19;
-    private static final int IF_DXT1_1BA = 20;
-    private static final int IF_BGRA5551 = 21;
-    private static final int IF_UV88 = 22;
-    private static final int IF_UVWQ8888 = 23;
-    private static final int IF_RGBA16161616F = 24;
-    private static final int IF_RGBA16161616 = 25;
-    public static final String[] imgfmt = new String[] { "RBGA8888", "ABGR8888", "RGB888", "BGR888", "RGB565", "I8",
-            "IA88",
-            "P8", "A8", "RGB888-BS", "BGR888-BS", "ARGB8888", " BGRA8888", "DXT1", "DXT3", "DXT5", "BGRX8888", "BGR565",
-            "BGRX5551", "BGRA4444", "DXT1_1BA", "BGRA5551", "UV88", "UVWQ8888", "RGBA16161616F", "RGBA16161616" };
-    private static final int[] imgfmtsize = new int[] { 4, 4, 3, 3, 2, 1, 2, 1, 1, 3, 3, 4, 4, 0, 0, 0, 4, 2, 2, 2, 0,
-            2, 2, 4,
-            8, 8, 4 };
-    private static final String[] flagstr = new String[] { "POINTSAMPLE", "TRILINEAR", "CLAMP-S", "CLAMP-T",
-            "ANISOTROPIC",
-            "HINT-DXT5", "NOCOMPRESS", "NORMAL", "NOMIP", "NOLOD", "MINMIP", "PROC", "1BALPHA", "8BALPHA", "ENVMAP",
-            "RENDERTARGET", "DEPTH-RT", "NODEBUGOVERRIDE", "SINGLECOPY", "1OVERMIPLEVELINALPHA", "PREMULTCOL1OML",
-            "NORMALTODUDV", "ALPHATESTMIPGEN", "NODEPTHBUFF", "NICEFILTERED" };
-    private static final int TF_ENVMAP = 16384;
-    int[] vers = new int[2];
-    boolean isValid = false;
-    int headersize;
-    short width;
-    short height;
-    int flags;
-    int imageformat;
-    int numframes;
-    int startframe;
-    float refx;
-    float refy;
-    float refz;
-    float bumpscale;
-    int nummips;
-    int lrimageformat;
-    short lrwidth;
-    short lrheight;
-    boolean isLR;
-    byte[] lrbuffer;
-    byte[] buffer;
-    double gamma = (double) 1.0F;
-    double bright = (double) 1.0F;
+    private static final int TEXTUREFLAGS_ENVMAP = 16384;
 
-    public void read(ByteBuffer b, long size) throws IOException {
-        this.isValid = false;
+    private static final String VTF_SIGNATURE = "VTF\u0000";
+
+    private final boolean valid;
+    private final int[] version;
+    private final short width;
+    private final short height;
+    private final int flags;
+    private final VtfImageFormat imageFormat;
+    private final int numberOfFrames;
+    private final int startFrame;
+    private final float reflectivityX;
+    private final float reflectivityY;
+    private final float reflectivityZ;
+    private final float bumpScale;
+    private final int numberOfMipMaps;
+    private final VtfImageFormat lowResImageFormat;
+    private final short lowResWidth;
+    private final short lowResHeight;
+    private final byte[] lowResBuffer;
+    private final byte[] buffer;
+
+    private Vtf(boolean valid, int[] version, int flags, VtfImageFormat imageFormat, short width, short height,
+            byte[] buffer,
+            VtfImageFormat lowResImageFormat, short lowResWidth, short lowResHeight, byte[] lowResBuffer,
+            float bumpScale, int numberOfFrames, int numberOfMipMaps, float reflectivityX, float reflectivityY,
+            float reflectivityZ, int startFrame) {
+        this.valid = valid;
+        this.version = version;
+        this.width = width;
+        this.height = height;
+        this.flags = flags;
+        this.imageFormat = imageFormat;
+        this.numberOfFrames = numberOfFrames;
+        this.startFrame = startFrame;
+        this.reflectivityX = reflectivityX;
+        this.reflectivityY = reflectivityY;
+        this.reflectivityZ = reflectivityZ;
+        this.bumpScale = bumpScale;
+        this.numberOfMipMaps = numberOfMipMaps;
+        this.lowResImageFormat = lowResImageFormat;
+        this.lowResWidth = lowResWidth;
+        this.lowResHeight = lowResHeight;
+        this.lowResBuffer = lowResBuffer;
+        this.buffer = buffer;
+    }
+
+    public static Vtf read(ByteBuffer b) throws IOException {
         char[] type = new char[4];
 
         for (int i = 0; i < 4; ++i) {
             type[i] = (char) b.get();
         }
 
-        String tstr = new String(type);
-        if (tstr.equals("VTF\u0000")) {
-            this.vers[0] = b.getInt();
-            this.vers[1] = b.getInt();
-            this.headersize = b.getInt();
-            this.width = b.getShort();
-            this.height = b.getShort();
-            this.flags = b.getInt();
-            this.numframes = b.getShort();
-            this.startframe = b.getShort();
-            b.getInt();
-            this.refx = b.getFloat();
-            this.refy = b.getFloat();
-            this.refz = b.getFloat();
-            b.getInt();
-            this.bumpscale = b.getFloat();
-            this.imageformat = b.getInt();
-            this.nummips = b.get();
-            this.lrimageformat = b.getInt();
-            this.lrwidth = (short) b.get();
-            this.lrheight = (short) b.get();
-            this.isLR = this.lrimageformat != -1;
-            int lrbuffsize = 0;
-            if (this.isLR) {
-                lrbuffsize = this.CalcSize(this.lrwidth, this.lrheight, this.lrimageformat);
-            }
-
-            int buffsize = this.CalcSize(this.width, this.height, this.nummips, this.imageformat) * this.GetFaceCount()
-                    * this.numframes;
-            b.position(this.headersize);
-            this.lrbuffer = new byte[lrbuffsize];
-            if (this.isLR) {
-                b.get(this.lrbuffer);
-            }
-
-            this.buffer = new byte[buffsize];
-            b.get(this.buffer);
-            this.isValid = true;
-        }
-    }
-
-    public String GetFlagStr() {
-        int bflags = this.flags;
-        StringBuilder str = new StringBuilder();
-
-        for (int i = 0; i < 25; ++i) {
-            if ((bflags & 1) == 1) {
-                str.append(flagstr[i]).append(" ");
-            }
-
-            bflags >>= 1;
+        String signature = new String(type);
+        if (!signature.equals(VTF_SIGNATURE)) {
+            return new Vtf(false, new int[2], 0, null, (short) 0, (short) 0, null, null, (short) 0, (short) 0, null,
+                    1.0f,
+                    0, 0, 0.0f, 0.0f, 0.0f, 0);
         }
 
-        return str.toString();
+        int[] version = new int[2];
+        version[0] = b.getInt();
+        version[1] = b.getInt();
+        int headerSize = b.getInt();
+        short width = b.getShort();
+        short height = b.getShort();
+        int flags = b.getInt();
+        int numberOfFrames = b.getShort();
+        int startFrame = b.getShort();
+        b.getInt();
+        float reflectivityX = b.getFloat();
+        float reflectivityY = b.getFloat();
+        float reflectivityZ = b.getFloat();
+        b.getInt();
+        float bumpScale = b.getFloat();
+        int imageFormatValue = b.getInt();
+        VtfImageFormat imageFormat = VtfImageFormat.from(imageFormatValue)
+                .orElseThrow(() -> new RuntimeException("Unknown image format value: " + imageFormatValue));
+        int numberOfMipMaps = b.get();
+        int lowResImageFormatValue = b.getInt();
+        VtfImageFormat lowResImageFormat = VtfImageFormat.from(lowResImageFormatValue).orElse(null);
+        short lowResWidth = (short) b.get();
+        short lowResHeight = (short) b.get();
+        int lowResBufferSize = 0;
+        if (lowResImageFormat != null) {
+            lowResBufferSize = calcSize(lowResWidth, lowResHeight, lowResImageFormat);
+        }
+
+        int bufferSize = calcSize(width, height, numberOfMipMaps, imageFormat)
+                * calculateFaceCount(startFrame, flags)
+                * numberOfFrames;
+        b.position(headerSize);
+        byte[] lowResBuffer = new byte[lowResBufferSize];
+        if (lowResImageFormat != null) {
+            b.get(lowResBuffer);
+        }
+
+        byte[] buffer = new byte[bufferSize];
+        b.get(buffer);
+
+        return new Vtf(true, version, flags, imageFormat, width, height, buffer, lowResImageFormat, lowResWidth,
+                lowResHeight, lowResBuffer, bumpScale, numberOfFrames, numberOfMipMaps, reflectivityX,
+                reflectivityY, reflectivityZ, startFrame);
     }
 
-    public int[] GetIntARGB(int frame, int face, int miplevel) {
-        int[] idata = new int[this.GetWidth(miplevel) * this.GetHeight(miplevel)];
-        byte[] data = this.GetRGBA(this.GetData(frame, face, miplevel), this.GetWidth(miplevel),
-                this.GetHeight(miplevel),
-                this.imageformat);
+    public int[] getIntARGB(int frame, int face, int miplevel, double gamma, double brightness) {
+        int[] idata = new int[this.getWidth(miplevel) * this.getHeight(miplevel)];
+        byte[] data = getRGBA(this.getData(frame, face, miplevel), this.getWidth(miplevel),
+                this.getHeight(miplevel),
+                this.imageFormat, gamma, brightness);
         int a = 0;
 
         for (int i = 0; i < idata.length; ++i) {
@@ -145,11 +126,11 @@ public class Vtf {
         return idata;
     }
 
-    public int[] GetIntCompRGBA(int frame, int face, int miplevel, int component) {
-        int[] idata = new int[this.GetWidth(miplevel) * this.GetHeight(miplevel)];
-        byte[] data = this.GetRGBA(this.GetData(frame, face, miplevel), this.GetWidth(miplevel),
-                this.GetHeight(miplevel),
-                this.imageformat);
+    public int[] getIntCompRGBA(int frame, int face, int miplevel, int component, double gamma, double brightness) {
+        int[] idata = new int[this.getWidth(miplevel) * this.getHeight(miplevel)];
+        byte[] data = getRGBA(this.getData(frame, face, miplevel), this.getWidth(miplevel),
+                this.getHeight(miplevel),
+                this.imageFormat, gamma, brightness);
         int a = 0;
 
         for (int i = 0; i < idata.length; ++i) {
@@ -161,19 +142,15 @@ public class Vtf {
         return idata;
     }
 
-    public byte[] GetRGBA(int frame, int face, int miplevel) {
-        return this.GetRGBA(this.GetData(frame, face, miplevel), this.GetWidth(miplevel), this.GetHeight(miplevel),
-                this.imageformat);
-    }
-
-    public byte[] GetRGBA(byte[] data, int mwidth, int mheight, int format) {
-        int destsize = this.CalcSize(mwidth, mheight, 0);
-        if (format != IF_DXT1 && format != IF_DXT1_1BA) {
-            if (format == IF_DXT5) {
-                return this.DecompDXT5(data, mwidth, mheight);
+    private static byte[] getRGBA(byte[] data, int mwidth, int mheight, VtfImageFormat format, double gamma,
+            double brightness) {
+        int destsize = calcSize(mwidth, mheight, VtfImageFormat.RGBA8888);
+        if (format != VtfImageFormat.DXT1 && format != VtfImageFormat.DXT1_ONEBITALPHA) {
+            if (format == VtfImageFormat.DXT5) {
+                return decompDXT5(data, mwidth, mheight);
             } else {
                 byte[] dest = new byte[destsize];
-                if (format == IF_RGB888) {
+                if (format == VtfImageFormat.RGB888) {
                     int end = mwidth * mheight * 3;
                     int j = 0;
 
@@ -186,7 +163,7 @@ public class Vtf {
                     }
 
                     return dest;
-                } else if (format == IF_BGR888) {
+                } else if (format == VtfImageFormat.BGR888) {
                     int end = mwidth * mheight * 3;
                     int j = 0;
 
@@ -199,8 +176,8 @@ public class Vtf {
                     }
 
                     return dest;
-                } else if (format != IF_RGBA8888 && format != IF_UVWQ8888) {
-                    if (format == IF_BGRA8888) {
+                } else if (format != VtfImageFormat.RGBA8888 && format != VtfImageFormat.UVWQ8888) {
+                    if (format == VtfImageFormat.BGRA8888) {
                         int end = mwidth * mheight * 4;
 
                         for (int i = 0; i < end; i += 4) {
@@ -211,7 +188,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_BGRX8888) {
+                    } else if (format == VtfImageFormat.BGRX8888) {
                         int end = mwidth * mheight * 4;
 
                         for (int i = 0; i < end; i += 4) {
@@ -222,7 +199,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_ARGB8888) {
+                    } else if (format == VtfImageFormat.ARGB8888) {
                         int end = mwidth * mheight * 4;
 
                         for (int i = 0; i < end; i += 4) {
@@ -233,7 +210,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_A8) {
+                    } else if (format == VtfImageFormat.A8) {
                         int end = mwidth * mheight;
                         int j = 0;
 
@@ -246,7 +223,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_I8) {
+                    } else if (format == VtfImageFormat.I8) {
                         int end = mwidth * mheight;
                         int j = 0;
 
@@ -259,7 +236,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_IA88) {
+                    } else if (format == VtfImageFormat.IA88) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -272,7 +249,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_RGB888_BS) {
+                    } else if (format == VtfImageFormat.RGB888_BLUESCREEN) {
                         int end = mwidth * mheight * 3;
                         int j = 0;
 
@@ -293,7 +270,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_BGR888_BS) {
+                    } else if (format == VtfImageFormat.BGR888_BLUESCREEN) {
                         int end = mwidth * mheight * 3;
                         int j = 0;
 
@@ -314,7 +291,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_RGB565) {
+                    } else if (format == VtfImageFormat.RGB565) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -331,7 +308,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_BGR565) {
+                    } else if (format == VtfImageFormat.BGR565) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -348,7 +325,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_BGRX5551) {
+                    } else if (format == VtfImageFormat.BGRX5551) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -365,7 +342,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_BGRA5551) {
+                    } else if (format == VtfImageFormat.BGRA5551) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -388,7 +365,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_BGRA4444) {
+                    } else if (format == VtfImageFormat.BGRA4444) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -406,7 +383,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_UV88) {
+                    } else if (format == VtfImageFormat.UV88) {
                         int end = mwidth * mheight * 2;
                         int j = 0;
 
@@ -419,7 +396,7 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format == IF_RGBA16161616) {
+                    } else if (format == VtfImageFormat.RGBA16161616) {
                         int end = mwidth * mheight * 8;
                         int j = 0;
 
@@ -436,8 +413,8 @@ public class Vtf {
                         }
 
                         return dest;
-                    } else if (format != IF_RGBA16161616F) {
-                        System.out.println("Vtf: Unsupported format " + imgfmt[format]);
+                    } else if (format != VtfImageFormat.RGBA16161616F) {
+                        System.out.println("Vtf: Unsupported format " + format.getName());
                         return dest;
                     } else {
                         int end = mwidth * mheight * 8;
@@ -448,9 +425,9 @@ public class Vtf {
                             int green = (255 & data[i + 3]) * 256 + (255 & data[i + 2]);
                             int blue = (255 & data[i + 5]) * 256 + (255 & data[i + 4]);
                             int alpha = (255 & data[i + 7]) * 256 + (255 & data[i + 6]);
-                            red = this.HDRScale(red);
-                            green = this.HDRScale(green);
-                            blue = this.HDRScale(blue);
+                            red = calculateHDRScale(red, gamma, brightness);
+                            green = calculateHDRScale(green, gamma, brightness);
+                            blue = calculateHDRScale(blue, gamma, brightness);
                             dest[j + 0] = (byte) (red >>> 8);
                             dest[j + 1] = (byte) (green >>> 8);
                             dest[j + 2] = (byte) (blue >>> 8);
@@ -471,12 +448,12 @@ public class Vtf {
                 }
             }
         } else {
-            return this.DecompDXT1(data, mwidth, mheight);
+            return decompDXT1(data, mwidth, mheight);
         }
     }
 
-    public int HDRScale(int chan) {
-        int out = (int) (Math.pow((double) ((float) chan / 65535.0F), this.gamma) * (double) 65535.0F * this.bright);
+    private static int calculateHDRScale(int chan, double gamma, double brightness) {
+        int out = (int) (Math.pow((double) ((float) chan / 65535.0F), gamma) * (double) 65535.0F * brightness);
         if (out > 65535) {
             out = 65535;
         }
@@ -484,13 +461,8 @@ public class Vtf {
         return out;
     }
 
-    public void setHDR(double g, double b) {
-        this.gamma = g;
-        this.bright = b;
-    }
-
-    public byte[] DecompDXT1(byte[] data, int mwidth, int mheight) {
-        int destsize = this.CalcSize(mwidth, mheight, 0);
+    private static byte[] decompDXT1(byte[] data, int mwidth, int mheight) {
+        int destsize = calcSize(mwidth, mheight, VtfImageFormat.RGBA8888);
         byte[] dest = new byte[destsize];
         int bpp = 4;
         int bps = bpp * mwidth;
@@ -562,18 +534,18 @@ public class Vtf {
         return dest;
     }
 
-    public byte[] DecompDXT5(byte[] data, int mwidth, int mheight) {
-        int destsize = this.CalcSize(mwidth, mheight, 0);
+    private static byte[] decompDXT5(byte[] data, int width, int height) {
+        int destsize = calcSize(width, height, VtfImageFormat.RGBA8888);
         byte[] dest = new byte[destsize];
         int bpp = 4;
-        int bps = bpp * mwidth;
+        int bps = bpp * width;
         int[] alphas = new int[8];
         ColRGBA8888[] colours = new ColRGBA8888[4];
 
         int index = 0;
 
-        for (int y = 0; y < mheight; y += 4) {
-            for (int x = 0; x < mwidth; x += 4) {
+        for (int y = 0; y < height; y += 4) {
+            for (int x = 0; x < width; x += 4) {
                 alphas[0] = data[index] & 255;
                 alphas[1] = data[index + 1] & 255;
                 int alphamask0 = toInt3(data, index + 2);
@@ -606,7 +578,7 @@ public class Vtf {
                     for (int var23 = 0; var23 < 4; ++var23) {
                         int select = (bitmask & 3 << k * 2) >>> k * 2;
                         ColRGBA8888 col = colours[select];
-                        if (x + var23 < mwidth && y + j < mheight) {
+                        if (x + var23 < width && y + j < height) {
                             int offset = (y + j) * bps + (x + var23) * bpp;
                             dest[offset + 0] = toByte(col.r());
                             dest[offset + 1] = toByte(col.g());
@@ -637,7 +609,7 @@ public class Vtf {
 
                 for (int var26 = 0; var26 < 2; ++var26) {
                     for (int var24 = 0; var24 < 4; ++var24) {
-                        if (x + var24 < mwidth && y + var26 < mheight) {
+                        if (x + var24 < width && y + var26 < height) {
                             int offset = (y + var26) * bps + (x + var24) * bpp + 3;
                             dest[offset] = (byte) alphas[bits & 7];
                         }
@@ -650,7 +622,7 @@ public class Vtf {
 
                 for (int var27 = 2; var27 < 4; ++var27) {
                     for (int var25 = 0; var25 < 4; ++var25) {
-                        if (x + var25 < mwidth && y + var27 < mheight) {
+                        if (x + var25 < width && y + var27 < height) {
                             int offset = (y + var27) * bps + (x + var25) * bpp + 3;
                             dest[offset] = (byte) alphas[bits & 7];
                         }
@@ -683,11 +655,11 @@ public class Vtf {
         return (byte) (in & 255);
     }
 
-    public byte[] GetData(int frame, int face, int miplevel) {
-        int dwidth = this.GetWidth(miplevel);
-        int dheight = this.GetHeight(miplevel);
-        int dlength = this.CalcSize(dwidth, dheight, this.imageformat);
-        int doffset = this.GetOffset(frame, face, miplevel);
+    private byte[] getData(int frame, int face, int mipLevel) {
+        int dwidth = this.getWidth(mipLevel);
+        int dheight = this.getHeight(mipLevel);
+        int dlength = calcSize(dwidth, dheight, this.imageFormat);
+        int doffset = this.getOffset(frame, face, mipLevel);
         byte[] databuff = new byte[dlength];
 
         for (int i = 0; i < dlength; ++i) {
@@ -697,39 +669,39 @@ public class Vtf {
         return databuff;
     }
 
-    public int GetOffset(int frame, int face, int mip) {
+    private int getOffset(int frame, int face, int mipLevel) {
         int offset = 0;
-        int mframecount = this.numframes;
-        int mfacecount = this.GetFaceCount();
-        int mmipcount = this.nummips;
-        if (frame >= mframecount) {
-            frame = mframecount - 1;
+        int frameCount = this.numberOfFrames;
+        int faceCount = this.getFaceCount();
+        int mipCount = this.numberOfMipMaps;
+        if (frame >= frameCount) {
+            frame = frameCount - 1;
         }
 
-        if (face >= mfacecount) {
-            face = mfacecount - 1;
+        if (face >= faceCount) {
+            face = faceCount - 1;
         }
 
-        if (mip >= mmipcount) {
-            mip = mmipcount - 1;
+        if (mipLevel >= mipCount) {
+            mipLevel = mipCount - 1;
         }
 
-        for (int i = mmipcount - 1; i > mip; --i) {
-            offset += mframecount * mfacecount * this.CalcSize(this.GetWidth(i), this.GetHeight(i), this.imageformat);
+        for (int i = mipCount - 1; i > mipLevel; --i) {
+            offset += frameCount * faceCount * calcSize(this.getWidth(i), this.getHeight(i), this.imageFormat);
         }
 
-        int temp = this.CalcSize(this.GetWidth(mip), this.GetHeight(mip), this.imageformat);
-        offset += temp * (frame * mfacecount + face);
+        int temp = calcSize(this.getWidth(mipLevel), this.getHeight(mipLevel), this.imageFormat);
+        offset += temp * (frame * faceCount + face);
         return offset;
     }
 
-    public int GetWidth(int miplev) {
-        if (miplev >= this.nummips) {
+    public int getWidth(int mipLevel) {
+        if (mipLevel >= this.numberOfMipMaps) {
             return 0;
         } else {
             int mwidth = this.width;
 
-            for (int i = 0; i < miplev; ++i) {
+            for (int i = 0; i < mipLevel; ++i) {
                 mwidth >>= 1;
                 if (mwidth < 1) {
                     mwidth = 1;
@@ -740,13 +712,13 @@ public class Vtf {
         }
     }
 
-    public int GetHeight(int miplev) {
-        if (miplev >= this.nummips) {
+    public int getHeight(int mipLevel) {
+        if (mipLevel >= this.numberOfMipMaps) {
             return 0;
         } else {
             int mheight = this.height;
 
-            for (int i = 0; i < miplev; ++i) {
+            for (int i = 0; i < mipLevel; ++i) {
                 mheight >>= 1;
                 if (mheight < 1) {
                     mheight = 1;
@@ -757,31 +729,35 @@ public class Vtf {
         }
     }
 
-    public int GetFaceCount() {
-        if (this.isEnvmap()) {
-            return this.startframe == -1 ? 6 : 7;
+    public int getFaceCount() {
+        return calculateFaceCount(this.startFrame, this.flags);
+    }
+
+    private static int calculateFaceCount(int startFrame, int flags) {
+        if (isEnvmap(flags)) {
+            return startFrame == -1 ? 6 : 7;
         } else {
             return 1;
         }
     }
 
-    public boolean isEnvmap() {
-        return (this.flags & TF_ENVMAP) != 0;
+    private static boolean isEnvmap(int flags) {
+        return (flags & TEXTUREFLAGS_ENVMAP) != 0;
     }
 
-    public int CalcSize(int mwidth, int mheight, int mmipmaps, int mformat) {
+    private static int calcSize(int width, int height, int numberOfMipMaps, VtfImageFormat format) {
         int size = 0;
-        if (mheight != 0 && mwidth != 0) {
-            for (int i = 0; i < mmipmaps; ++i) {
-                size += this.CalcSize(mwidth, mheight, mformat);
-                mwidth >>= 1;
-                mheight >>= 1;
-                if (mwidth < 1) {
-                    mwidth = 1;
+        if (height != 0 && width != 0) {
+            for (int i = 0; i < numberOfMipMaps; ++i) {
+                size += calcSize(width, height, format);
+                width >>= 1;
+                height >>= 1;
+                if (width < 1) {
+                    width = 1;
                 }
 
-                if (mheight < 1) {
-                    mheight = 1;
+                if (height < 1) {
+                    height = 1;
                 }
             }
 
@@ -791,36 +767,105 @@ public class Vtf {
         }
     }
 
-    public int CalcSize(int mwidth, int mheight, int mformat) {
-        switch (mformat) {
-            case IF_DXT1:
-            case IF_DXT1_1BA:
-                if (mwidth < 4 && mwidth > 0) {
-                    mwidth = 4;
+    private static int calcSize(int width, int height, VtfImageFormat format) {
+        switch (format) {
+            case DXT1, DXT1_ONEBITALPHA -> {
+                if (width < 4 && width > 0) {
+                    width = 4;
                 }
 
-                if (mheight < 4 && mheight > 0) {
-                    mheight = 4;
+                if (height < 4 && height > 0) {
+                    height = 4;
                 }
 
-                return (mwidth + 3) / 4 * ((mheight + 3) / 4) * 8;
-            case IF_DXT3:
-            case IF_DXT5:
-                if (mwidth < 4 && mwidth > 0) {
-                    mwidth = 4;
+                return (width + 3) / 4 * ((height + 3) / 4) * 8;
+            }
+            case DXT3, DXT5 -> {
+                if (width < 4 && width > 0) {
+                    width = 4;
                 }
 
-                if (mheight < 4 && mheight > 0) {
-                    mheight = 4;
+                if (height < 4 && height > 0) {
+                    height = 4;
                 }
 
-                return (mwidth + 3) / 4 * ((mheight + 3) / 4) * 16;
-            case IF_BGRX8888:
-            case IF_BGR565:
-            case IF_BGRX5551:
-            case IF_BGRA4444:
-            default:
-                return mwidth * mheight * imgfmtsize[mformat];
+                return (width + 3) / 4 * ((height + 3) / 4) * 16;
+            }
+            default -> {
+                return width * height * format.getPixelSizeInBytes();
+            }
         }
+    }
+
+    public int[] getVersion() {
+        return version;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public short getWidth() {
+        return width;
+    }
+
+    public short getHeight() {
+        return height;
+    }
+
+    public int getFlags() {
+        return flags;
+    }
+
+    public VtfImageFormat getImageFormat() {
+        return imageFormat;
+    }
+
+    public int getNumberOfFrames() {
+        return numberOfFrames;
+    }
+
+    public int getStartFrame() {
+        return startFrame;
+    }
+
+    public float getReflectivityX() {
+        return reflectivityX;
+    }
+
+    public float getReflectivityY() {
+        return reflectivityY;
+    }
+
+    public float getReflectivityZ() {
+        return reflectivityZ;
+    }
+
+    public float getBumpScale() {
+        return bumpScale;
+    }
+
+    public int getNumberOfMipMaps() {
+        return numberOfMipMaps;
+    }
+
+    public VtfImageFormat getLowResImageFormat() {
+        return lowResImageFormat;
+    }
+
+    public short getLowResWidth() {
+        return lowResWidth;
+    }
+
+    public short getLowResHeight() {
+        return lowResHeight;
+    }
+
+    public byte[] getLowResBuffer() {
+        return lowResBuffer;
+    }
+
+    public byte[] getBuffer() {
+        return buffer;
     }
 }

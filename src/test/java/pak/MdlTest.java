@@ -75,8 +75,12 @@ final class MdlTest {
         assertEquals(false, mdl.isValid());
     }
 
-    private static byte[] readFile(String fileName) throws Exception {
-        return Files
-                .readAllBytes(new File(MappakTest.class.getClassLoader().getResource(fileName).toURI()).toPath());
+    public static byte[] readFile(String fileName) {
+        try {
+            return Files
+                    .readAllBytes(new File(MappakTest.class.getClassLoader().getResource(fileName).toURI()).toPath());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read all bytes of file " + fileName, e);
+        }
     }
 }

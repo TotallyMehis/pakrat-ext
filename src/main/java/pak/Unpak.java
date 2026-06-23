@@ -1141,45 +1141,39 @@ public class Unpak {
 
     private void vtfInfo(ByteBuffer b, String filename, int size) {
         StringBuilder t = new StringBuilder();
-        Vtf vtf = new Vtf();
+        Vtf vtf;
 
         try {
-            vtf.read(b, (long) size);
+            vtf = Vtf.read(b);
         } catch (Exception ex) {
             Cons.println(ex);
             t.append(ex.toString());
+            return;
         }
 
-        if (!vtf.isValid) {
+        if (!vtf.isValid()) {
             t.append("Invalid VTF file\n");
         } else {
             t.append("VTF file " + size + " bytes\n");
-            t.append("Version " + vtf.vers[0] + "." + vtf.vers[1] + "\n");
-            t.append("WxH: " + vtf.width + " x " + vtf.height + "\n");
-            t.append("Flags: " + vtf.GetFlagStr() + "\n");
+            t.append("Version " + vtf.getVersion()[0] + "." + vtf.getVersion()[1] + "\n");
+            t.append("WxH: " + vtf.getWidth() + " x " + vtf.getHeight() + "\n");
+            t.append("Flags: " + VtfFlags.getFlagString(vtf.getFlags()) + "\n");
             t.append(
-                    "Start frame " + vtf.startframe + " of " + vtf.numframes + " with " + vtf.GetFaceCount()
+                    "Start frame " + vtf.getStartFrame() + " of " + vtf.getNumberOfFrames() + " with "
+                            + vtf.getFaceCount()
                             + " face(s)\n");
             t.append("Reflectivity: ");
             DecimalFormat df = new DecimalFormat("0.00");
-            t.append(df.format((double) vtf.refx) + ", " + df.format((double) vtf.refy) + ", "
-                    + df.format((double) vtf.refz));
-            t.append("  Bumpscale: " + df.format((double) vtf.bumpscale) + "\n");
-            if (vtf.imageformat < Vtf.imgfmt.length) {
-                t.append("Image format: " + Vtf.imgfmt[vtf.imageformat]);
-            } else {
-                t.append("Unknown image format: " + vtf.imageformat);
-            }
+            t.append(df.format(vtf.getReflectivityX()) + ", " + df.format(vtf.getReflectivityY())
+                    + ", "
+                    + df.format(vtf.getReflectivityZ()));
+            t.append("  Bumpscale: " + df.format(vtf.getBumpScale()) + "\n");
+            t.append("Image format: " + vtf.getImageFormat().getName());
 
-            t.append(" with " + vtf.nummips + " mip levels\n");
-            if (vtf.isLR) {
-                if (vtf.lrimageformat < Vtf.imgfmt.length) {
-                    t.append("Low-res format: " + Vtf.imgfmt[vtf.lrimageformat]);
-                } else {
-                    t.append("Unknown lrif: " + vtf.lrimageformat);
-                }
-
-                t.append(" WxH: " + vtf.lrwidth + " x " + vtf.lrheight + "\n");
+            t.append(" with " + vtf.getNumberOfMipMaps() + " mip levels\n");
+            if (vtf.getLowResImageFormat() != null) {
+                t.append("Low-res format: " + vtf.getLowResImageFormat().getName());
+                t.append(" WxH: " + vtf.getLowResWidth() + " x " + vtf.getLowResHeight() + "\n");
             } else {
                 t.append("No low-res image\n");
             }
@@ -1194,7 +1188,7 @@ public class Unpak {
         textarea.setEditable(false);
         panel.setLayout(new BorderLayout());
         panel.add(textarea, "North");
-        if (vtf.isValid) {
+        if (vtf.isValid()) {
             VImage vim = new VImage(vtf);
             panel.add(vim, "Center");
         }
