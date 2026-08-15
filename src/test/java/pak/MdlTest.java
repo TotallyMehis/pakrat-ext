@@ -1,11 +1,10 @@
 package pak;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static pak.TestUtil.readResourceFile;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.file.Files;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -13,7 +12,7 @@ import org.junit.jupiter.api.Test;
 final class MdlTest {
     @Test
     void readMdl() throws Exception {
-        byte[] content = readFile("roller.mdl");
+        byte[] content = readResourceFile("roller.mdl");
 
         ByteBuffer byteBuffer = ByteBuffer.wrap(content);
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -38,7 +37,7 @@ final class MdlTest {
 
     @Test
     void readMdl2() throws Exception {
-        byte[] content = readFile("v_crowbar.mdl");
+        byte[] content = readResourceFile("v_crowbar.mdl");
 
         ByteBuffer byteBuffer = ByteBuffer.wrap(content);
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -65,7 +64,7 @@ final class MdlTest {
 
     @Test
     void readInvalid() throws Exception {
-        byte[] content = readFile("test.txt");
+        byte[] content = readResourceFile("test.txt");
 
         ByteBuffer byteBuffer = ByteBuffer.wrap(content);
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -75,12 +74,4 @@ final class MdlTest {
         assertEquals(false, mdl.isValid());
     }
 
-    public static byte[] readFile(String fileName) {
-        try {
-            return Files
-                    .readAllBytes(new File(MappakTest.class.getClassLoader().getResource(fileName).toURI()).toPath());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to read all bytes of file " + fileName, e);
-        }
-    }
 }

@@ -3,6 +3,7 @@ package pak;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static pak.TestUtil.getResourceAsFile;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -33,7 +34,7 @@ final class ZipfTest {
 
     @Test
     void fromFile() throws Exception {
-        File file = new File(MappakTest.class.getClassLoader().getResource("test_npcclip.bsp").toURI());
+        File file = getResourceAsFile("test_npcclip.bsp");
         Zipf zipFile = Zipf.fromFile(file, false, null);
 
         assertFalse(zipFile.isInPak());
@@ -55,8 +56,7 @@ final class ZipfTest {
     void fromFileFixup(String fixupFolder, @TempDir Path tempDir) throws Exception {
         Path filePath = tempDir.resolve("%s/subfolder/test.txt".formatted(fixupFolder));
         tempDir.resolve("%s/subfolder".formatted(fixupFolder)).toFile().mkdirs();
-        Files.copy(Path.of(MappakTest.class.getClassLoader().getResource("test.txt").toURI()),
-                Files.newOutputStream(filePath));
+        Files.copy(getResourceAsFile("test.txt").toPath(), Files.newOutputStream(filePath));
 
         Zipf zipFile = Zipf.fromFile(filePath.toFile(), true, null);
 
@@ -74,8 +74,7 @@ final class ZipfTest {
         File rootDir = tempDir.resolve("something").toFile();
         tempDir.resolve("something/subfolder").toFile().mkdirs();
 
-        Files.copy(Path.of(MappakTest.class.getClassLoader().getResource("test.txt").toURI()),
-                Files.newOutputStream(filePath));
+        Files.copy(getResourceAsFile("test.txt").toPath(), Files.newOutputStream(filePath));
 
         Zipf zipFile = Zipf.fromFile(filePath.toFile(), true, Util.normalizePath(rootDir.getAbsolutePath()));
 
@@ -90,7 +89,7 @@ final class ZipfTest {
     @ParameterizedTest
     @ValueSource(strings = { "materials", "materials/", "/materials/", "\\materials\\", "////materials////" })
     void setPath(String path) throws Exception {
-        File testFile = new File(MappakTest.class.getClassLoader().getResource("test.txt").toURI());
+        File testFile = getResourceAsFile("test.txt");
 
         Zipf zipFile = Zipf.fromFile(testFile, false, null);
         zipFile.setPath(path);

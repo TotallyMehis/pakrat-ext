@@ -1,6 +1,7 @@
 package pak;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static pak.TestUtil.readResourceFile;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -10,7 +11,7 @@ import org.junit.jupiter.api.Test;
 final class VtfTest {
     @Test
     void readSimpleVtf() throws Exception {
-        ByteBuffer buffer = ByteBuffer.wrap(MdlTest.readFile("flat_normal.vtf"));
+        ByteBuffer buffer = ByteBuffer.wrap(readResourceFile("flat_normal.vtf"));
         buffer.order(ByteOrder.LITTLE_ENDIAN);
 
         Vtf vtf = Vtf.read(buffer);
@@ -49,7 +50,7 @@ final class VtfTest {
 
     @Test
     void readSimpleVtf2() throws Exception {
-        ByteBuffer buffer = ByteBuffer.wrap(MdlTest.readFile("sky_day01_01bk.vtf"));
+        ByteBuffer buffer = ByteBuffer.wrap(readResourceFile("sky_day01_01bk.vtf"));
         buffer.order(ByteOrder.LITTLE_ENDIAN);
 
         Vtf vtf = Vtf.read(buffer);
@@ -70,7 +71,7 @@ final class VtfTest {
 
     @Test
     void readSimpleVtf3() throws Exception {
-        ByteBuffer buffer = ByteBuffer.wrap(MdlTest.readFile("sky_day01_01_hdrbk.vtf"));
+        ByteBuffer buffer = ByteBuffer.wrap(readResourceFile("sky_day01_01_hdrbk.vtf"));
         buffer.order(ByteOrder.LITTLE_ENDIAN);
 
         Vtf vtf = Vtf.read(buffer);

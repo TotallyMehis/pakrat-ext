@@ -2,9 +2,10 @@ package pak;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static pak.TestUtil.getFileCrc;
+import static pak.TestUtil.getResourceAsFile;
 
 import java.io.File;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ final class UnpakCliTest {
         UnpakCli.savePakFileToDisk(filePath, "cubemapdefault.vtf", outputFile.getAbsolutePath());
 
         assertEquals(true, outputFile.exists());
-        assertEquals(1408923060, MappakTest.getFileCrc(outputFile));
+        assertEquals(1408923060, getFileCrc(outputFile));
     }
 
     @Test
@@ -43,14 +44,10 @@ final class UnpakCliTest {
         UnpakCli.dumpPak(filePath, outputFile.getAbsolutePath());
 
         assertEquals(true, outputFile.exists());
-        assertEquals(3068538124L, MappakTest.getFileCrc(outputFile));
+        assertEquals(3068538124L, getFileCrc(outputFile));
     }
 
     private static File getBspFile() {
-        try {
-            return new File(UnpakCliTest.class.getClassLoader().getResource("test_npcclip.bsp").toURI());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Failed to get URI of resource.", e);
-        }
+        return getResourceAsFile("test_npcclip.bsp");
     }
 }

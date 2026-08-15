@@ -4,17 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static pak.TestUtil.getFileCrc;
+import static pak.TestUtil.getResourceAsFile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.zip.CRC32;
-import java.util.zip.Checksum;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -74,7 +71,7 @@ final class MappakTest {
             });
         }
 
-        long inCrc = getFileCrc(new File(MappakTest.class.getClassLoader().getResource(testMap).toURI()));
+        long inCrc = getFileCrc(getResourceAsFile(testMap));
         long outCrc = getFileCrc(outputFile);
         assertEquals(inCrc, outCrc);
     }
@@ -131,29 +128,8 @@ final class MappakTest {
         }
     }
 
-    private static File getResourceAsFile(String fileName) {
-        try {
-            return new File(MappakTest.class.getClassLoader().getResource(fileName).toURI());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Failed to get resource " + fileName, e);
-        }
-    }
-
     private void assertContainsFile(List<Zipf> files, String fileName) {
         assertTrue(files.stream().anyMatch(zipf -> fileName.equals(zipf.getFullPath())),
                 () -> "Did not contain file %s".formatted(fileName));
-    }
-
-    public static long getFileCrc(File file) {
-        byte[] data;
-        try {
-            data = Files.readAllBytes(file.toPath());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to calculate CRC of a file " + file.getAbsolutePath(), e);
-        }
-
-        Checksum checksum = new CRC32();
-        checksum.update(data);
-        return checksum.getValue();
     }
 }
