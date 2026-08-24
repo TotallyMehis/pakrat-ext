@@ -2,7 +2,6 @@ package pak;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -36,8 +35,8 @@ class JImage extends JComponent {
 
     public void setScale(float scale) {
         BufferedImageOp op = new AffineTransformOp(AffineTransform.getScaleInstance((double) scale, (double) scale),
-                (RenderingHints) null);
-        this.viewImage = op.filter(this.image, (BufferedImage) null);
+                null);
+        this.viewImage = op.filter(this.image, null);
         this.width = (int) ((float) this.owidth * scale);
         this.height = (int) ((float) this.oheight * scale);
         this.revalidate();

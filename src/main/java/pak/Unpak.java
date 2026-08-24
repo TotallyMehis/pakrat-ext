@@ -496,7 +496,7 @@ public class Unpak {
                         pbox.add(pathtext);
                         int result = JOptionPane.showOptionDialog(Unpak.this.frame,
                                 new Object[] { z.getFullPath(), cbox, fbox, pbox }, "Edit file parameters", 2, -1,
-                                (Icon) null, (Object[]) null, (Object) null);
+                                null, null, null);
                         if (result != 2) {
                             z.setFullPath(pathtext.getText() + "/" + filetext.getText());
                             Unpak.this.tmodel.fireTableDataChanged();
@@ -758,7 +758,7 @@ public class Unpak {
                                             fullPath + "\nFix-up path to: \"" + relativePath + "\" ?",
                                             "Add file " + (i + 1) + " of " + tfile.length, 0, 3, (Icon) null,
                                             new String[] { "Yes", "Yes to All", "No", "Skip", "Cancel" },
-                                            (Object) null);
+                                            null);
                                     if (result == 0 || result == 1) {
                                         fixupPath = true;
                                     }
@@ -1064,7 +1064,7 @@ public class Unpak {
         abox.add(ab5);
         abox.setToolTipText("Optional files to search for during Scan and Autoscan operations");
         int result = JOptionPane.showOptionDialog(this.frame, new Object[] { gbox, fbox, abox }, "Preferences", 2, -1,
-                (Icon) null, (Object[]) null, (Object) null);
+                null, null, null);
         if (result != 2) {
             this.gamedir = gdirtext.getText();
             this.gamedir = this.gamedir.replace(File.separatorChar, '/');
@@ -1221,7 +1221,7 @@ public class Unpak {
             }
 
             for (int i = 0; i < phy.gibmodel.size(); ++i) {
-                String gib = (String) phy.gibmodel.get(i);
+                String gib = phy.gibmodel.get(i);
                 t.append("    " + gib + ".mdl");
                 if (this.isInPak("models/" + gib + ".mdl")) {
                     t.append(" - in pak\n");

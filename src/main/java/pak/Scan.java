@@ -257,7 +257,7 @@ public class Scan {
         this.dirset.clear();
 
         for (int i = 0; i < 6; ++i) {
-            String dir = Pakpref.get("Basedir" + i, (String) null);
+            String dir = Pakpref.get("Basedir" + i, null);
             if (dir != null) {
                 this.dirset.add(dir);
             }
@@ -272,13 +272,13 @@ public class Scan {
         }
 
         this.compactBaseDirs();
-        return (String[]) this.dirset.toArray(new String[0]);
+        return this.dirset.toArray(new String[0]);
     }
 
     private void addBaseDir(String dir) {
         this.dirset.add(0, dir);
         this.compactBaseDirs();
-        String[] dirs = (String[]) this.dirset.toArray(new String[0]);
+        String[] dirs = this.dirset.toArray(new String[0]);
 
         for (int i = 0; i < dirs.length && i != 6; ++i) {
             Pakpref.put("Basedir" + i, dirs[i]);
@@ -288,7 +288,7 @@ public class Scan {
 
     private void compactBaseDirs() {
         boolean[] marked = new boolean[this.dirset.size()];
-        String[] dirs = (String[]) this.dirset.toArray(new String[0]);
+        String[] dirs = this.dirset.toArray(new String[0]);
 
         for (int i = 0; i < dirs.length; ++i) {
             marked[i] = false;
@@ -346,7 +346,7 @@ public class Scan {
 
         if (this.auton) {
             this.doScan();
-            if (this.autoAddFiles((Component) null) == 0) {
+            if (this.autoAddFiles(null) == 0) {
                 this.nofiles = true;
             }
         } else {
@@ -725,7 +725,7 @@ public class Scan {
                     return sublist;
                 } else {
                     for (int j = 0; j < phy.gibmodel.size(); ++j) {
-                        Scanfile sfile = new Scanfile((String) phy.gibmodel.get(j), this.tmod, this.basedir,
+                        Scanfile sfile = new Scanfile(phy.gibmodel.get(j), this.tmod, this.basedir,
                                 ScanfileType.MDL,
                                 s,
                                 "gib model");
@@ -767,7 +767,7 @@ public class Scan {
                     List<String> texturelist = model.getTextureList();
 
                     for (int j = 0; j < texturelist.size(); ++j) {
-                        Scanfile sfile = new Scanfile((String) texturelist.get(j), this.tmod, this.basedir,
+                        Scanfile sfile = new Scanfile(texturelist.get(j), this.tmod, this.basedir,
                                 ScanfileType.VMT, s,
                                 "texture");
                         sublist.add(sfile);
@@ -899,7 +899,7 @@ public class Scan {
             token.add(antiquine(match.group()));
         }
 
-        return (String[]) token.toArray(new String[0]);
+        return token.toArray(new String[0]);
     }
 
     private static String antiquine(String in) {
