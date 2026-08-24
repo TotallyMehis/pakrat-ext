@@ -69,9 +69,7 @@ public class Unpak {
         this.auton = true;
         Cons.open(false);
         long starttime = System.currentTimeMillis();
-        Cons.println(
-                "**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)"
-                        .formatted(Version.getFullVersion()));
+        Cons.println(PakratUI.getPakratTitle());
         Cons.println("Game base directory " + basename);
         Cons.println("Perfoming autoscan of " + filename);
 
@@ -151,8 +149,7 @@ public class Unpak {
             Pakpref.getInit();
             this.gamedir = Pakpref.gamedir;
             Cons.settitle("Pakrat - console");
-            Cons.println(
-                    "Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
+            Cons.println(PakratUI.getPakratTitle());
             if (filename == null) {
                 JFileChooser chooser = new JFileChooser(Pakpref.mapdir);
                 chooser.setDialogTitle("Open a map file");
@@ -648,8 +645,7 @@ public class Unpak {
                 });
                 mhelp.addActionListener(_ -> {
                     String help = """
-                             Pakrat %s
-                             Original Pakrat 0.95 by Rof (rof@mellish.org.uk)
+                             %s (rof@mellish.org.uk)
                              Edited by Mehis
 
                              A program for managing Half-Life 2 BSP PAK archives
@@ -720,7 +716,7 @@ public class Unpak {
                              file found on disk to the pak.
 
 
-                            """.formatted(Version.getFullVersion());
+                            """.formatted(PakratUI.getPakratTitle());
                     Unpak.this.TextBox("About Pakrat", help);
                 });
                 this.frame.setDefaultCloseOperation(0);
@@ -1410,14 +1406,14 @@ public class Unpak {
             if (args.length != 1) {
                 System.out.println(
                         """
-                                Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)
+                                %s
                                 Usage:
                                   pakrat [<filename.bsp>]
                                   pakrat -auto <base directory> <filename.bsp>
                                   pakrat -list <filename.bsp>
                                   pakrat -save <filename.bsp> <pakfile>
                                   pakrat -dump <filename.bsp>
-                                """.formatted(Version.getFullVersion()));
+                                """.formatted(PakratUI.getPakratTitle()));
                 return;
             }
 

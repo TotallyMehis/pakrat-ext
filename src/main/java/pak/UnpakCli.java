@@ -9,9 +9,7 @@ public abstract class UnpakCli {
     public static void savePakFileToDisk(String bspFilePath, String pakFile, String outputFile) {
         Cons.open(false);
         long starttime = System.currentTimeMillis();
-        Cons.println(
-                "**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)"
-                        .formatted(Version.getFullVersion()));
+        Cons.println(PakratUI.getPakratTitle());
         Cons.println("Saving " + pakFile + " from " + bspFilePath);
 
         if (!bspFilePath.endsWith(".bsp")) {
@@ -59,8 +57,7 @@ public abstract class UnpakCli {
 
     public static void printPakFiles(String filename) {
         Cons.open(false);
-        Cons.println(
-                "Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)".formatted(Version.getFullVersion()));
+        Cons.println(PakratUI.getPakratTitle());
         Cons.println("Listing pak files from " + filename);
 
         if (!filename.endsWith(".bsp")) {
@@ -88,9 +85,7 @@ public abstract class UnpakCli {
     public static void dumpPak(String bspFilePath, String outputFile) {
         Cons.open(false);
         long starttime = System.currentTimeMillis();
-        Cons.println(
-                "**** Pakrat %s - Original Pakrat 0.95 by Rof (rof@mellish.org.uk)"
-                        .formatted(Version.getFullVersion()));
+        Cons.println(PakratUI.getPakratTitle());
         Cons.println("Dumping pak lump from " + bspFilePath);
 
         if (!bspFilePath.endsWith(".bsp")) {
