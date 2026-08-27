@@ -6,7 +6,7 @@ import java.text.DecimalFormat;
 import java.util.Collection;
 
 public abstract class UnpakCli {
-    public static void savePakFileToDisk(String bspFilePath, String pakFile, String outputFile) {
+    public static void extractPakFile(String bspFilePath, String pakFile, String outputFile) {
         Cons.open(false);
         long starttime = System.currentTimeMillis();
         Cons.println(PakratUI.getPakratTitle());
@@ -82,7 +82,7 @@ public abstract class UnpakCli {
         }
     }
 
-    public static void dumpPak(String bspFilePath, String outputFile) {
+    public static void extractPakFileAsZip(String bspFilePath, String outputFile) {
         Cons.open(false);
         long starttime = System.currentTimeMillis();
         Cons.println(PakratUI.getPakratTitle());

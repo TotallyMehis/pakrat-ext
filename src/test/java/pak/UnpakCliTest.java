@@ -20,7 +20,7 @@ final class UnpakCliTest {
 
         assertEquals(false, outputFile.exists());
 
-        UnpakCli.savePakFileToDisk(filePath, "cubemapdefault.vtf", outputFile.getAbsolutePath());
+        UnpakCli.extractPakFile(filePath, "cubemapdefault.vtf", outputFile.getAbsolutePath());
 
         assertEquals(true, outputFile.exists());
         assertEquals(1408923060, getFileCrc(outputFile));
@@ -41,7 +41,7 @@ final class UnpakCliTest {
 
         assertEquals(false, outputFile.exists());
 
-        UnpakCli.dumpPak(filePath, outputFile.getAbsolutePath());
+        UnpakCli.extractPakFileAsZip(filePath, outputFile.getAbsolutePath());
 
         assertEquals(true, outputFile.exists());
         assertEquals(3068538124L, getFileCrc(outputFile));

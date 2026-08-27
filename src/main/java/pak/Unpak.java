@@ -1372,54 +1372,53 @@ public class Unpak {
 
     public static void main(String[] args) throws Exception {
         Unpak inst = new Unpak();
-        String fn;
-        if (args.length < 1) {
-            fn = null;
-        } else {
-            if (args[0].equalsIgnoreCase("-save")) {
-                fn = args[1];
-                String pakFile = args[2];
-                UnpakCli.savePakFileToDisk(fn, pakFile, new File(pakFile).getName());
+        String arg = null;
+        if (args.length >= 1) {
+            if ("extract".equalsIgnoreCase(args[0])) {
+                String bspFilePath = args[1];
+
+                if (args.length >= 3) {
+                    String pakFile = args[2];
+                    UnpakCli.extractPakFile(bspFilePath, pakFile, new File(pakFile).getName());
+                } else {
+                    bspFilePath = args[1];
+                    String outputFileName = bspFilePath + ".zip";
+                    UnpakCli.extractPakFileAsZip(bspFilePath, outputFileName);
+                }
+
                 return;
             }
 
-            if (args[0].equalsIgnoreCase("-list")) {
-                fn = args[1];
-                UnpakCli.printPakFiles(fn);
+            if ("list".equalsIgnoreCase(args[0])) {
+                String fileName = args[1];
+                UnpakCli.printPakFiles(fileName);
                 return;
             }
 
-            if (args[0].equalsIgnoreCase("-dump")) {
-                fn = args[1];
-                String outputFileName = fn + ".zip";
-                UnpakCli.dumpPak(fn, outputFileName);
+            if ("auto".equalsIgnoreCase(args[0])) {
+                String baseDirectory = args[1];
+                String bspFilePath = args[2];
+                inst.exec(baseDirectory, bspFilePath);
                 return;
             }
 
-            if (args[0].equalsIgnoreCase("-auto")) {
-                String bn = args[1];
-                fn = args[2];
-                inst.exec(bn, fn);
-                return;
-            }
-
-            if (args.length != 1) {
+            if (args.length != 1 || "help".equalsIgnoreCase(args[0])) {
                 System.out.println(
                         """
                                 %s
                                 Usage:
                                   pakrat [<filename.bsp>]
-                                  pakrat -auto <base directory> <filename.bsp>
-                                  pakrat -list <filename.bsp>
-                                  pakrat -save <filename.bsp> <pakfile>
-                                  pakrat -dump <filename.bsp>
+                                  pakrat auto <base directory> <filename.bsp>
+                                  pakrat list <filename.bsp>
+                                  pakrat extract <filename.bsp> [<pakfile>]
+                                  pakrat help
                                 """.formatted(PakratUI.getPakratTitle()));
                 return;
             }
 
-            fn = args[0];
+            arg = args[0];
         }
 
-        inst.exec(fn);
+        inst.exec(arg);
     }
 }
