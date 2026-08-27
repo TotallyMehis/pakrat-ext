@@ -12,10 +12,6 @@ public abstract class UnpakCli {
         Cons.println(PakratUI.getPakratTitle());
         Cons.println("Saving " + pakFile + " from " + bspFilePath);
 
-        if (!bspFilePath.endsWith(".bsp")) {
-            bspFilePath = bspFilePath + ".bsp";
-        }
-
         File bspFile = new File(bspFilePath);
         if (!bspFile.exists() || !bspFile.canRead()) {
             Cons.println("Can't open " + bspFilePath);
@@ -60,10 +56,6 @@ public abstract class UnpakCli {
         Cons.println(PakratUI.getPakratTitle());
         Cons.println("Listing pak files from " + filename);
 
-        if (!filename.endsWith(".bsp")) {
-            filename = filename + ".bsp";
-        }
-
         var infile = new File(filename);
         if (!infile.exists() || !infile.canRead()) {
             Cons.println("Can't open " + filename);
@@ -87,10 +79,6 @@ public abstract class UnpakCli {
         long starttime = System.currentTimeMillis();
         Cons.println(PakratUI.getPakratTitle());
         Cons.println("Dumping pak lump from " + bspFilePath);
-
-        if (!bspFilePath.endsWith(".bsp")) {
-            bspFilePath = bspFilePath + ".bsp";
-        }
 
         var infile = new File(bspFilePath);
         if (!infile.exists() || !infile.canRead()) {

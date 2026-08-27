@@ -76,9 +76,6 @@ public class Unpak {
         try {
             this.gamedir = basename;
             Pakpref.fixup = 2;
-            if (!filename.endsWith(".bsp")) {
-                filename = filename + ".bsp";
-            }
 
             this.infile = new File(filename);
             if (this.infile.exists() && this.infile.canRead()) {
@@ -162,10 +159,6 @@ public class Unpak {
                 this.infile = chooser.getSelectedFile();
                 filename = this.infile.getName();
             } else {
-                if (!filename.endsWith(".bsp")) {
-                    filename = filename + ".bsp";
-                }
-
                 this.infile = new File(filename);
             }
 
