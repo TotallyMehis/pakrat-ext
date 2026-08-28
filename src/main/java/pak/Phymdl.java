@@ -30,11 +30,10 @@ public class Phymdl {
             String[] physdata = this.physblock.split("\n");
             this.gibmodel = new ArrayList<>();
 
-            for (int i = 0; i < physdata.length; ++i) {
-                if (physdata[i].startsWith("break ")) {
+            for (String line : physdata) {
+                if (line.startsWith("break ")) {
                 }
 
-                String line = physdata[i];
                 int mindex = line.indexOf("\"model\"");
                 if (mindex >= 0) {
                     line = line.substring(mindex + 7).trim();

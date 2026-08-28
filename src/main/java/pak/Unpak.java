@@ -305,10 +305,10 @@ public class Unpak {
                 this.tree.addTreeSelectionListener(_ -> {
                     TreePath[] paths = Unpak.this.tree.getSelectionPaths();
                     if (paths != null) {
-                        for (int i = 0; i < paths.length; ++i) {
-                            Object sel = ((DefaultMutableTreeNode) paths[i].getLastPathComponent()).getUserObject();
+                        for (TreePath treePath : paths) {
+                            Object sel = ((DefaultMutableTreeNode) treePath.getLastPathComponent()).getUserObject();
                             if (sel.getClass() != Zipf.class) {
-                                Unpak.this.tree.removeSelectionPath(paths[i]);
+                                Unpak.this.tree.removeSelectionPath(treePath);
                             }
                         }
                     }
@@ -616,11 +616,8 @@ public class Unpak {
                 });
                 view.addActionListener(_ -> {
                     int[] rows = Unpak.this.getSelection();
-                    if (rows.length != 0) {
-                        for (int i = 0; i < rows.length; ++i) {
-                            Unpak.this.viewFile(Unpak.this.zmodel.getzipfile(rows[i]));
-                        }
-
+                    for (int row : rows) {
+                        Unpak.this.viewFile(Unpak.this.zmodel.getzipfile(row));
                     }
                 });
                 ascan.addActionListener(_ -> {
@@ -1213,8 +1210,7 @@ public class Unpak {
                 t.append("\n");
             }
 
-            for (int i = 0; i < phy.gibmodel.size(); ++i) {
-                String gib = phy.gibmodel.get(i);
+            for (String gib : phy.gibmodel) {
                 t.append("    " + gib + ".mdl");
                 if (this.isInPak("models/" + gib + ".mdl")) {
                     t.append(" - in pak\n");
@@ -1278,11 +1274,11 @@ public class Unpak {
             }
         }
 
-        String[] modelexts = new String[] { ".phy", ".sw.vtx", ".dx80.vtx", ".dx90.vtx", ".vvd" };
+        List<String> modelExtensions = List.of(".phy", ".sw.vtx", ".dx80.vtx", ".dx90.vtx", ".vvd");
         t.append("Associated files\n");
 
-        for (int i = 0; i < modelexts.length; ++i) {
-            String amfname = strsubext(filename, modelexts[i]);
+        for (String modelext : modelExtensions) {
+            String amfname = strsubext(filename, modelext);
             t.append("    " + amfname);
             if (this.isInPak(amfname)) {
                 t.append(" - in pak\n");

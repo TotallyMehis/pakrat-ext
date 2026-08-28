@@ -44,15 +44,13 @@ public class Scan {
     private final List<Scanfile> files;
     private final boolean auton;
     private boolean nofiles;
-    private static final String[] mattexref = new String[] { "$basetexture", "$basetexture2", "$bumpmap", "$bumpmap2",
-            "$envmap",
-            "$normalmap", "$dudvmap", "$envmapmask", "$detail", "$parallaxmap", "$parallaxmap2", "$texture2",
-            "$selfillumtexture", "$cloudalphatexture", "$gradienttexture", "$fbtexture", "$refracttexture",
-            "$refracttinttexture", "$hdrbasetexture" };
-    private static final String[] matmatref = new String[] { "include", "$fallbackmaterial", "$bottommaterial",
-            "$crackmaterial",
-            "$material", "$modelmaterial", "$translucent_material" };
-    private static final String[] mdlext = new String[] { ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".phy", ".vvd" };
+    private static final List<String> MATERIAL_TEXTURE_PARAMETERS = List.of("$basetexture", "$basetexture2", "$bumpmap",
+            "$bumpmap2", "$envmap", "$normalmap", "$dudvmap", "$envmapmask", "$detail", "$parallaxmap", "$parallaxmap2",
+            "$texture2", "$selfillumtexture", "$cloudalphatexture", "$gradienttexture", "$fbtexture", "$refracttexture",
+            "$refracttinttexture", "$hdrbasetexture");
+    private static final List<String> MATERIAL_MATERIAL_PARAMETERS = List.of("include", "$fallbackmaterial",
+            "$bottommaterial", "$crackmaterial", "$material", "$modelmaterial", "$translucent_material");
+    private static final List<String> MODEL_EXTENSIONS = List.of(".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".phy", ".vvd");
     private String basedir;
     private final List<String> dirset;
 
@@ -477,8 +475,7 @@ public class Scan {
                     refd[i] = this.tmod.getzipfile(i).getPath().startsWith(cubemappath);
                 }
 
-                for (int i = 0; i < this.files.size(); ++i) {
-                    Scanfile s = this.files.get(i);
+                for (Scanfile s : this.files) {
                     if (s.zip != null) {
                         int row = this.tmod.getrow(s.zip);
                         if (row != -1) {
@@ -743,8 +740,8 @@ public class Scan {
         ArrayList<Scanfile> sublist = new ArrayList<>();
         String basename = s.name;
 
-        for (int i = 0; i < mdlext.length; ++i) {
-            String name = basename + mdlext[i];
+        for (String ext : MODEL_EXTENSIONS) {
+            String name = basename + ext;
             Scanfile sfile = new Scanfile(name, this.tmod, this.basedir, ScanfileType.getTypeFromFilename(name), s,
                     "datafile");
             sublist.add(sfile);
@@ -850,8 +847,8 @@ public class Scan {
 
                         String[] token = tokenize(line);
                         if (token.length == 2 && !token[1].startsWith("_")) {
-                            for (int i = 0; i < matmatref.length; ++i) {
-                                if (token[0].equalsIgnoreCase(matmatref[i])) {
+                            for (String matParam : MATERIAL_MATERIAL_PARAMETERS) {
+                                if (token[0].equalsIgnoreCase(matParam)) {
                                     Scanfile ssfile = new Scanfile(token[1], this.tmod, this.basedir, ScanfileType.VMT,
                                             s,
                                             token[0]);
@@ -864,9 +861,9 @@ public class Scan {
                                 }
                             }
 
-                            for (int i = 0; i < mattexref.length; ++i) {
-                                if (token[0].equalsIgnoreCase(mattexref[i])) {
-                                    if (mattexref[i].equals("$envmap")) {
+                            for (String textureParam : MATERIAL_TEXTURE_PARAMETERS) {
+                                if (token[0].equalsIgnoreCase(textureParam)) {
+                                    if (textureParam.equals("$envmap")) {
                                         if (!token[1].equalsIgnoreCase("env_cubemap")) {
                                             Scanfile vfile = new Scanfile(token[1], this.tmod, this.basedir,
                                                     ScanfileType.VTF,
