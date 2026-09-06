@@ -466,18 +466,18 @@ public class Scan {
 
             Cons.println(this.compactList() + " duplicates removed");
             if (!this.auton) {
-                int pakfiles = this.tmod.getRowCount();
+                int pakfiles = this.tmod.getZipFileCount();
                 boolean[] refd = new boolean[pakfiles];
                 String mapname = this.pakrat.getInfile().getName().toLowerCase(ROOT);
                 String cubemappath = "materials/maps/" + mapname.substring(0, mapname.lastIndexOf(".bsp"));
 
                 for (int i = 0; i < pakfiles; ++i) {
-                    refd[i] = this.tmod.getzipfile(i).getPath().startsWith(cubemappath);
+                    refd[i] = this.tmod.getZipFileByIndex(i).getPath().startsWith(cubemappath);
                 }
 
                 for (Scanfile s : this.files) {
                     if (s.zip != null) {
-                        int row = this.tmod.getrow(s.zip);
+                        int row = this.tmod.getZipFileIndex(s.zip);
                         if (row != -1) {
                             refd[row] = true;
                         }
@@ -497,7 +497,7 @@ public class Scan {
 
                     for (int i = 0; i < pakfiles; ++i) {
                         if (!refd[i]) {
-                            Cons.println("  " + this.tmod.getzipfile(i).toString());
+                            Cons.println("  " + this.tmod.getZipFileByIndex(i).toString());
                         }
                     }
 

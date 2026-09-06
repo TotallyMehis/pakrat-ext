@@ -12,7 +12,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-public class ZipDirModel extends AbstractTableModel {
+public class ZipDirModel extends AbstractTableModel implements ZipFileCollector {
     private RandomAccessFile braf;
     private int offset;
     private final List<Zipf> zfl;
@@ -23,13 +23,9 @@ public class ZipDirModel extends AbstractTableModel {
         this.zfl = Objects.requireNonNull(zipfilelist);
     }
 
-    public Zipf getzipfile(int row) {
-        return this.zfl.get(row);
-    }
-
     @Override
     public int getRowCount() {
-        return this.zfl.size();
+        return this.getZipFileCount();
     }
 
     @Override
@@ -45,11 +41,11 @@ public class ZipDirModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int row, int col) {
         return switch (col) {
-            case 0 -> this.getzipfile(row).isInPak();
-            case 1 -> this.getzipfile(row).getFileName();
-            case 2 -> this.getzipfile(row).getPath();
-            case 3 -> this.getzipfile(row).getSize();
-            case 4 -> this.getzipfile(row).getType().getName();
+            case 0 -> this.getZipFileByIndex(row).isInPak();
+            case 1 -> this.getZipFileByIndex(row).getFileName();
+            case 2 -> this.getZipFileByIndex(row).getPath();
+            case 3 -> this.getZipFileByIndex(row).getSize();
+            case 4 -> this.getZipFileByIndex(row).getType().getName();
             default -> null;
         };
     }
@@ -58,10 +54,10 @@ public class ZipDirModel extends AbstractTableModel {
     public void setValueAt(Object value, int row, int col) {
         switch (col) {
             case 1 -> {
-                this.getzipfile(row).setFileName((String) value);
+                this.getZipFileByIndex(row).setFileName((String) value);
             }
             case 2 -> {
-                this.getzipfile(row).setPath((String) value);
+                this.getZipFileByIndex(row).setPath((String) value);
             }
         }
 
@@ -84,33 +80,6 @@ public class ZipDirModel extends AbstractTableModel {
 
     public int getoffset() {
         return this.offset;
-    }
-
-    public void deletefile(int row) {
-        if (row >= 0 && row < this.zfl.size()) {
-            this.zfl.remove(row);
-        }
-
-        this.fireTableDataChanged();
-    }
-
-    public void addfile(Zipf zip) {
-        this.zfl.add(zip);
-        this.fireTableDataChanged();
-    }
-
-    public Zipf getbyname(String fname) {
-        for (int i = 0; i < this.getRowCount(); ++i) {
-            if (fname.equalsIgnoreCase(this.getzipfile(i).getFullPath())) {
-                return this.getzipfile(i);
-            }
-        }
-
-        return null;
-    }
-
-    public int getrow(Zipf f) {
-        return this.zfl.indexOf(f);
     }
 
     public DefaultMutableTreeNode getTree(String file) {
@@ -160,7 +129,7 @@ public class ZipDirModel extends AbstractTableModel {
         int[] rows = sorter.modelIndex(table.getSelectedRows());
         if (rows.length != 0) {
             for (int i = 0; i < rows.length; ++i) {
-                Zipf z = this.getzipfile(rows[i]);
+                Zipf z = this.getZipFileByIndex(rows[i]);
                 this.selectTreeNode(tree, z);
             }
 
@@ -191,7 +160,7 @@ public class ZipDirModel extends AbstractTableModel {
             for (int i = 0; i < paths.length; ++i) {
                 Object sel = ((DefaultMutableTreeNode) paths[i].getLastPathComponent()).getUserObject();
                 if (sel.getClass() == Zipf.class) {
-                    int row = this.getrow((Zipf) sel);
+                    int row = this.getZipFileIndex((Zipf) sel);
                     if (row == -1) {
                         Cons.println("SetTableSelection: Couldn't find a match for " + (Zipf) sel);
                     } else {
@@ -204,5 +173,40 @@ public class ZipDirModel extends AbstractTableModel {
             }
 
         }
+    }
+
+    @Override
+    public Zipf getZipFileByIndex(int index) {
+        assert index >= 0 && index < this.zfl.size();
+        return this.zfl.get(index);
+    }
+
+    @Override
+    public int getZipFileCount() {
+        return this.zfl.size();
+    }
+
+    @Override
+    public Zipf getZipFileByPath(String filePath) {
+        return this.zfl.stream().filter(file -> filePath.equalsIgnoreCase(file.getFullPath())).findAny().orElse(null);
+    }
+
+    @Override
+    public int getZipFileIndex(Zipf file) {
+        assert file != null;
+        return this.zfl.indexOf(file);
+    }
+
+    @Override
+    public void addZipFile(Zipf file) {
+        this.zfl.add(file);
+        this.fireTableDataChanged();
+    }
+
+    @Override
+    public void removeZipFileByIndex(int index) {
+        assert index >= 0 && index < this.zfl.size();
+        this.zfl.remove(index);
+        this.fireTableDataChanged();
     }
 }

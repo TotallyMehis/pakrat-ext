@@ -39,7 +39,8 @@ public class Scanfile {
         this.referent = "";
     }
 
-    public Scanfile(String name, ZipDirModel tm, String basedir, ScanfileType type, Scanfile parent, String referent) {
+    public Scanfile(String name, ZipFileCollector collector, String basedir, ScanfileType type, Scanfile parent,
+            String referent) {
         this.parent = Objects.requireNonNull(parent);
         this.referent = referent;
         name = name.replace(File.separatorChar, '/');
@@ -58,7 +59,7 @@ public class Scanfile {
             this.pathname = "";
         }
 
-        this.zip = tm.getbyname(this.fullname);
+        this.zip = collector.getZipFileByPath(this.fullname);
         if (this.zip != null) {
             this.inlist = true;
             if (this.zip.isInPak()) {

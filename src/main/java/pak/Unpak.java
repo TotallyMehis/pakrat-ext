@@ -408,7 +408,7 @@ public class Unpak {
                     int[] rows = Unpak.this.getSelection();
                     if (rows.length != 0) {
                         if (rows.length == 1) {
-                            Zipf z = Unpak.this.zmodel.getzipfile(rows[0]);
+                            Zipf z = Unpak.this.zmodel.getZipFileByIndex(rows[0]);
                             File sfile = new File(z.getFullPath());
                             JFileChooser schooser = new JFileChooser(Pakpref.adddir);
                             schooser.setDialogTitle("Save selected file - " + z.getFullPath());
@@ -432,7 +432,7 @@ public class Unpak {
                             File path = sc.getSelectedFile();
 
                             for (int r = 0; r < rows.length; ++r) {
-                                Zipf z = Unpak.this.zmodel.getzipfile(rows[r]);
+                                Zipf z = Unpak.this.zmodel.getZipFileByIndex(rows[r]);
                                 File sfile = new File(path, z.getFileName());
                                 if (!Unpak.this.savePakFile(z, sfile, true)) {
                                     break;
@@ -475,7 +475,7 @@ public class Unpak {
                 editfile.addActionListener(_ -> {
                     int[] rows = Unpak.this.getSelection();
                     if (rows.length != 0) {
-                        Zipf z = Unpak.this.zmodel.getzipfile(rows[0]);
+                        Zipf z = Unpak.this.zmodel.getZipFileByIndex(rows[0]);
                         JTextField filetext = new JTextField(z.getFileName());
                         JTextField pathtext = new JTextField(z.getPath());
                         Container cbox = Box.createHorizontalBox();
@@ -617,7 +617,7 @@ public class Unpak {
                 view.addActionListener(_ -> {
                     int[] rows = Unpak.this.getSelection();
                     for (int row : rows) {
-                        Unpak.this.viewFile(Unpak.this.zmodel.getzipfile(row));
+                        Unpak.this.viewFile(Unpak.this.zmodel.getZipFileByIndex(row));
                     }
                 });
                 ascan.addActionListener(_ -> {
@@ -771,7 +771,7 @@ public class Unpak {
                         }
 
                         Cons.println("Reading " + tfilename);
-                        this.zmodel.addfile(Zipf.fromFile(tfile[i], fixupPath, base));
+                        this.zmodel.addZipFile(Zipf.fromFile(tfile[i], fixupPath, base));
                         if (!this.auton) {
                             this.table.scrollRectToVisible(
                                     this.table.getCellRect(this.tmodel.getRowCount() - 1, 0, true));
@@ -890,7 +890,7 @@ public class Unpak {
 
                 for (int i = 0; i < paths.length; ++i) {
                     Zipf sel = (Zipf) ((DefaultMutableTreeNode) paths[i].getLastPathComponent()).getUserObject();
-                    int row = this.zmodel.getrow(sel);
+                    int row = this.zmodel.getZipFileIndex(sel);
                     if (row == -1) {
                         Cons.println("GetSelection: Couldn't find a match for " + sel);
                     } else {
@@ -911,7 +911,7 @@ public class Unpak {
         Arrays.sort(rows);
 
         for (int i = rows.length - 1; i >= 0; --i) {
-            Zipf z = this.zmodel.getzipfile(rows[i]);
+            Zipf z = this.zmodel.getZipFileByIndex(rows[i]);
             if (!all) {
                 int result = JOptionPane.showOptionDialog(this.frame,
                         "Remove file " + z.getFileName() + " from the pak?",
@@ -930,7 +930,7 @@ public class Unpak {
                 }
             }
 
-            this.zmodel.deletefile(rows[i]);
+            this.zmodel.removeZipFileByIndex(rows[i]);
         }
 
         this.dirty = true;
@@ -1351,7 +1351,7 @@ public class Unpak {
 
     public boolean isInPak(String filename) {
         filename = filename.replace(File.separatorChar, '/');
-        Zipf f = this.zmodel.getbyname(filename);
+        Zipf f = this.zmodel.getZipFileByPath(filename);
         return f != null;
     }
 
