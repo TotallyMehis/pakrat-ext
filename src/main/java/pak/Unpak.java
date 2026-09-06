@@ -64,6 +64,8 @@ public class Unpak {
     private Scan scan;
     private boolean dirty = false;
     private boolean auton = false;
+    private ZipFiles zipFiles;
+    private final BspFileReaderImpl bspFileReader = new BspFileReaderImpl();
 
     private void exec(String basename, String filename) throws Exception {
         this.auton = true;
@@ -84,10 +86,11 @@ public class Unpak {
                 this.raf = new RandomAccessFile(this.infile, "r");
                 this.m = new Mappak(true);
                 this.m.loadMap(this.raf);
-                this.zmodel = new ZipDirModel(this.m.getZf());
-                this.zmodel.setfileparams(this.raf, this.m.getOffset());
+                this.zipFiles = new ZipFiles(this, this.m);
+                this.zmodel = new ZipDirModel(this.zipFiles);
+                this.bspFileReader.update(this.raf, this.m.getOffset());
                 Cons.println("Scanning for referenced files...");
-                this.scan = new Scan(this, null, this.m, this.zmodel, filename, this.gamedir, true);
+                this.scan = new Scan(this.zipFiles, this.bspFileReader, null, this.m, this.infile, this.gamedir, true);
                 if (this.scan.isNofiles()) {
                     long duration = System.currentTimeMillis() - starttime;
                     Cons.println("**** Pakrat autoscan complete in "
@@ -109,7 +112,7 @@ public class Unpak {
                     } else {
                         this.raf.close();
                         this.raf = new RandomAccessFile(this.infile, "r");
-                        this.zmodel.setfileparams(this.raf, this.m.getOffset());
+                        this.bspFileReader.update(this.raf, this.m.getOffset());
                         Cons.print("Writing " + filename + "...");
                         this.raf.seek(0L);
                         RandomAccessFile outraf = new RandomAccessFile(sfile, "rw");
@@ -123,7 +126,7 @@ public class Unpak {
                         this.raf.close();
                         this.infile = sfile;
                         this.raf = new RandomAccessFile(this.infile, "rw");
-                        this.zmodel.setfileparams(this.raf, this.m.getOffset());
+                        this.bspFileReader.update(this.raf, this.m.getOffset());
                         this.checkNav();
                         this.raf.close();
                         long duration = System.currentTimeMillis() - starttime;
@@ -169,6 +172,7 @@ public class Unpak {
                 this.raf = new RandomAccessFile(this.infile, "r");
                 this.m = new Mappak(false);
                 this.m.loadMap(this.raf);
+                this.zipFiles = new ZipFiles(this, this.m);
                 this.frame = new JFrame("Pakrat %s - %s".formatted(Version.getVersion(), filename));
                 JPanel panel = new JPanel();
                 panel.setLayout(new BorderLayout());
@@ -216,8 +220,8 @@ public class Unpak {
                 menubar.add(viewmenu);
                 menubar.add(helpmenu);
                 this.frame.setJMenuBar(menubar);
-                this.zmodel = new ZipDirModel(this.m.getZf());
-                this.zmodel.setfileparams(this.raf, this.m.getOffset());
+                this.zmodel = new ZipDirModel(this.zipFiles);
+                this.bspFileReader.update(this.raf, this.m.getOffset());
                 this.tmodel = new TableSorter(this.zmodel);
                 this.table = new JTable(this.tmodel);
                 this.tmodel.setTableHeader(this.table.getTableHeader());
@@ -373,7 +377,7 @@ public class Unpak {
 
                                 Unpak.this.raf.close();
                                 Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "r");
-                                Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.getOffset());
+                                Unpak.this.bspFileReader.update(Unpak.this.raf, Unpak.this.m.getOffset());
                             }
                         }
 
@@ -395,7 +399,7 @@ public class Unpak {
                         Unpak.this.checkNav();
                         Unpak.this.raf.close();
                         Unpak.this.raf = new RandomAccessFile(Unpak.this.infile, "r");
-                        Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.getOffset());
+                        Unpak.this.bspFileReader.update(Unpak.this.raf, Unpak.this.m.getOffset());
                         Unpak.this.tmodel.fireTableDataChanged();
                         Unpak.this.dirty = false;
                         Unpak.this.frame.setTitle("Pakrat - " + sfile.getName());
@@ -408,7 +412,7 @@ public class Unpak {
                     int[] rows = Unpak.this.getSelection();
                     if (rows.length != 0) {
                         if (rows.length == 1) {
-                            Zipf z = Unpak.this.zmodel.getZipFileByIndex(rows[0]);
+                            Zipf z = Unpak.this.zipFiles.getZipFileByIndex(rows[0]);
                             File sfile = new File(z.getFullPath());
                             JFileChooser schooser = new JFileChooser(Pakpref.adddir);
                             schooser.setDialogTitle("Save selected file - " + z.getFullPath());
@@ -432,7 +436,7 @@ public class Unpak {
                             File path = sc.getSelectedFile();
 
                             for (int r = 0; r < rows.length; ++r) {
-                                Zipf z = Unpak.this.zmodel.getZipFileByIndex(rows[r]);
+                                Zipf z = Unpak.this.zipFiles.getZipFileByIndex(rows[r]);
                                 File sfile = new File(path, z.getFileName());
                                 if (!Unpak.this.savePakFile(z, sfile, true)) {
                                     break;
@@ -475,7 +479,7 @@ public class Unpak {
                 editfile.addActionListener(_ -> {
                     int[] rows = Unpak.this.getSelection();
                     if (rows.length != 0) {
-                        Zipf z = Unpak.this.zmodel.getZipFileByIndex(rows[0]);
+                        Zipf z = Unpak.this.zipFiles.getZipFileByIndex(rows[0]);
                         JTextField filetext = new JTextField(z.getFileName());
                         JTextField pathtext = new JTextField(z.getPath());
                         Container cbox = Box.createHorizontalBox();
@@ -529,10 +533,11 @@ public class Unpak {
                         Unpak.this.m = new Mappak(false);
                         Unpak.this.frame.setCursor(Cursor.getPredefinedCursor(3));
                         Unpak.this.m.loadMap(Unpak.this.raf);
+                        Unpak.this.zipFiles = new ZipFiles(Unpak.this, Unpak.this.m);
                         Unpak.this.frame.setCursor(Cursor.getDefaultCursor());
                         Unpak.this.frame.setTitle("Pakrat - " + filename_);
-                        Unpak.this.zmodel = new ZipDirModel(Unpak.this.m.getZf());
-                        Unpak.this.zmodel.setfileparams(Unpak.this.raf, Unpak.this.m.getOffset());
+                        Unpak.this.zmodel = new ZipDirModel(Unpak.this.zipFiles);
+                        Unpak.this.bspFileReader.update(Unpak.this.raf, Unpak.this.m.getOffset());
                         Unpak.this.tmodel = new TableSorter(Unpak.this.zmodel);
                         Unpak.this.table.setModel(Unpak.this.tmodel);
                         Unpak.this.tmodel.setTableHeader(Unpak.this.table.getTableHeader());
@@ -617,18 +622,18 @@ public class Unpak {
                 view.addActionListener(_ -> {
                     int[] rows = Unpak.this.getSelection();
                     for (int row : rows) {
-                        Unpak.this.viewFile(Unpak.this.zmodel.getZipFileByIndex(row));
+                        Unpak.this.viewFile(Unpak.this.zipFiles.getZipFileByIndex(row));
                     }
                 });
                 ascan.addActionListener(_ -> {
                     Unpak.this.closeScan();
-                    Unpak.this.scan = new Scan(Unpak.this, Unpak.this.frame, Unpak.this.m, Unpak.this.zmodel,
-                            Unpak.this.infile.getName(), Unpak.this.gamedir);
+                    Unpak.this.scan = new Scan(Unpak.this.zipFiles, Unpak.this.bspFileReader, Unpak.this.frame,
+                            Unpak.this.m, Unpak.this.infile, Unpak.this.gamedir, false);
                 });
                 auto.addActionListener(_ -> {
                     Unpak.this.closeScan();
-                    Unpak.this.scan = new Scan(Unpak.this, Unpak.this.frame, Unpak.this.m, Unpak.this.zmodel,
-                            Unpak.this.infile.getName(), Unpak.this.gamedir, true);
+                    Unpak.this.scan = new Scan(Unpak.this.zipFiles, Unpak.this.bspFileReader, Unpak.this.frame,
+                            Unpak.this.m, Unpak.this.infile, Unpak.this.gamedir, true);
                 });
                 mcons.addActionListener(_ -> {
                     Cons.show();
@@ -771,8 +776,9 @@ public class Unpak {
                         }
 
                         Cons.println("Reading " + tfilename);
-                        this.zmodel.addZipFile(Zipf.fromFile(tfile[i], fixupPath, base));
+                        this.zipFiles.addZipFile(Zipf.fromFile(tfile[i], fixupPath, base));
                         if (!this.auton) {
+                            this.zmodel.fireTableDataChanged();
                             this.table.scrollRectToVisible(
                                     this.table.getCellRect(this.tmodel.getRowCount() - 1, 0, true));
                         }
@@ -890,7 +896,7 @@ public class Unpak {
 
                 for (int i = 0; i < paths.length; ++i) {
                     Zipf sel = (Zipf) ((DefaultMutableTreeNode) paths[i].getLastPathComponent()).getUserObject();
-                    int row = this.zmodel.getZipFileIndex(sel);
+                    int row = this.zipFiles.getZipFileIndex(sel);
                     if (row == -1) {
                         Cons.println("GetSelection: Couldn't find a match for " + sel);
                     } else {
@@ -911,7 +917,7 @@ public class Unpak {
         Arrays.sort(rows);
 
         for (int i = rows.length - 1; i >= 0; --i) {
-            Zipf z = this.zmodel.getZipFileByIndex(rows[i]);
+            Zipf z = this.zipFiles.getZipFileByIndex(rows[i]);
             if (!all) {
                 int result = JOptionPane.showOptionDialog(this.frame,
                         "Remove file " + z.getFileName() + " from the pak?",
@@ -930,7 +936,8 @@ public class Unpak {
                 }
             }
 
-            this.zmodel.removeZipFileByIndex(rows[i]);
+            this.zipFiles.removeZipFileByIndex(rows[i]);
+            this.zmodel.fireTableDataChanged();
         }
 
         this.dirty = true;
@@ -1351,7 +1358,7 @@ public class Unpak {
 
     public boolean isInPak(String filename) {
         filename = filename.replace(File.separatorChar, '/');
-        Zipf f = this.zmodel.getZipFileByPath(filename);
+        Zipf f = this.zipFiles.getZipFileByPath(filename);
         return f != null;
     }
 

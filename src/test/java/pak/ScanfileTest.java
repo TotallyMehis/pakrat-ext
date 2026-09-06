@@ -3,8 +3,11 @@ package pak;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static pak.TestUtil.getResourceAsFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -52,6 +55,16 @@ public class ScanfileTest {
         @Override
         public void removeZipFileByIndex(int index) {
             throw new UnsupportedOperationException("Unimplemented method 'removeZipFileByIndex'");
+        }
+
+        @Override
+        public void addFilesToPak(File[] files, String baseDirectory, boolean force) throws IOException {
+            throw new UnsupportedOperationException("Unimplemented method 'addFilesToPak'");
+        }
+
+        @Override
+        public List<Zipf> getZipFiles() {
+            throw new UnsupportedOperationException("Unimplemented method 'getZipFiles'");
         }
     }
 
