@@ -47,9 +47,9 @@ public class Scanfile {
         this.name = trimName(name, type);
         this.type = type;
 
-        String base = basedir + (basedir.endsWith("/") ? "" : "/");
+        String base = basedir + (basedir.endsWith(File.separator) ? "" : File.separator);
         this.fullname = getPathPrefix(this.type) + this.name + this.type.getExtension();
-        this.diskname = base + this.fullname;
+        this.diskname = base + this.fullname.replace('/', File.separatorChar);
         int is = this.fullname.lastIndexOf("/");
         if (is >= 0 && is < this.fullname.length() - 1) {
             this.listname = this.fullname.substring(is + 1);
